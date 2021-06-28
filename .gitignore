@@ -1,5 +1,6 @@
 .*
 __pycache__
+camus.pyc
 !/.gitignore
 .DS_Store
 /**/reference/*.*
