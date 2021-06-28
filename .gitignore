@@ -1,0 +1,6 @@
+.*
+__pycache__
+!/.gitignore
+.DS_Store
+/**/reference/*.*
+/**/reference-pages/
