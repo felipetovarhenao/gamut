@@ -7,10 +7,11 @@ recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/dialogue_
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
-frame_length = 512*(2**2)
-jitter = 0
+# frame_length = 512*(2**2)
+frame_length = [512, 4096*2]
+jitter = 256
 stretch_factor = 1
-kn = 4
+kn = 8
 # envelope settings
 env_type = 0
 sustain = 0.1
@@ -44,7 +45,7 @@ else:
     envtag = env_types[env_type]
 
 # COOK SOUND
-output = camus.cook_recipe(recipe_path, 
+output = camus.cook_recipe_2(recipe_path, 
                                 envelope=env_types[env_type],
                                 frame_length=frame_length,
                                 stretch_factor=stretch_factor,

@@ -6,8 +6,8 @@
 audio_samples = '/Users/felipe-tovar-henao/Google Drive/FTH Drive/Sample libraries/genres/pop'
 output_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/'
 duration = None
-hop_length = 128
-frame_length = 512
+hop_length = 512
+frame_length = 1024
 
 # ------------------ MAIN ------------------------
 # MODULES

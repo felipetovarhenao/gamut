@@ -3,10 +3,12 @@ from os import walk
 import librosa
 import json
 from librosa.util.utils import frame
+from numba.core.decorators import jit
 import numpy as np
-from numpy import inf
+from numpy import inf, int64
 from math import floor, log
 from random import randint, choices
+import scipy
 from scipy.signal import get_window, resample
 from sklearn.neighbors import NearestNeighbors
 
@@ -103,7 +105,7 @@ def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_lengt
     print('    ...loading corpus...')
     corpus_dict = load_JSON(corpus_db)
     print('    ...analyzing target...')
-    target_mfcc, target_extras, n_samples = get_features(target_path,
+    target_mfcc, target_extras, target_size = get_features(target_path,
                         duration=duration,
                         n_mfcc=n_mfcc,
                         hop_length=hop_length,
@@ -117,7 +119,8 @@ def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_lengt
                 'sample_index'
             ],
             'data_dims': k,
-            'n_samples': n_samples
+            'target_size': target_size,
+            'n_samples': len(target_mfcc)
         },
         'corpus_info': corpus_dict['corpus_info'],
         'data_samples': list()
@@ -221,7 +224,91 @@ def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=
         segment = snd[samp_st:samp_st+frame_length]
         segments.append(segment)
 
-    return concat_segments(segments, envelope=envelope, hop_length=hop_length, jitter=jitter, max_frame_length=frame_length, total_samples=recipe_dict['target_info']['n_samples'])
+    return concat_segments(segments, envelope=envelope, hop_length=hop_length, jitter=jitter, max_frame_length=frame_length, total_samples=recipe_dict['target_info']['target_size'])
+
+def cook_recipe_2(recipe_path, envelope='hann', frame_length=1024, stretch_factor=1, jitter=512, kn=8, n_chans=2):
+    print('...loading recipe...')
+    recipe_dict = load_JSON(recipe_path)
+
+    print('...loading corpus sounds...')
+    max_duration = recipe_dict['corpus_info']['max_duration']
+    sounds = [librosa.load(p, duration=max_duration)[0] for p in recipe_dict['corpus_info']['paths']]
+    hop_length = int(recipe_dict['target_info']['hop_length'])
+    data_samples = recipe_dict['data_samples']
+
+    n_segments = recipe_dict['target_info']['n_samples']
+    # populate frame length table
+    if type(frame_length) is list:
+        frame_length_table = np.round(array_resampling(frame_length, n_segments))
+    if type(frame_length) is int:
+        frame_length_table = np.empty(n_segments)
+        frame_length_table.fill(frame_length) 
+    frame_length_table = frame_length_table.astype('int64')
+
+    # populate sample index table   
+    if type(stretch_factor) is int or type(stretch_factor) is float:
+        samp_onset_table = np.empty(n_segments)
+        samp_onset_table.fill(hop_length*stretch_factor)
+    if type(stretch_factor) is list:
+        samp_onset_table = array_resampling(stretch_factor, n_segments)*hop_length   
+    samp_onset_table = np.concatenate([[0], np.round(samp_onset_table)]).astype('int64').cumsum()[:-1]    
+
+    # populate jitter table
+    if jitter == 0:
+        jitter_table = np.zeros(n_segments, dtype=int)
+    else:
+        jitter = int(max(1, abs(jitter/2)))
+        jitter_table = np.random.randint(low=jitter*-1, high=jitter, size=n_segments)
+        samp_onset_table = samp_onset_table + jitter_table
+        samp_onset_table[samp_onset_table < 0] = 0
+    
+    # get total duration
+    output_length = int(samp_onset_table[-1] + np.amax(frame_length_table))
+
+    # make output array
+    output = np.empty(shape=(output_length, n_chans))
+    output.fill(0)
+
+    # compute window with default size
+    env_type = type(envelope)
+    default_length = scipy.stats.mode(frame_length_table)[0]
+    if env_type == str:
+        window = get_window(envelope, Nx=default_length)
+    if env_type == np.ndarray or env_type == list:
+        window = array_resampling(envelope, N=default_length)
+    window = np.repeat(np.array([window]).T, n_chans, axis=1)
+
+    # compute panning vable
+    pan_table = np.random.randint(low=1, high=16, size=(n_segments, n_chans))
+    row_sums = pan_table.sum(axis=1)
+    pan_table = pan_table / row_sums[:, np.newaxis]
+    
+    if kn == None:
+        kn = recipe_dict['target_info']['frame_dims']
+    weigths = np.arange(kn, 0, -1)
+
+    for ds, so, fl, p in zip(data_samples, samp_onset_table, frame_length_table, pan_table):
+        num_frames = len(ds[:kn])
+        f = choices(ds[:kn], weights=weigths[kn-num_frames:])[0]
+        snd = sounds[f[0]]
+        max_idx = len(snd) - 1
+        samp_st = f[1]
+        samp_end = min(max_idx, samp_st+fl)
+        segment = np.repeat(np.array([snd[samp_st:samp_end]]).T, n_chans, axis=1)
+        seg_size = len(segment)
+        if seg_size != len(window):
+            segment = segment * resample(window, seg_size)
+        else:
+            segment = segment * window
+        output[so:so+seg_size] = output[so:so+seg_size] + (segment * p)
+
+    # return normalized output
+    return (output / np.amax(np.abs(output))) * 0.707946
+
+def array_resampling(array, N):
+        x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)
+        x_coor2 = np.arange(0, len(array))
+        return np.interp(x_coor1, x_coor2, array)
 
 def concat_segments(segments, envelope='hann', hop_length=512, jitter=64, n_chans=2, max_frame_length=1024, total_samples=None):
     n_segments = len(segments)
@@ -257,6 +344,11 @@ def nearest_neighbors(item, data, k=8):
 
 if __name__ == '__main__':
     print('----- running utilities.py')
-
-    frame_length = 1024
-    hop_length = 256
+    a = np.array([
+        [0, 0],
+        [1, 2],
+        [2,3],
+        [4,5]
+    ])
+    b = np.array([2,2])
+    print(a*b)
