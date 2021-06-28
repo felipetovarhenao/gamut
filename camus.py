@@ -50,21 +50,21 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
 
     print('    TOTAL NUMBER OF FRAMES: {}'.format(n_frames))
 
-    return mfcc_frames, metadata
+    return mfcc_frames, metadata, len(y)
 
-def build_mfcc_database(corpus_path, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
+def build_corpus(corpus_path, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
     corpus_path = realpath(corpus_path)
     corpus_name = basename(corpus_path)
 
     if isdir(corpus_path):
         print('...building corpus dictionary from {}...'.format(corpus_name))
         db = {
-            'info': {
+            'corpus_info': {
                 'corpus_name': corpus_name,
                 'max_duration': duration,
                 'frame_length': frame_length,
                 'hop_length': hop_length,
-                'frame_format': [
+                'data_format': [
                     'path_id',
                     'sample_index',
                     'RMS',
@@ -73,7 +73,7 @@ def build_mfcc_database(corpus_path, duration=None, n_mfcc=13, hop_length=512, f
                 'n_frames': int(),
                 'paths': list()
             },
-            'frames': list(),
+            'data_samples': list(),
             'KDTree': dict()
         }
         path_id = 0
@@ -83,16 +83,16 @@ def build_mfcc_database(corpus_path, duration=None, n_mfcc=13, hop_length=512, f
                 file_ext = splitext(f)[1]
                 if file_ext == '.wav' or file_ext == '.aif' or file_ext == '.aiff':
                     file_path = join(path, f)
-                    db['info']['paths'].append(file_path)
-                    mfcc_stream, metadata = get_features(file_path, duration=duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
+                    db['corpus_info']['paths'].append(file_path)
+                    mfcc_stream, metadata, _ = get_features(file_path, duration=duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
                     for mf, md in zip(mfcc_stream, metadata):
                         mfcc_frames.append(mf)
-                        db['frames'].append([path_id] + md.tolist())
+                        db['data_samples'].append([path_id] + md.tolist())
                     path_id += 1
         n_frames = len(mfcc_frames)
         if kd is None:
             kd = max(int(log(n_frames)/log(4)), 1)
-        db['info']['n_frames'] = n_frames
+        db['corpus_info']['n_frames'] = n_frames
         db['KDTree'] = build_KDTree(mfcc_frames, kd=kd)
         print('\nDONE building corpus {}.json'.format(corpus_name))
         return db
@@ -102,30 +102,34 @@ def build_mfcc_database(corpus_path, duration=None, n_mfcc=13, hop_length=512, f
 def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, k=3):
     print('    ...loading corpus...')
     corpus_dict = load_JSON(corpus_db)
-    corpus_dict['info']['frame_length'] = frame_length
-    corpus_dict['info']['hop_length'] = hop_length
-    corpus_dict['info']['frame_format'] = ['path_id', 'sample_index']
-    corpus_dict['info']['frame_dims'] = k
-    corpus_dict['info']['target_duration'] = duration
-    dictionary = {
-        'info': corpus_dict['info'],
-        'frames': list()
-    }
-
     print('    ...analyzing target...')
-    target_mfcc, target_extras = get_features(target_path,
+    target_mfcc, target_extras, n_samples = get_features(target_path,
                         duration=duration,
                         n_mfcc=n_mfcc,
                         hop_length=hop_length,
-                        frame_length=frame_length)
+                        frame_length=frame_length)    
+    dictionary = {
+        'target_info': {
+            'frame_length': frame_length,
+            'hop_length': hop_length,
+            'frame_format': [
+                'path_id', 
+                'sample_index'
+            ],
+            'data_dims': k,
+            'n_samples': n_samples
+        },
+        'corpus_info': corpus_dict['corpus_info'],
+        'data_samples': list()
+    } 
 
-    corpus_metadata = np.array(corpus_dict['frames'])
+    corpus_metadata = np.array(corpus_dict['data_samples'])
 
     corpus_tree = corpus_dict['KDTree']
     tree_size = 2**corpus_tree['dims']
 
-    corpus_tree_posns = [np.array(corpus_tree['positions'][str(x)], dtype='int') for x in range(tree_size)]
-    corpus_tree_mfccs = [np.array(corpus_tree['branches'][str(x)], dtype='int') for x in range(tree_size)]
+    corpus_tree_posns = [np.array(corpus_tree['position_branches'][str(x)], dtype='int') for x in range(tree_size)]
+    corpus_tree_mfccs = [np.array(corpus_tree['data_branches'][str(x)], dtype='int') for x in range(tree_size)]
 
     print('    ...finding best matches...')
 
@@ -136,7 +140,7 @@ def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_lengt
         metadata = corpus_metadata[original_positions]
         sorted_positions = nearest_neighbors(tex[1:], metadata[:,[2,3]],k=k)
         mfcc_options = metadata[sorted_positions]
-        dictionary['frames'].append(mfcc_options[:,[0,1]].astype(int).tolist())
+        dictionary['data_samples'].append(mfcc_options[:,[0,1]].astype(int).tolist())
     print('DONE making recipe')
     return dictionary
 
@@ -148,17 +152,17 @@ def build_KDTree(data, kd=2):
     tree = {
         'nodes': nodes.tolist(),
         'dims': kd,
-        'positions': dict(),
-        'branches': dict()
+        'position_branches': dict(),
+        'data_branches': dict()
     }
     for i in range(tree_size):
-        tree['positions'][str(i)] = list()
-        tree['branches'][str(i)] = list()
+        tree['position_branches'][str(i)] = list()
+        tree['data_branches'][str(i)] = list()
     print("    ...populating branches...")
     for pos, datum in enumerate(data):
         branch_id = get_branch_id(datum[:kd], nodes)
-        tree['positions'][str(branch_id)].append(pos)
-        tree['branches'][str(branch_id)].append(datum.tolist())
+        tree['position_branches'][str(branch_id)].append(pos)
+        tree['data_branches'][str(branch_id)].append(datum.tolist())
 
     print("    KDTree built")
     return tree
@@ -171,7 +175,7 @@ def neighborhood_index(item, tree):
     flag = True
     z = 1
     while flag:
-        if len(tree['branches'][str(path_id)]) > 0:
+        if len(tree['data_branches'][str(path_id)]) > 0:
             flag = False
         else:
             path_id = wrap(wedgesum(default_id, z), 0, tree_size)
@@ -197,19 +201,18 @@ def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=
     print('...loading recipe...')
 
     recipe_dict = load_JSON(recipe_path)
-    hop_length = int(recipe_dict['info']['hop_length'] * stretch_factor)
+    hop_length = int(recipe_dict['target_info']['hop_length'] * stretch_factor)
 
     print('...loading corpus sounds...')
 
-    max_duration = recipe_dict['info']['max_duration']
-    sounds = [librosa.load(p, duration=max_duration)[0] for p in recipe_dict['info']['paths']]
-    frames = recipe_dict['frames']
+    max_duration = recipe_dict['corpus_info']['max_duration']
+    sounds = [librosa.load(p, duration=max_duration)[0] for p in recipe_dict['corpus_info']['paths']]
+    frames = recipe_dict['data_samples']
     segments = list()
 
     if kn == None:
-        kn = recipe_dict['info']['k']
-
-    weigths = [x for x in range(kn, 0, -1)]
+        kn = recipe_dict['target_info']['frame_dims']
+    weigths = np.arange(kn, 0, -1)
     for fs in frames:
         num_frames = len(fs[:kn])
         f = choices(fs[:kn], weights=weigths[kn-num_frames:])[0]
@@ -218,11 +221,11 @@ def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=
         segment = snd[samp_st:samp_st+frame_length]
         segments.append(segment)
 
-    return concat_segments(segments, envelope=envelope, hop_length=hop_length, jitter=jitter, max_frame_length=frame_length)
+    return concat_segments(segments, envelope=envelope, hop_length=hop_length, jitter=jitter, max_frame_length=frame_length, total_samples=recipe_dict['target_info']['n_samples'])
 
-def concat_segments(segments, envelope='hann', hop_length=512, jitter=64, n_chans=2, max_frame_length=1024):
+def concat_segments(segments, envelope='hann', hop_length=512, jitter=64, n_chans=2, max_frame_length=1024, total_samples=None):
     n_segments = len(segments)
-    outsize = (n_segments * hop_length) + max_frame_length + jitter
+    outsize = total_samples + jitter + max_frame_length
     output = np.zeros((outsize, n_chans))
     jitsize = int(jitter/2)
     envtype = type(envelope)

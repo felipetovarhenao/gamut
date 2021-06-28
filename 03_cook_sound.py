@@ -3,19 +3,19 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/dialogue_fr_from_commercial_loops_corpus.json'
+recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/dialogue_fr_from_pop_corpus.json'
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
-frame_length = 512*(2**3)
-jitter = 128
+frame_length = 512*(2**2)
+jitter = 0
 stretch_factor = 1
-kn = 5
+kn = 4
 # envelope settings
 env_type = 0
 sustain = 0.1
 env_array = [0, 1, 0.85]
-sharpness = 13
+sharpness = 6
 
 sr = 22050
 

@@ -3,7 +3,7 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/commercial_loops'
+audio_samples = '/Users/felipe-tovar-henao/Google Drive/FTH Drive/Sample libraries/genres/pop'
 output_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/'
 duration = None
 hop_length = 128
@@ -18,7 +18,7 @@ import time
 st = time.time()
 audio_samples = os.path.realpath(audio_samples)
 
-corpus_dictionary = camus.build_mfcc_database(audio_samples, 
+corpus_dictionary = camus.build_corpus(audio_samples, 
                                                 frame_length=frame_length,
                                                 duration=duration,
                                                 hop_length=hop_length)
