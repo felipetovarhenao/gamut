@@ -3,7 +3,7 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/dialogue_fr_from_pop_corpus.json'
+recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/dialogo_from_genres_corpus.json'
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
@@ -45,7 +45,7 @@ else:
     envtag = env_types[env_type]
 
 # COOK SOUND
-output = camus.cook_recipe_2(recipe_path, 
+output = camus.cook_recipe(recipe_path, 
                                 envelope=env_types[env_type],
                                 frame_length=frame_length,
                                 stretch_factor=stretch_factor,

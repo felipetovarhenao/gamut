@@ -198,39 +198,18 @@ def get_branch_id(vector, nodes):
     size = len(vector)-1
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
-def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=1, jitter=512, kn=8):
-    print('...loading recipe...')
-
-    recipe_dict = load_JSON(recipe_path)
-    hop_length = int(recipe_dict['target_info']['hop_length'] * stretch_factor)
-
-    print('...loading corpus sounds...')
-
-    max_duration = recipe_dict['corpus_info']['max_duration']
-    sounds = [librosa.load(p, duration=max_duration)[0] for p in recipe_dict['corpus_info']['paths']]
-    frames = recipe_dict['data_samples']
-    segments = list()
-
-    if kn == None:
-        kn = recipe_dict['target_info']['frame_dims']
-    weigths = np.arange(kn, 0, -1)
-    for fs in frames:
-        num_frames = len(fs[:kn])
-        f = choices(fs[:kn], weights=weigths[kn-num_frames:])[0]
-        snd = sounds[f[0]]
-        samp_st = f[1]
-        segment = snd[samp_st:samp_st+frame_length]
-        segments.append(segment)
-
-    return concat_segments(segments, envelope=envelope, hop_length=hop_length, jitter=jitter, max_frame_length=frame_length, total_samples=recipe_dict['target_info']['target_size'])
-
-def cook_recipe_2(recipe_path, envelope='hann', frame_length=1024, stretch_factor=1, jitter=512, kn=8, n_chans=2):
+def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=1, jitter=512, kn=8, n_chans=2):
     print('...loading recipe...')
     recipe_dict = load_JSON(recipe_path)
 
     print('...loading corpus sounds...')
+    sounds = [[]] * len(recipe_dict['corpus_info']['paths'])
+    snd_idxs = np.unique(np.concatenate(np.array(recipe_dict['data_samples'])[:,:,0]))
     max_duration = recipe_dict['corpus_info']['max_duration']
-    sounds = [librosa.load(p, duration=max_duration)[0] for p in recipe_dict['corpus_info']['paths']]
+    for i in snd_idxs:
+        sounds[i] = librosa.load(recipe_dict['corpus_info']['paths'][i], duration=max_duration)[0]
+
+    print("...creating dynamic control tables...")
     hop_length = int(recipe_dict['target_info']['hop_length'])
     data_samples = recipe_dict['data_samples']
 
@@ -285,6 +264,7 @@ def cook_recipe_2(recipe_path, envelope='hann', frame_length=1024, stretch_facto
         kn = recipe_dict['target_info']['frame_dims']
     weigths = np.arange(kn, 0, -1)
 
+    print("...concatenating grains...")
     for ds, so, fl, p in zip(data_samples, samp_onset_table, frame_length_table, pan_table):
         num_frames = len(ds[:kn])
         f = choices(ds[:kn], weights=weigths[kn-num_frames:])[0]
@@ -307,30 +287,6 @@ def array_resampling(array, N):
         x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)
         x_coor2 = np.arange(0, len(array))
         return np.interp(x_coor1, x_coor2, array)
-
-def concat_segments(segments, envelope='hann', hop_length=512, jitter=64, n_chans=2, max_frame_length=1024, total_samples=None):
-    n_segments = len(segments)
-    outsize = total_samples + jitter + max_frame_length
-    output = np.zeros((outsize, n_chans))
-    jitsize = int(jitter/2)
-    envtype = type(envelope)
-    if envtype == str:
-        window = np.repeat(np.array([get_window(envelope, Nx=max_frame_length)]).T, n_chans, axis=1)
-    if envtype == np.ndarray or envtype == list:
-        window = np.repeat(np.array([resample(envelope, num=max_frame_length)]).T, n_chans, axis=1)
-    panning = np.random.randint(1, 16, size=(n_segments, n_chans))
-    for i, (seg, pan) in enumerate(zip(segments, panning)):
-        segsize = len(seg)
-        st = max(0, (i*hop_length)+randint(-jitsize, jitsize))
-        end = min(st + segsize, outsize-1)
-        seg = np.repeat(np.array([seg]).T, n_chans, axis=1)
-        pan = pan/np.sum(pan)
-        if segsize != len(window):
-            seg = seg * resample(window, segsize)
-        else:
-            seg = seg * window
-        output[st:end] = output[st:end] + (seg * pan)
-    return output
 
 def nearest_neighbors(item, data, k=8):
     datasize = len(data)
