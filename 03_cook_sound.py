@@ -69,7 +69,3 @@ if not os.path.exists(outdir):
 sf.write(os.path.join(outdir, filename), output, sr, 'PCM_24')
 end = time.time()
 print('DONE cooking {}.\nElapsed time: {}'.format(filename, round(end-st, 2)))
-
-    
-
-
