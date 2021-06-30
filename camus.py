@@ -23,7 +23,7 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
 
     print('\n        ...loading {}...'.format(basename(file_path)))
 
-    y, sr = librosa.load(file_path, duration=duration)
+    y, sr = librosa.load(file_path, duration=duration, sr=None)
 
     print('       ...analyzing sample...')
 
@@ -50,7 +50,7 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
 
     print('    TOTAL NUMBER OF FRAMES: {}'.format(n_frames))
 
-    return mfcc_frames, metadata, len(y)
+    return mfcc_frames, metadata, len(y), sr
 
 def build_corpus(corpus_path, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
     corpus_path = realpath(corpus_path)
@@ -83,11 +83,11 @@ def build_corpus(corpus_path, duration=None, n_mfcc=13, hop_length=512, frame_le
                 file_ext = splitext(f)[1]
                 if file_ext == '.wav' or file_ext == '.aif' or file_ext == '.aiff':
                     file_path = join(path, f)
-                    db['corpus_info']['paths'].append(file_path)
-                    mfcc_stream, metadata, _ = get_features(file_path, duration=duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
+                    mfcc_stream, metadata, _, sr = get_features(file_path, duration=duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
                     for mf, md in zip(mfcc_stream, metadata):
                         mfcc_frames.append(mf)
                         db['data_samples'].append([path_id] + md.tolist())
+                    db['corpus_info']['paths'].append([sr, file_path])
                     path_id += 1
         n_frames = len(mfcc_frames)
         if kd is None:
@@ -103,13 +103,15 @@ def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_lengt
     print('    ...loading corpus...')
     corpus_dict = load_JSON(corpus_db)
     print('    ...analyzing target...')
-    target_mfcc, target_extras, target_size = get_features(target_path,
-                        duration=duration,
-                        n_mfcc=n_mfcc,
-                        hop_length=hop_length,
-                        frame_length=frame_length)    
+    target_mfcc, target_extras, target_size, sr = get_features(target_path,
+                                                                duration=duration,
+                                                                n_mfcc=n_mfcc,
+                                                                hop_length=hop_length,
+                                                                frame_length=frame_length)    
     dictionary = {
         'target_info': {
+            'name': splitext(basename(target_path))[0],
+            'sr': sr,
             'frame_length': frame_length,
             'hop_length': hop_length,
             'frame_format': [
@@ -142,6 +144,7 @@ def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_lengt
         sorted_positions = nearest_neighbors(tex[1:], metadata[:,[2,3]],k=k)
         mfcc_options = metadata[sorted_positions]
         dictionary['data_samples'].append(mfcc_options[:,[0,1]].astype(int).tolist())
+
     print('DONE making recipe')
     return dictionary
 
@@ -198,28 +201,30 @@ def get_branch_id(vector, nodes):
     size = len(vector)-1
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
-def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=1, jitter=512, kn=8, n_chans=2):
+def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=1, jitter=512, kn=8, n_chans=2, sr=44100):
     print('...loading recipe...')
     recipe_dict = load_JSON(recipe_path)
-
+    target_sr = recipe_dict['target_info']['sr']
+    sr_ratio = sr/target_sr
     print('...loading corpus sounds...')
     sounds = [[]] * len(recipe_dict['corpus_info']['paths'])
-    snd_idxs = np.unique(np.concatenate(np.array(recipe_dict['data_samples'])[:,:,0]))
+    snd_idxs = np.unique(np.concatenate([[y[0] for y in x] for x in recipe_dict['data_samples']]))
     max_duration = recipe_dict['corpus_info']['max_duration']
     for i in snd_idxs:
-        sounds[i] = librosa.load(recipe_dict['corpus_info']['paths'][i], duration=max_duration)[0]
+        # load and, when necessary, resample sounds to output sampling rate.
+        sounds[i] = librosa.load(recipe_dict['corpus_info']['paths'][i][1], duration=max_duration, sr=sr)[0]
 
     print("...creating dynamic control tables...")
-    hop_length = int(recipe_dict['target_info']['hop_length'])
+    hop_length = int(recipe_dict['target_info']['hop_length'] * sr_ratio) 
     data_samples = recipe_dict['data_samples']
 
     n_segments = recipe_dict['target_info']['n_samples']
     # populate frame length table
     if type(frame_length) is list:
-        frame_length_table = np.round(array_resampling(frame_length, n_segments))
+        frame_length_table = np.round(array_resampling(np.array(frame_length) * sr_ratio, n_segments))
     if type(frame_length) is int:
         frame_length_table = np.empty(n_segments)
-        frame_length_table.fill(frame_length) 
+        frame_length_table.fill(frame_length * sr_ratio) 
     frame_length_table = frame_length_table.astype('int64')
 
     # populate sample index table   
@@ -234,7 +239,7 @@ def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=
     if jitter == 0:
         jitter_table = np.zeros(n_segments, dtype=int)
     else:
-        jitter = int(max(1, abs(jitter/2)))
+        jitter = int(max(1, abs((jitter*sr_ratio)/2)))
         jitter_table = np.random.randint(low=jitter*-1, high=jitter, size=n_segments)
         samp_onset_table = samp_onset_table + jitter_table
         samp_onset_table[samp_onset_table < 0] = 0
@@ -268,10 +273,13 @@ def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=
     for ds, so, fl, p in zip(data_samples, samp_onset_table, frame_length_table, pan_table):
         num_frames = len(ds[:kn])
         f = choices(ds[:kn], weights=weigths[kn-num_frames:])[0]
-        snd = sounds[f[0]]
+        snd_id = f[0]
+        snd = sounds[snd_id]
+        snd_sr = recipe_dict['corpus_info']['paths'][snd_id][0]
+        snd_sr_ratio = sr/snd_sr
         max_idx = len(snd) - 1
-        samp_st = f[1]
-        samp_end = min(max_idx, samp_st+fl)
+        samp_st = int(f[1] * snd_sr_ratio)
+        samp_end = min(max_idx, samp_st+int(fl*snd_sr_ratio))
         segment = np.repeat(np.array([snd[samp_st:samp_end]]).T, n_chans, axis=1)
         seg_size = len(segment)
         if seg_size != len(window):

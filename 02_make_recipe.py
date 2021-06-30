@@ -4,7 +4,7 @@
 
 # PATHS
 target = '/Users/felipe-tovar-henao/Documents/Camus files/target_samples/dialogue_fr.wav'
-corpus = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/pop_corpus.json'
+corpus = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/Sax_Alto_corpus.json'
 recipe_dir = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/'
 
 # RECIPE SETTINGS

@@ -3,12 +3,12 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/dialogo_from_genres_corpus.json'
+recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/dialogue_fr_from_Sax_Alto_corpus.json'
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
 # frame_length = 512*(2**2)
-frame_length = [512, 4096*2]
+frame_length = 2048
 jitter = 256
 stretch_factor = 1
 kn = 8
@@ -18,7 +18,7 @@ sustain = 0.1
 env_array = [0, 1, 0.85]
 sharpness = 6
 
-sr = 22050
+sr = 44100
 
 # ------------------ MAIN ------------------------
 # MODULES
