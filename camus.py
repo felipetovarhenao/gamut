@@ -278,7 +278,7 @@ def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=
             segment = segment * resample(window, seg_size)
         else:
             segment = segment * window
-        output[so:so+seg_size] = output[so:so+seg_size] + (segment * p)
+        output[so:so+seg_size] = output[so:so+seg_size] + (segment*p)
 
     # return normalized output
     return (output / np.amax(np.abs(output))) * 0.707946
