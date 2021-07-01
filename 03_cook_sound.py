@@ -3,20 +3,20 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/dialogue_fr_from_Sax_Alto_corpus.json'
+recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/dialogue_fr_from_Orchset_corpus.json'
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
 # frame_length = 512*(2**2)
-frame_length = 2048
-jitter = 256
+frame_length = 2048*4
+jitter = 128
 stretch_factor = 1
 kn = 8
 # envelope settings
 env_type = 0
 sustain = 0.1
 env_array = [0, 1, 0.85]
-sharpness = 6
+sharpness = 15
 
 sr = 44100
 

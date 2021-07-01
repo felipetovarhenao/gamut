@@ -3,7 +3,7 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/_OrchideaSOL2020_release/OrchideaSOL2020/Winds/Sax_Alto'
+audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/Orchset'
 output_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/'
 duration = None
 hop_length = 512

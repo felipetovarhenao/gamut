@@ -52,33 +52,33 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
 
     return mfcc_frames, metadata, len(y), sr
 
-def build_corpus(corpus_path, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
-    corpus_path = realpath(corpus_path)
-    corpus_name = basename(corpus_path)
+def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
+    folder_dir = realpath(folder_dir)
+    corpus_name = basename(folder_dir)
 
-    if isdir(corpus_path):
+    if isdir(folder_dir):
         print('...building corpus dictionary from {}...'.format(corpus_name))
         db = {
             'corpus_info': {
-                'corpus_name': corpus_name,
+                'name': corpus_name,
                 'max_duration': duration,
                 'frame_length': frame_length,
                 'hop_length': hop_length,
                 'data_format': [
-                    'path_id',
+                    'file_id',
                     'sample_index',
                     'RMS',
                     'centroid_pitch'
                 ],
                 'n_frames': int(),
-                'paths': list()
+                'files': list()
             },
             'data_samples': list(),
             'KDTree': dict()
         }
-        path_id = 0
+        file_id = 0
         mfcc_frames = list()
-        for path, _, files in walk(corpus_path):
+        for path, _, files in walk(folder_dir):
             for f in files:
                 file_ext = splitext(f)[1]
                 if file_ext == '.wav' or file_ext == '.aif' or file_ext == '.aiff':
@@ -86,9 +86,9 @@ def build_corpus(corpus_path, duration=None, n_mfcc=13, hop_length=512, frame_le
                     mfcc_stream, metadata, _, sr = get_features(file_path, duration=duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
                     for mf, md in zip(mfcc_stream, metadata):
                         mfcc_frames.append(mf)
-                        db['data_samples'].append([path_id] + md.tolist())
-                    db['corpus_info']['paths'].append([sr, file_path])
-                    path_id += 1
+                        db['data_samples'].append([file_id] + md.tolist())
+                    db['corpus_info']['files'].append([sr, file_path])
+                    file_id += 1
         n_frames = len(mfcc_frames)
         if kd is None:
             kd = max(int(log(n_frames)/log(4)), 1)
@@ -97,7 +97,7 @@ def build_corpus(corpus_path, duration=None, n_mfcc=13, hop_length=512, frame_le
         print('\nDONE building corpus {}.json'.format(corpus_name))
         return db
     else:
-        raise ValueError("ERROR: {} must be a folder!".format(basename(corpus_path)))
+        raise ValueError("ERROR: {} must be a folder!".format(basename(folder_dir)))
 
 def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, k=3):
     print('    ...loading corpus...')
@@ -115,7 +115,7 @@ def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_lengt
             'frame_length': frame_length,
             'hop_length': hop_length,
             'frame_format': [
-                'path_id', 
+                'file_id', 
                 'sample_index'
             ],
             'data_dims': k,
@@ -174,17 +174,17 @@ def build_KDTree(data, kd=2):
 def neighborhood_index(item, tree):
     kd = tree['dims']
     tree_size = 2**kd
-    path_id = get_branch_id(item[:kd], tree['nodes'][:kd])
-    default_id = path_id
+    file_id = get_branch_id(item[:kd], tree['nodes'][:kd])
+    default_id = file_id
     flag = True
     z = 1
     while flag:
-        if len(tree['data_branches'][str(path_id)]) > 0:
+        if len(tree['data_branches'][str(file_id)]) > 0:
             flag = False
         else:
-            path_id = wrap(wedgesum(default_id, z), 0, tree_size)
+            file_id = wrap(wedgesum(default_id, z), 0, tree_size)
             z += 1
-    return path_id
+    return file_id
 
 def wedgesum(a, b):
     if b % 2 == 0:
@@ -207,12 +207,12 @@ def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=
     target_sr = recipe_dict['target_info']['sr']
     sr_ratio = sr/target_sr
     print('...loading corpus sounds...')
-    sounds = [[]] * len(recipe_dict['corpus_info']['paths'])
+    sounds = [[]] * len(recipe_dict['corpus_info']['files'])
     snd_idxs = np.unique(np.concatenate([[y[0] for y in x] for x in recipe_dict['data_samples']]))
     max_duration = recipe_dict['corpus_info']['max_duration']
     for i in snd_idxs:
         # load and, when necessary, resample sounds to output sampling rate.
-        sounds[i] = librosa.load(recipe_dict['corpus_info']['paths'][i][1], duration=max_duration, sr=sr)[0]
+        sounds[i] = librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=max_duration, sr=sr)[0]
 
     print("...creating dynamic control tables...")
     hop_length = int(recipe_dict['target_info']['hop_length'] * sr_ratio) 
@@ -253,7 +253,7 @@ def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=
 
     # compute window with default size
     env_type = type(envelope)
-    default_length = scipy.stats.mode(frame_length_table)[0]
+    default_length = int(scipy.stats.mode(frame_length_table)[0])
     if env_type == str:
         window = get_window(envelope, Nx=default_length)
     if env_type == np.ndarray or env_type == list:
@@ -275,7 +275,7 @@ def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=
         f = choices(ds[:kn], weights=weigths[kn-num_frames:])[0]
         snd_id = f[0]
         snd = sounds[snd_id]
-        snd_sr = recipe_dict['corpus_info']['paths'][snd_id][0]
+        snd_sr = recipe_dict['corpus_info']['files'][snd_id][0]
         snd_sr_ratio = sr/snd_sr
         max_idx = len(snd) - 1
         samp_st = int(f[1] * snd_sr_ratio)
@@ -306,11 +306,3 @@ def nearest_neighbors(item, data, k=8):
 
 if __name__ == '__main__':
     print('----- running utilities.py')
-    a = np.array([
-        [0, 0],
-        [1, 2],
-        [2,3],
-        [4,5]
-    ])
-    b = np.array([2,2])
-    print(a*b)
