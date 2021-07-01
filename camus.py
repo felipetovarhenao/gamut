@@ -22,11 +22,9 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
     file_path = realpath(file_path)
 
     print('\n        ...loading {}...'.format(basename(file_path)))
-
     y, sr = librosa.load(file_path, duration=duration, sr=None)
 
     print('       ...analyzing sample...')
-
     mfcc_frames = librosa.feature.mfcc(y=y,
                                     sr=sr, 
                                     n_mfcc=n_mfcc, 
@@ -34,7 +32,6 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
                                     hop_length=hop_length).T[:-2]
 
     print('        ...computing extra features...')
-
     rms_frames = librosa.feature.rms(y=y, 
                                     frame_length=frame_length, 
                                     hop_length=hop_length)[0][:-2]
@@ -104,10 +101,10 @@ def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_lengt
     corpus_dict = load_JSON(corpus_db)
     print('    ...analyzing target...')
     target_mfcc, target_extras, target_size, sr = get_features(target_path,
-                                                                duration=duration,
-                                                                n_mfcc=n_mfcc,
-                                                                hop_length=hop_length,
-                                                                frame_length=frame_length)    
+                                                            duration=duration,
+                                                            n_mfcc=n_mfcc,
+                                                            hop_length=hop_length,
+                                                            frame_length=frame_length)    
     dictionary = {
         'target_info': {
             'name': splitext(basename(target_path))[0],
@@ -201,7 +198,7 @@ def get_branch_id(vector, nodes):
     size = len(vector)-1
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
-def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=1, jitter=512, kn=8, n_chans=2, sr=44100):
+def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var = 0, kn=8, n_chans=2, sr=44100):
     print('...loading recipe...')
     recipe_dict = load_JSON(recipe_path)
     target_sr = recipe_dict['target_info']['sr']
@@ -220,11 +217,11 @@ def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=
 
     n_segments = recipe_dict['target_info']['n_samples']
     # populate frame length table
-    if type(frame_length) is list:
-        frame_length_table = np.round(array_resampling(np.array(frame_length) * sr_ratio, n_segments))
-    if type(frame_length) is int:
+    if type(grain_dur) is list:
+        frame_length_table = np.round(array_resampling(np.array(grain_dur) * sr, n_segments))
+    if type(grain_dur) is float or type(grain_dur) is int:
         frame_length_table = np.empty(n_segments)
-        frame_length_table.fill(frame_length * sr_ratio) 
+        frame_length_table.fill(grain_dur * sr) 
     frame_length_table = frame_length_table.astype('int64')
 
     # populate sample index table   
@@ -236,16 +233,15 @@ def cook_recipe(recipe_path, envelope='hann', frame_length=1024, stretch_factor=
     samp_onset_table = np.concatenate([[0], np.round(samp_onset_table)]).astype('int64').cumsum()[:-1]    
 
     # populate jitter table
-    if jitter == 0:
-        jitter_table = np.zeros(n_segments, dtype=int)
-    else:
+    jitter = int(onset_var * sr)
+    if jitter > 0:
         jitter = int(max(1, abs((jitter*sr_ratio)/2)))
         jitter_table = np.random.randint(low=jitter*-1, high=jitter, size=n_segments)
         samp_onset_table = samp_onset_table + jitter_table
         samp_onset_table[samp_onset_table < 0] = 0
     
     # get total duration
-    output_length = int(samp_onset_table[-1] + np.amax(frame_length_table))
+    output_length = int(np.amax(samp_onset_table) + np.amax(frame_length_table))
 
     # make output array
     output = np.empty(shape=(output_length, n_chans))

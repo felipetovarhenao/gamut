@@ -3,20 +3,19 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/dialogue_fr_from_Orchset_corpus.json'
+recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/dialogue_fr_from_Berklee44v8_corpus.json'
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
-# frame_length = 512*(2**2)
-frame_length = 2048*4
-jitter = 128
+grain_dur = [0.01, 0.5]
+onset_var = 2
 stretch_factor = 1
-kn = 8
+kn = 5
 # envelope settings
 env_type = 0
-sustain = 0.1
+sustain = 0.6
 env_array = [0, 1, 0.85]
-sharpness = 15
+sharpness = 10
 
 sr = 44100
 
@@ -47,18 +46,18 @@ else:
 # COOK SOUND
 output = camus.cook_recipe(recipe_path, 
                             envelope=env_types[env_type],
-                            frame_length=frame_length,
+                            grain_dur=grain_dur,
                             stretch_factor=stretch_factor,
-                            jitter=jitter,
+                            onset_var=onset_var,
                             kn=kn)
 
 # WRITE SOUND TO WAVE
 basename = os.path.splitext(os.path.basename(recipe_path))[0]
-filename = '{}_f{}_s{}_j{}_e-{}_k{}.wav'.format(
+filename = '{}_d{}_s{}_j{}_e-{}_k{}.wav'.format(
                 basename,
-                str(frame_length),
+                str(grain_dur),
                 str(stretch_factor),
-                str(jitter),
+                str(onset_var),
                 envtag,
                 kn
                 )
