@@ -11,14 +11,14 @@ frame_length = 1024
 
 # ------------------ MAIN ------------------------
 # MODULES
-import camus
+from camus import build_corpus
 import os
 import time
 
 st = time.time()
 audio_samples = os.path.realpath(audio_samples)
 
-corpus_dictionary = camus.build_corpus(audio_samples, 
+corpus_dictionary = build_corpus(audio_samples, 
                                         frame_length=frame_length,
                                         duration=duration,
                                         hop_length=hop_length)

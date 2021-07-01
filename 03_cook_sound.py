@@ -21,7 +21,7 @@ sr = 44100
 
 # ------------------ MAIN ------------------------
 # MODULES
-import camus
+from camus import cook_recipe
 import soundfile as sf
 import os
 import time
@@ -44,7 +44,7 @@ else:
     envtag = env_types[env_type]
 
 # COOK SOUND
-output = camus.cook_recipe(recipe_path, 
+output = cook_recipe(recipe_path, 
                             envelope=env_types[env_type],
                             grain_dur=grain_dur,
                             stretch_factor=stretch_factor,

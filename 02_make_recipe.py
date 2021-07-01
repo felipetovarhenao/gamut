@@ -15,14 +15,14 @@ k = 8
 
 # ------------------ MAIN ------------------------
 # MODULES
-import camus
+from camus import get_audio_recipe
 from os.path import basename, splitext, exists, join
 from os import mkdir
 import time
 
 st = time.time()
 # MAKE RECIPE
-recipe = camus.get_audio_recipe(target, corpus, 
+recipe = get_audio_recipe(target, corpus, 
                             hop_length=hop_length, 
                             frame_length=frame_length, 
                             duration=duration,
