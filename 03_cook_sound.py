@@ -46,11 +46,11 @@ else:
 
 # COOK SOUND
 output = camus.cook_recipe(recipe_path, 
-                                envelope=env_types[env_type],
-                                frame_length=frame_length,
-                                stretch_factor=stretch_factor,
-                                jitter=jitter,
-                                kn=kn)
+                            envelope=env_types[env_type],
+                            frame_length=frame_length,
+                            stretch_factor=stretch_factor,
+                            jitter=jitter,
+                            kn=kn)
 
 # WRITE SOUND TO WAVE
 basename = os.path.splitext(os.path.basename(recipe_path))[0]

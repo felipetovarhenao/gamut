@@ -19,9 +19,9 @@ st = time.time()
 audio_samples = os.path.realpath(audio_samples)
 
 corpus_dictionary = camus.build_corpus(audio_samples, 
-                                                frame_length=frame_length,
-                                                duration=duration,
-                                                hop_length=hop_length)
+                                        frame_length=frame_length,
+                                        duration=duration,
+                                        hop_length=hop_length)
 
 ### WRITE JSON CORPUS
 outname =  os.path.basename(audio_samples) + '_corpus.json'

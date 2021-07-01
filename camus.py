@@ -5,7 +5,7 @@ import json
 import numpy as np
 from numpy import inf
 from math import floor, log
-from random import randint, choices
+from random import choices
 import scipy
 from scipy.signal import get_window, resample
 from sklearn.neighbors import NearestNeighbors
