@@ -198,7 +198,7 @@ def get_branch_id(vector, nodes):
     size = len(vector)-1
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
-def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var = 0, kn=8, n_chans=2, sr=44100):
+def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100):
     print('...loading recipe...')
     recipe_dict = load_JSON(recipe_path)
     target_sr = recipe_dict['target_info']['sr']
