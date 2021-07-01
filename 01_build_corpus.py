@@ -3,7 +3,7 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-audio_samples = '/Users/felipe-tovar-henao/Documents/Camus files/target_samples/'
+audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/_OrchideaSOL2020_release/OrchideaSOL2020/PluckedStrings'
 output_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/'
 duration = None
 hop_length = 256
@@ -19,9 +19,9 @@ st = time.time()
 audio_samples = os.path.realpath(audio_samples)
 
 corpus_dictionary = build_corpus(audio_samples, 
-                                        frame_length=frame_length,
-                                        duration=duration,
-                                        hop_length=hop_length)
+                                frame_length=frame_length,
+                                duration=duration,
+                                hop_length=hop_length)
 
 ### WRITE JSON CORPUS
 outname =  os.path.basename(audio_samples) + '_corpus.json'

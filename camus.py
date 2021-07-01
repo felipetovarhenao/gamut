@@ -204,7 +204,7 @@ def get_branch_id(vector, nodes):
     size = len(vector)-1
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
-def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0.5):
+def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0.5, stereo=0.5):
     print('...loading recipe...')
     recipe_dict = load_JSON(recipe_path)
     target_sr = recipe_dict['target_info']['sr']
@@ -274,10 +274,15 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     window = np.repeat(np.array([window]).T, n_chans, axis=1)
 
     # compute panning table
+    pan_type = type(stereo)
     pan_table = np.random.randint(low=1, high=16, size=(n_segments, n_chans))
+    if pan_type is int or pan_type is float:
+        pan_table = pan_table * stereo
+    if pan_type is list:
+        pan_table = pan_table * np.repeat(np.array([array_resampling(stereo, n_segments)]).T, n_chans, axis=1)
+    pan_table[pan_table < 1] = 1
     row_sums = pan_table.sum(axis=1)
     pan_table = pan_table / row_sums[:, np.newaxis]
-    
     if kn == None:
         kn = recipe_dict['target_info']['frame_dims']
     weigths = np.arange(kn, 0, -1)
