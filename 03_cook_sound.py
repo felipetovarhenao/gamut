@@ -3,14 +3,15 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/dialogue_fr_from_Berklee44v8_corpus.json'
+recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/Je respire ou tu palpites_from_Berklee44v8_corpus.json'
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
-grain_dur = [0.01, 0.5]
-onset_var = 2
+grain_dur = 0.05
+onset_var = 0
 stretch_factor = 1
-kn = 5
+kn = 8
+target_mix = [1, 0]
 # envelope settings
 env_type = 0
 sustain = 0.6
@@ -49,7 +50,8 @@ output = cook_recipe(recipe_path,
                             grain_dur=grain_dur,
                             stretch_factor=stretch_factor,
                             onset_var=onset_var,
-                            kn=kn)
+                            kn=kn,
+                            target_mix=target_mix)
 
 # WRITE SOUND TO WAVE
 basename = os.path.splitext(os.path.basename(recipe_path))[0]

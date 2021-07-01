@@ -5,7 +5,7 @@ import json
 import numpy as np
 from numpy import inf
 from math import floor, log
-from random import choices
+from random import choices, random
 import scipy
 from scipy.signal import get_window, resample
 from sklearn.neighbors import NearestNeighbors
@@ -117,11 +117,17 @@ def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_lengt
             ],
             'data_dims': k,
             'target_size': target_size,
-            'n_samples': len(target_mfcc)
+            'n_samples': len(target_mfcc),
+            'data_samples': list()
         },
         'corpus_info': corpus_dict['corpus_info'],
         'data_samples': list()
     } 
+
+    # include target data samples for cooking mix parameter
+    file_id = len(corpus_dict['corpus_info']['files'])
+    corpus_dict['corpus_info']['files'].append([sr, target_path])
+    [dictionary['target_info']['data_samples'].append([file_id, int(te[0])]) for te in target_extras]
 
     corpus_metadata = np.array(corpus_dict['data_samples'])
 
@@ -198,24 +204,35 @@ def get_branch_id(vector, nodes):
     size = len(vector)-1
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
-def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100):
+def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0.5):
     print('...loading recipe...')
     recipe_dict = load_JSON(recipe_path)
     target_sr = recipe_dict['target_info']['sr']
     sr_ratio = sr/target_sr
+     
     print('...loading corpus sounds...')
-    sounds = [[]] * len(recipe_dict['corpus_info']['files'])
+    corpus_size = len(recipe_dict['corpus_info']['files'])
+    sounds = [[]] * corpus_size
     snd_idxs = np.unique(np.concatenate([[y[0] for y in x] for x in recipe_dict['data_samples']]))
+    snd_idxs[-1] = corpus_size - 1
     max_duration = recipe_dict['corpus_info']['max_duration']
     for i in snd_idxs:
-        # load and, when necessary, resample sounds to output sampling rate.
+        # load and, when necessary, resample sounds to buffer sampling rate.
         sounds[i] = librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=max_duration, sr=sr)[0]
 
     print("...creating dynamic control tables...")
     hop_length = int(recipe_dict['target_info']['hop_length'] * sr_ratio) 
     data_samples = recipe_dict['data_samples']
-
     n_segments = recipe_dict['target_info']['n_samples']
+
+    # populate target mix table
+    tmix_type = type(target_mix)
+    if tmix_type is list:
+        target_mix_table = array_resampling(target_mix, n_segments)
+    if tmix_type is float or tmix_type is int:
+        target_mix_table = np.empty(n_segments)
+        target_mix_table.fill(target_mix)
+
     # populate frame length table
     if type(grain_dur) is list:
         frame_length_table = np.round(array_resampling(np.array(grain_dur) * sr, n_segments))
@@ -241,11 +258,11 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
         samp_onset_table[samp_onset_table < 0] = 0
     
     # get total duration
-    output_length = int(np.amax(samp_onset_table) + np.amax(frame_length_table))
+    buffer_length = int(np.amax(samp_onset_table) + np.amax(frame_length_table))
 
-    # make output array
-    output = np.empty(shape=(output_length, n_chans))
-    output.fill(0)
+    # make buffer array
+    buffer = np.empty(shape=(buffer_length, n_chans))
+    buffer.fill(0)
 
     # compute window with default size
     env_type = type(envelope)
@@ -256,7 +273,7 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
         window = array_resampling(envelope, N=default_length)
     window = np.repeat(np.array([window]).T, n_chans, axis=1)
 
-    # compute panning vable
+    # compute panning table
     pan_table = np.random.randint(low=1, high=16, size=(n_segments, n_chans))
     row_sums = pan_table.sum(axis=1)
     pan_table = pan_table / row_sums[:, np.newaxis]
@@ -266,26 +283,29 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     weigths = np.arange(kn, 0, -1)
 
     print("...concatenating grains...")
-    for ds, so, fl, p in zip(data_samples, samp_onset_table, frame_length_table, pan_table):
-        num_frames = len(ds[:kn])
-        f = choices(ds[:kn], weights=weigths[kn-num_frames:])[0]
+    for n, (ds, so, fl, p, tm) in enumerate(zip(data_samples, samp_onset_table, frame_length_table, pan_table, target_mix_table)):
+        if random() > tm:
+            num_frames = len(ds[:kn])
+            f = choices(ds[:kn], weights=weigths[kn-num_frames:])[0]
+        else:
+            f = recipe_dict['target_info']['data_samples'][n]
         snd_id = f[0]
         snd = sounds[snd_id]
         snd_sr = recipe_dict['corpus_info']['files'][snd_id][0]
         snd_sr_ratio = sr/snd_sr
         max_idx = len(snd) - 1
         samp_st = int(f[1] * snd_sr_ratio)
-        samp_end = min(max_idx, samp_st+int(fl*snd_sr_ratio))
+        samp_end = min(max_idx, samp_st+fl)
         segment = np.repeat(np.array([snd[samp_st:samp_end]]).T, n_chans, axis=1)
         seg_size = len(segment)
         if seg_size != len(window):
             segment = segment * resample(window, seg_size)
         else:
             segment = segment * window
-        output[so:so+seg_size] = output[so:so+seg_size] + (segment*p)
+        buffer[so:so+seg_size] = buffer[so:so+seg_size] + (segment*p)
 
-    # return normalized output
-    return (output / np.amax(np.abs(output))) * 0.707946
+    # return normalized buffer
+    return (buffer / np.amax(np.abs(buffer))) * 0.707946
 
 def array_resampling(array, N):
         x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)
