@@ -11,7 +11,7 @@ frame_length = 1024
 
 # ------------------ MAIN ------------------------
 # MODULES
-from camus import build_corpus
+from camus import build_corpus, save_JSON
 import os
 import time
 
@@ -30,7 +30,7 @@ outpath = os.path.join(outdir, outname)
 if not os.path.exists(outdir):
     os.mkdir(outdir)
 
-camus.save_JSON(corpus_dictionary, outpath)
+save_JSON(corpus_dictionary, outpath)
 print('\n...saving corpus {}...'.format(outname))
 
 end = time.time()
