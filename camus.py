@@ -1,3 +1,4 @@
+from genericpath import exists
 from os.path import realpath, basename, isdir, splitext, join
 from os import walk
 import librosa
@@ -220,11 +221,11 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
         # load and, when necessary, resample sounds to buffer sampling rate.
         sounds[i] = librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=max_duration, sr=sr)[0]
 
-    print("...creating dynamic control tables...")
     hop_length = int(recipe_dict['target_info']['hop_length'] * sr_ratio) 
     data_samples = recipe_dict['data_samples']
     n_segments = recipe_dict['target_info']['n_samples']
 
+    print("...creating dynamic control tables...")
     # populate target mix table
     tmix_type = type(target_mix)
     if tmix_type is list:
@@ -249,20 +250,15 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
         samp_onset_table = array_resampling(stretch_factor, n_segments)*hop_length   
     samp_onset_table = np.concatenate([[0], np.round(samp_onset_table)]).astype('int64').cumsum()[:-1]    
 
-    # populate jitter table
-    jitter = int(onset_var * sr)
-    if jitter > 0:
-        jitter = int(max(1, abs((jitter*sr_ratio)/2)))
-        jitter_table = np.random.randint(low=jitter*-1, high=jitter, size=n_segments)
-        samp_onset_table = samp_onset_table + jitter_table
-        samp_onset_table[samp_onset_table < 0] = 0
-    
-    # get total duration
-    buffer_length = int(np.amax(samp_onset_table) + np.amax(frame_length_table))
-
-    # make buffer array
-    buffer = np.empty(shape=(buffer_length, n_chans))
-    buffer.fill(0)
+    onset_var_type = type(onset_var)
+    if onset_var_type is float or onset_var_type is int:
+        if onset_var > 0:
+            jitter = int(max(1, abs((onset_var*sr)/2)))
+            onset_var_table = np.random.randint(low=jitter*-1, high=jitter, size=n_segments)
+            samp_onset_table = samp_onset_table + onset_var_table
+    if onset_var_type is list:
+        onset_var_table = array_resampling(np.array(onset_var)*sr, n_segments) * np.random.rand(n_segments)
+        samp_onset_table = samp_onset_table + onset_var_table.astype('int64')
 
     # compute window with default size
     env_type = type(envelope)
@@ -283,9 +279,17 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     pan_table[pan_table < 1] = 1
     row_sums = pan_table.sum(axis=1)
     pan_table = pan_table / row_sums[:, np.newaxis]
+
     if kn == None:
         kn = recipe_dict['target_info']['frame_dims']
     weigths = np.arange(kn, 0, -1)
+
+    # get total duration
+    buffer_length = int(np.amax(samp_onset_table) + np.amax(frame_length_table))
+
+    # make buffer array
+    buffer = np.empty(shape=(buffer_length, n_chans))
+    buffer.fill(0)
 
     print("...concatenating grains...")
     for n, (ds, so, fl, p, tm) in enumerate(zip(data_samples, samp_onset_table, frame_length_table, pan_table, target_mix_table)):

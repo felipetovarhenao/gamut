@@ -4,11 +4,11 @@
 
 # PATHS
 target = '/Users/felipe-tovar-henao/Documents/Camus files/target_samples/Je respire ou tu palpites.wav'
-corpus = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/PluckedStrings_corpus.json'
+corpus = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/genres_corpus.json'
 recipe_dir = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/'
 
 # RECIPE SETTINGS
-hop_length = 512
+hop_length = 256
 frame_length = 1024
 duration = None
 k = 8

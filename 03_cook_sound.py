@@ -3,22 +3,22 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/Je respire ou tu palpites_from_PluckedStrings_corpus.json'
+recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/Je respire ou tu palpites_from_genres_corpus.json'
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
-grain_dur = [0.05 , 0.1]
-onset_var = 0
-stretch_factor = 1
-kn = 5
-target_mix = [1, 0]
+grain_dur = [0.08, 0.08, 0.1, 0.08]
+onset_var = [0, 0.01, 0.1, 0.01, 0]
+stretch_factor = [1, 1, 1, 2, 4, 1]
+kn = 8
+target_mix = [1, 0.75, 0, 1]
 # envelope settings
 env_type = 0
-sustain = 0.6
+sustain = 0.25
 env_array = [0, 1, 0.85]
-sharpness = 12
+sharpness = 16
 stereo = [0, 1]
-sr = 44100
+sr = 22050
 
 # ------------------ MAIN ------------------------
 # MODULES
@@ -52,12 +52,14 @@ output = cook_recipe(recipe_path,
                     onset_var=onset_var,
                     kn=kn,
                     target_mix=target_mix,
-                    stereo=stereo)
+                    stereo=stereo,
+                    sr=sr)
 
 # WRITE SOUND TO WAVE
 basename = os.path.splitext(os.path.basename(recipe_path))[0]
-filename = '{}_d{}_s{}_j{}_e-{}_k{}.wav'.format(
+filename = '{}_d{}_m{}_s{}_j{}_e-{}_k{}.wav'.format(
                 basename,
+                str(target_mix),
                 str(grain_dur),
                 str(stretch_factor),
                 str(onset_var),

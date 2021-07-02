@@ -3,11 +3,11 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/_OrchideaSOL2020_release/OrchideaSOL2020/PluckedStrings'
+audio_samples = '/Users/felipe-tovar-henao/Google Drive/FTH Drive/Sample libraries/genres'
 output_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/'
 duration = None
 hop_length = 256
-frame_length = 1024
+frame_length = 512
 
 # ------------------ MAIN ------------------------
 # MODULES
