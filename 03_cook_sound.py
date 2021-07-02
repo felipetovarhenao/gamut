@@ -3,21 +3,21 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/Je respire ou tu palpites_from_Berklee44v8_corpus.json'
+recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/Je respire ou tu palpites_from_Winds_corpus.json'
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
-grain_dur = [0.25, 0.1]
-onset_var = [1,0,0]
+grain_dur = [0.5, 1.3]
+onset_var = [0.05, 0, 0, 0.1]
 stretch_factor = 1
 kn = 8
-target_mix = [0,0.5,0.25,1]
+target_mix = [0.5, 0.5]
 # envelope settings
 env_type = 0
-sustain = 0.25
+sustain = 0.03
 env_array = [0, 1, 0.85]
-sharpness = 20
-stereo = [1,0.1]
+sharpness = 40
+stereo = 1
 sr = 44100
 
 # ------------------ MAIN ------------------------

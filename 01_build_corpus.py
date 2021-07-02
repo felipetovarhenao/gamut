@@ -3,10 +3,10 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/Berklee44v8'
+audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/Violin_notes'
 output_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/'
 duration = None
-hop_length = 256
+hop_length = 512
 frame_length = 1024
 
 # ------------------ MAIN ------------------------

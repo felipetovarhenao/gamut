@@ -154,7 +154,7 @@ def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_lengt
     return dictionary
 
 def build_KDTree(data, kd=2):
-    print('    ...building KDTree with {} branches...'.format(2**kd))
+    print('\n  ...building KDTree with {} branches...'.format(2**kd))
     data = np.array(data)
     nodes = np.median(data, axis=0)[:kd]
     tree_size =2**len(nodes)
@@ -167,7 +167,7 @@ def build_KDTree(data, kd=2):
     for i in range(tree_size):
         tree['position_branches'][str(i)] = list()
         tree['data_branches'][str(i)] = list()
-    print("    ...populating branches...")
+    print("  ...populating branches...")
     for pos, datum in enumerate(data):
         branch_id = get_branch_id(datum[:kd], nodes)
         tree['position_branches'][str(branch_id)].append(pos)
@@ -213,11 +213,10 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     corpus_size = len(recipe_dict['corpus_info']['files'])
     sounds = [[]] * corpus_size
     snd_idxs = np.unique(np.concatenate([[y[0] for y in x] for x in recipe_dict['data_samples']]))
-    snd_idxs[-1] = corpus_size - 1
     max_duration = recipe_dict['corpus_info']['max_duration']
     for i in snd_idxs:
         sounds[i] = librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=max_duration, sr=sr)[0]
-
+    sounds[-1] = librosa.load(recipe_dict['corpus_info']['files'][-1][1], duration=None, sr=sr)[0]
     hop_length = int(recipe_dict['target_info']['hop_length'] * sr_ratio) 
     data_samples = recipe_dict['data_samples']
     n_segments = recipe_dict['target_info']['n_samples']
