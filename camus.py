@@ -1,11 +1,10 @@
-from genericpath import exists
 from os.path import realpath, basename, isdir, splitext, join
 from os import walk
 import librosa
 import json
 import numpy as np
 from numpy import inf
-from math import floor, log
+from math import floor, log, sqrt
 from random import choices, random
 import scipy
 from scipy.signal import get_window, resample
@@ -38,9 +37,10 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
                                     hop_length=hop_length)[0][:-2]
                                     
     centroid_frames = np.log2(librosa.feature.spectral_centroid(y=y,
-                                                    sr=sr,
-                                                    n_fft=frame_length,
-                                                    hop_length=hop_length)[0][:-2]/440)*12+69
+                                                                sr=sr,
+                                                                n_fft=frame_length,
+                                                                hop_length=hop_length)[0][:-2]/440)*12+69
+
     centroid_frames[centroid_frames == -inf] = 0                                                
     n_frames = np.shape(rms_frames)[0]
     sample_indxs = np.arange(start=0, stop=n_frames*hop_length, step=hop_length)
@@ -56,7 +56,7 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
 
     if isdir(folder_dir):
         print('...building corpus dictionary from {}...'.format(corpus_name))
-        db = {
+        dictionary = {
             'corpus_info': {
                 'name': corpus_name,
                 'max_duration': duration,
@@ -84,28 +84,30 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
                     mfcc_stream, metadata, _, sr = get_features(file_path, duration=duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
                     for mf, md in zip(mfcc_stream, metadata):
                         mfcc_frames.append(mf)
-                        db['data_samples'].append([file_id] + md.tolist())
-                    db['corpus_info']['files'].append([sr, file_path])
+                        dictionary['data_samples'].append([file_id] + md.tolist())
+                    dictionary['corpus_info']['files'].append([sr, file_path])
                     file_id += 1
         n_frames = len(mfcc_frames)
         if kd is None:
             kd = max(int(log(n_frames)/log(4)), 1)
-        db['corpus_info']['n_frames'] = n_frames
-        db['KDTree'] = build_KDTree(mfcc_frames, kd=kd)
+        dictionary['corpus_info']['n_frames'] = n_frames
+        dictionary['KDTree'] = build_KDTree(mfcc_frames, kd=kd)
         print('\nDONE building corpus {}.json'.format(corpus_name))
-        return db
+        return dictionary
     else:
         raise ValueError("ERROR: {} must be a folder!".format(basename(folder_dir)))
 
 def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, k=3):
     print('    ...loading corpus...')
     corpus_dict = load_JSON(corpus_db)
+
     print('    ...analyzing target...')
     target_mfcc, target_extras, target_size, sr = get_features(target_path,
                                                             duration=duration,
                                                             n_mfcc=n_mfcc,
                                                             hop_length=hop_length,
-                                                            frame_length=frame_length)    
+                                                            frame_length=frame_length) 
+
     dictionary = {
         'target_info': {
             'name': splitext(basename(target_path))[0],
@@ -128,13 +130,12 @@ def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_lengt
     # include target data samples for cooking mix parameter
     file_id = len(corpus_dict['corpus_info']['files'])
     corpus_dict['corpus_info']['files'].append([sr, target_path])
+    
     [dictionary['target_info']['data_samples'].append([file_id, int(te[0])]) for te in target_extras]
 
     corpus_metadata = np.array(corpus_dict['data_samples'])
-
     corpus_tree = corpus_dict['KDTree']
     tree_size = 2**corpus_tree['dims']
-
     corpus_tree_posns = [np.array(corpus_tree['position_branches'][str(x)], dtype='int') for x in range(tree_size)]
     corpus_tree_mfccs = [np.array(corpus_tree['data_branches'][str(x)], dtype='int') for x in range(tree_size)]
 
@@ -182,12 +183,9 @@ def neighborhood_index(item, tree):
     default_id = file_id
     flag = True
     z = 1
-    while flag:
-        if len(tree['data_branches'][str(file_id)]) > 0:
-            flag = False
-        else:
-            file_id = wrap(wedgesum(default_id, z), 0, tree_size)
-            z += 1
+    while (len(tree['data_branches'][str(file_id)]) == 0):
+        file_id = wrap(wedgesum(default_id, z), 0, tree_size)
+        z += 1
     return file_id
 
 def wedgesum(a, b):
@@ -205,7 +203,7 @@ def get_branch_id(vector, nodes):
     size = len(vector)-1
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
-def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0.5, stereo=0.5):
+def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5):
     print('...loading recipe...')
     recipe_dict = load_JSON(recipe_path)
     target_sr = recipe_dict['target_info']['sr']
@@ -218,7 +216,6 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     snd_idxs[-1] = corpus_size - 1
     max_duration = recipe_dict['corpus_info']['max_duration']
     for i in snd_idxs:
-        # load and, when necessary, resample sounds to buffer sampling rate.
         sounds[i] = librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=max_duration, sr=sr)[0]
 
     hop_length = int(recipe_dict['target_info']['hop_length'] * sr_ratio) 
@@ -314,7 +311,7 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
         buffer[so:so+seg_size] = buffer[so:so+seg_size] + (segment*p)
 
     # return normalized buffer
-    return (buffer / np.amax(np.abs(buffer))) * 0.707946
+    return (buffer / np.amax(np.abs(buffer))) * sqrt(0.5)
 
 def array_resampling(array, N):
         x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)
@@ -331,3 +328,7 @@ def nearest_neighbors(item, data, k=8):
 
 if __name__ == '__main__':
     print('----- running utilities.py')
+    '''
+    TODO: 
+
+    '''

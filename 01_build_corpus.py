@@ -3,11 +3,11 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-audio_samples = '/Users/felipe-tovar-henao/Google Drive/FTH Drive/Sample libraries/genres'
+audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/Berklee44v8'
 output_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/'
 duration = None
 hop_length = 256
-frame_length = 512
+frame_length = 1024
 
 # ------------------ MAIN ------------------------
 # MODULES
