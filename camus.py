@@ -11,8 +11,6 @@ from scipy.signal import get_window, resample
 from sklearn.neighbors import NearestNeighbors
 from progress.bar import IncrementalBar
 from progress.counter import Counter
-import timeit 
-import time
 
 np.seterr(divide='ignore')
 
@@ -163,7 +161,6 @@ def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_len
                                                             n_mfcc=n_mfcc,
                                                             hop_length=hop_length,
                                                             frame_length=frame_length) 
-
     dictionary = {
         'target_info': {
             'name': splitext(basename(target_path))[0],
@@ -254,8 +251,9 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
         samp_onset_table.fill(hop_length*stretch_factor)
     if type(stretch_factor) is list:
         samp_onset_table = array_resampling(stretch_factor, n_segments)*hop_length   
-    samp_onset_table = np.concatenate([[0], np.round(samp_onset_table)], ).astype('int64').cumsum()[:-1]    
-
+    samp_onset_table = np.concatenate([[0], np.round(samp_onset_table)], ).astype('int64').cumsum()[:-1]
+    
+    # apply onset variation table   
     onset_var_type = type(onset_var)
     if onset_var_type is float or onset_var_type is int:
         if onset_var > 0:
@@ -265,6 +263,7 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     if onset_var_type is list:
         onset_var_table = array_resampling(np.array(onset_var)*sr, n_segments) * np.random.rand(n_segments)
         samp_onset_table = samp_onset_table + onset_var_table.astype('int64')
+    samp_onset_table[samp_onset_table < 0] = 0
 
     # compute window with default size
     env_type = type(envelope)

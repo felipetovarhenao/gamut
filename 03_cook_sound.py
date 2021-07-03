@@ -3,12 +3,12 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/Je respire ou tu palpites_from_PeimanKhosravi44_corpus.json'
+recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/poeme_verlaine_from_Violin_notes_corpus.json'
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
 grain_dur = 0.7
-onset_var = [0, 0, 0, 0.7]
+onset_var = 0.1
 stretch_factor = 1
 kn = 8
 target_mix = [0, 0.25, 1]
@@ -18,7 +18,7 @@ sustain = 0.1
 env_array = [0, 1, 0.85]
 sharpness = 10
 stereo = 1
-sr = 44100
+sr = 48000
 
 # ------------------ MAIN ------------------------
 # MODULES
