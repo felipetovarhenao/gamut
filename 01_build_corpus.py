@@ -3,7 +3,7 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/PeimanKhosravi44'
+audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/Violin_notes'
 output_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/'
 duration = None
 hop_length = 512
