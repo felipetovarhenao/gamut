@@ -4,7 +4,7 @@
 
 # PATHS
 target = '/Users/felipe-tovar-henao/Documents/Camus files/target_samples/Je respire ou tu palpites.wav'
-corpus = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/Brass_allstars_corpus.json'
+corpus_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/PeimanKhosravi44_corpus.json'
 recipe_dir = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/'
 
 # RECIPE SETTINGS
@@ -15,12 +15,14 @@ k = 8
 
 # ------------------ MAIN ------------------------
 # MODULES
-from camus import get_audio_recipe, save_JSON
+from camus import get_audio_recipe, save_JSON, load_JSON
 from os.path import basename, splitext, exists, join
 from os import mkdir
 import time
 
 st = time.time()
+
+corpus = load_JSON(corpus_path)
 # MAKE RECIPE
 recipe = get_audio_recipe(target, corpus, 
                             hop_length=hop_length, 
@@ -29,10 +31,10 @@ recipe = get_audio_recipe(target, corpus,
                             k=k)
 
 ### WRITE JSON RECIPE
-recipe_name = splitext(basename(target))[0] + '_from_' + basename(corpus)
+recipe_name = splitext(basename(target))[0] + '_from_' + basename(corpus_path)
 if not exists(recipe_dir):
     mkdir(recipe_dir)
 output = join(recipe_dir, recipe_name)
 save_JSON(recipe, output)
 end = time.time()
-print('DONE writing {}.\nElapsed time: {}'.format(recipe_name, round(end-st, 2)))
+print('DONE writing {}\nElapsed time: {}'.format(recipe_name, round(end-st, 2)))

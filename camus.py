@@ -58,8 +58,8 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
     folder_dir = realpath(folder_dir)
     corpus_name = basename(folder_dir)
     if isdir(folder_dir):
-        print('Building {}_corpus.json'.format(corpus_name))
-        counter = Counter()
+        print('\nBuilding {}_corpus.json'.format(corpus_name))
+        counter = Counter(message='        Number of analyzed samples: ')
         dictionary = {
             'corpus_info': {
                 'name': corpus_name,
@@ -90,7 +90,8 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
                         mfcc_frames.append(mf)
                         dictionary['data_samples'].append([file_id] + md.tolist())
                     dictionary['corpus_info']['files'].append([sr, file_path])
-                    counter.write('        Number of analyzed samples: {}'.format(file_id + 1))
+                    # counter.write('        Number of analyzed samples: {}'.format(file_id + 1))
+                    counter.write(str(file_id + 1))
                     file_id += 1
         n_frames = len(mfcc_frames)
         if kd is None:
@@ -102,68 +103,10 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
     else:
         raise ValueError("ERROR: {} must be a folder!".format(basename(folder_dir)))
 
-def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, k=3):
-    '''Takes an audio sample directory/path (i.e. the _target_) and a `JSON` file directory/path (i.e. the _corpus_), and returns another directory containing the necessary information to rebuild the _target_ using grains from the _corpus_. The recipe is intended to be saved as a `JSON` file with the `save_JSON()` function.'''
-
-    print('Making recipe for {}\n        ...loading corpus...'.format(basename(target_path)))
-    corpus_dict = load_JSON(corpus_db)
-    print('        ...analyzing target...')
-    target_mfcc, target_extras, target_size, sr = get_features(target_path,
-                                                            duration=duration,
-                                                            n_mfcc=n_mfcc,
-                                                            hop_length=hop_length,
-                                                            frame_length=frame_length) 
-
-    dictionary = {
-        'target_info': {
-            'name': splitext(basename(target_path))[0],
-            'sr': sr,
-            'frame_length': frame_length,
-            'hop_length': hop_length,
-            'frame_format': [
-                'file_id', 
-                'sample_index'
-            ],
-            'data_dims': k,
-            'target_size': target_size,
-            'n_samples': len(target_mfcc),
-            'data_samples': list()
-        },
-        'corpus_info': corpus_dict['corpus_info'],
-        'data_samples': list()
-    } 
-
-    # include target data samples for cooking mix parameter
-    file_id = len(corpus_dict['corpus_info']['files'])
-    corpus_dict['corpus_info']['files'].append([sr, target_path])
-    
-    [dictionary['target_info']['data_samples'].append([file_id, int(te[0])]) for te in target_extras]
-
-    corpus_metadata = np.array(corpus_dict['data_samples'])
-    corpus_tree = corpus_dict['KDTree']
-    tree_size = 2**corpus_tree['dims']
-    corpus_tree_posns = [np.array(corpus_tree['position_branches'][str(x)], dtype='int') for x in range(tree_size)]
-    corpus_tree_mfccs = [np.array(corpus_tree['data_branches'][str(x)], dtype='int') for x in range(tree_size)]
-
-    bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc))
-
-    for tm, tex in zip(target_mfcc, target_extras):
-        branch_id = neighborhood_index(tm, corpus_tree)
-        mfcc_indxs = nearest_neighbors(tm, corpus_tree_mfccs[branch_id], k=k)
-        original_positions = [corpus_tree_posns[branch_id][j] for j in mfcc_indxs]
-        metadata = corpus_metadata[original_positions]
-        sorted_positions = nearest_neighbors(tex[1:], metadata[:,[2,3]],k=k)
-        mfcc_options = metadata[sorted_positions]
-        dictionary['data_samples'].append(mfcc_options[:,[0,1]].astype(int).tolist())
-        bar.next()
-    bar.finish()
-    print('        DONE\n')
-    return dictionary
-
 def build_KDTree(data, kd=2):
     data = np.array(data)
     print()
-    bar = IncrementalBar('        Building KDTree: ', max=len(data))
+    bar = IncrementalBar('        Building KDTree: ', max=len(data), suffix='%(index)d/%(max)d frames')
     nodes = np.median(data, axis=0)[:kd]
     tree_size =2**len(nodes)
     tree = {
@@ -211,10 +154,66 @@ def get_branch_id(vector, nodes):
     size = len(vector)-1
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
+def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, k=3):
+    '''Takes an audio sample directory/path (i.e. the _target_) and a dictionary object (i.e. the _corpus_), and returns another directory containing the necessary information to rebuild the _target_ using grains from the _corpus_. The recipe is intended to be saved as a `JSON` file with the `save_JSON()` function.'''
+
+    print('\nMaking recipe for {}\n        ...loading corpus...\n        ...analyzing target...'.format(basename(target_path)))
+    target_mfcc, target_extras, target_size, sr = get_features(target_path,
+                                                            duration=duration,
+                                                            n_mfcc=n_mfcc,
+                                                            hop_length=hop_length,
+                                                            frame_length=frame_length) 
+
+    dictionary = {
+        'target_info': {
+            'name': splitext(basename(target_path))[0],
+            'sr': sr,
+            'frame_length': frame_length,
+            'hop_length': hop_length,
+            'frame_format': [
+                'file_id', 
+                'sample_index'
+            ],
+            'data_dims': k,
+            'target_size': target_size,
+            'n_samples': len(target_mfcc),
+            'data_samples': list()
+        },
+        'corpus_info': corpus_dict['corpus_info'],
+        'data_samples': list()
+    } 
+
+    # include target data samples for cooking mix parameter
+    file_id = len(corpus_dict['corpus_info']['files'])
+    corpus_dict['corpus_info']['files'].append([sr, target_path])
+    
+    [dictionary['target_info']['data_samples'].append([file_id, int(te[0])]) for te in target_extras]
+
+    corpus_metadata = np.array(corpus_dict['data_samples'])
+    corpus_tree = corpus_dict['KDTree']
+    tree_size = 2**corpus_tree['dims']
+    corpus_tree_posns = [np.array(corpus_tree['position_branches'][str(x)], dtype='int') for x in range(tree_size)]
+    corpus_tree_mfccs = [np.array(corpus_tree['data_branches'][str(x)], dtype='int') for x in range(tree_size)]
+
+    bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc), suffix='%(index)d/%(max)d frames')
+
+    for tm, tex in zip(target_mfcc, target_extras):
+        branch_id = neighborhood_index(tm, corpus_tree)
+        mfcc_indxs = nearest_neighbors(tm, corpus_tree_mfccs[branch_id], k=k)
+        original_positions = [corpus_tree_posns[branch_id][j] for j in mfcc_indxs]
+        metadata = corpus_metadata[original_positions]
+        sorted_positions = nearest_neighbors(tex[1:], metadata[:,[2,3]],k=k)
+        mfcc_options = metadata[sorted_positions]
+        dictionary['data_samples'].append(mfcc_options[:,[0,1]].astype(int).tolist())
+        bar.next()
+    bar.finish()
+    print('        DONE\n')
+    return dictionary
+
 def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5):
     '''Takes a `JSON` file directory/path (i.e. the _recipe_), and returns an array of audio samples, to be written as an audio file.'''
 
-    print('Cooking {}\n        ...loading recipe...'.format(basename(recipe_path)))
+    print('\nCooking {}\n        ...loading recipe...'.format(basename(recipe_path)))
     recipe_dict = load_JSON(recipe_path)
     target_sr = recipe_dict['target_info']['sr']
     sr_ratio = sr/target_sr
@@ -223,7 +222,7 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     sounds = [[]] * corpus_size
     snd_idxs = np.unique(np.concatenate([[y[0] for y in x] for x in recipe_dict['data_samples']]))
     max_duration = recipe_dict['corpus_info']['max_duration']
-    snd_counter = IncrementalBar('        Loading corpus sounds: ', max=len(snd_idxs) + 1)
+    snd_counter = IncrementalBar('        Loading corpus sounds: ', max=len(snd_idxs) + 1, suffix='%(index)d/%(max)d files')
     for i in snd_idxs:
         sounds[i] = librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=max_duration, sr=sr)[0]
         snd_counter.next()
@@ -300,7 +299,7 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     buffer = np.empty(shape=(buffer_length, n_chans))
     buffer.fill(0)
 
-    grain_counter = IncrementalBar('        Concatenating grains: ', max=len(data_samples))
+    grain_counter = IncrementalBar('        Concatenating grains: ', max=len(data_samples), suffix='%(index)d/%(max)d grains')
     for n, (ds, so, fl, p, tm) in enumerate(zip(data_samples, samp_onset_table, frame_length_table, pan_table, target_mix_table)):
         if random() > tm:
             num_frames = len(ds[:kn])
@@ -343,3 +342,4 @@ def nearest_neighbors(item, data, k=8):
 
 if __name__ == '__main__':
     print('----- running utilities.py')
+    get_audio_recipe()
