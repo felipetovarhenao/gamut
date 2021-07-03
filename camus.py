@@ -12,6 +12,7 @@ from sklearn.neighbors import NearestNeighbors
 from progress.bar import IncrementalBar
 from progress.counter import Counter
 import timeit 
+import time
 
 np.seterr(divide='ignore')
 
@@ -27,9 +28,9 @@ def load_JSON(file):
 
 def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_length=1024):
     '''Returns a 4-tuple, consisting of:
-            - MFCC frames of target (list)
-            - Metadata (list) - i.e. [sample_index, rms value, pitch centroid]
-            - Length of target in samples (int)
+            - MFCC frames of audio target (list)
+            - Audio target meta-data (list) - i.e. [`sample_index`, `rms_amplitude`, `pitch_centroid`]
+            - Length of audio target in samples (int)
             - Sampling rate of target (int).'''
             
     file_path = realpath(file_path)
@@ -104,9 +105,9 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
         raise ValueError("ERROR: {} must be a folder!".format(basename(folder_dir)))
 
 def build_KDTree(data, kd=2):
-    data = np.array(data)
     print()
-    bar = IncrementalBar('        Building KDTree: ', max=len(data), suffix='%(index)d/%(max)d frames')
+    data = np.array(data)
+    bar = IncrementalBar('        Classifying data frames: ', max=len(data), suffix='%(index)d/%(max)d frames')
     nodes = np.median(data, axis=0)[:kd]
     tree_size =2**len(nodes)
     tree = {
@@ -124,7 +125,7 @@ def build_KDTree(data, kd=2):
         tree['data_branches'][str(branch_id)].append(datum.tolist())
         bar.next()
     bar.finish()
-    print("        Total number of branches: {}".format(2**kd))
+    print("        Total number of data clusters: {}".format(2**kd))
     return tree
 
 def neighborhood_index(item, tree):
@@ -132,7 +133,6 @@ def neighborhood_index(item, tree):
     tree_size = 2**kd
     file_id = get_branch_id(item[:kd], tree['nodes'][:kd])
     default_id = file_id
-    flag = True
     z = 1
     while (len(tree['data_branches'][str(file_id)]) == 0):
         file_id = wrap(wedgesum(default_id, z), 0, tree_size)
@@ -186,14 +186,13 @@ def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_len
     # include target data samples for cooking mix parameter
     file_id = len(corpus_dict['corpus_info']['files'])
     corpus_dict['corpus_info']['files'].append([sr, target_path])
-    
     [dictionary['target_info']['data_samples'].append([file_id, int(te[0])]) for te in target_extras]
 
     corpus_metadata = np.array(corpus_dict['data_samples'])
     corpus_tree = corpus_dict['KDTree']
     tree_size = 2**corpus_tree['dims']
     corpus_tree_posns = [np.array(corpus_tree['position_branches'][str(x)], dtype='int') for x in range(tree_size)]
-    corpus_tree_mfccs = [np.array(corpus_tree['data_branches'][str(x)], dtype='int') for x in range(tree_size)]
+    corpus_tree_mfccs = [np.array(corpus_tree['data_branches'][str(x)]) for x in range(tree_size)]
 
     bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc), suffix='%(index)d/%(max)d frames')
 
@@ -338,15 +337,6 @@ def nearest_neighbors(item, data, k=8):
     nn = NearestNeighbors(n_neighbors=k, algorithm='brute').fit(data)
     positions = np.array(nn.kneighbors(np.array([item]), n_neighbors=k)[1][0])
     return positions
-
-def make_table(x, N):
-    t = type(x)
-    if t == int or t == float:
-        out = np.empty(shape=N)
-        out.fill(x)
-        return out
-    if t == list or t == 'ndarray':
-        return array_resampling(x, N)
 
 if __name__ == '__main__':
     print('----- running utilities.py')         
