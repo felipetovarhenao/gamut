@@ -3,9 +3,9 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/Violin_notes'
+audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/Brass_allstars'
 output_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/'
-duration = None
+duration = 3
 hop_length = 512
 frame_length = 1024
 

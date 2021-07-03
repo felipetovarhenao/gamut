@@ -9,6 +9,10 @@ from random import choices, random
 import scipy
 from scipy.signal import get_window, resample
 from sklearn.neighbors import NearestNeighbors
+from progress.bar import IncrementalBar
+from progress.counter import Counter
+
+np.seterr(divide='ignore')
 
 def save_JSON(dict, outpath):
     with open(outpath, 'w') as fp:
@@ -20,42 +24,32 @@ def load_JSON(file):
 
 def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_length=1024):
     file_path = realpath(file_path)
-
-    print('\n        ...loading {}...'.format(basename(file_path)))
     y, sr = librosa.load(file_path, duration=duration, sr=None)
-
-    print('       ...analyzing sample...')
     mfcc_frames = librosa.feature.mfcc(y=y,
                                     sr=sr, 
                                     n_mfcc=n_mfcc, 
                                     n_fft=frame_length, 
                                     hop_length=hop_length).T[:-2]
-
-    print('        ...computing extra features...')
     rms_frames = librosa.feature.rms(y=y, 
                                     frame_length=frame_length, 
-                                    hop_length=hop_length)[0][:-2]
-                                    
+                                    hop_length=hop_length)[0][:-2]              
     centroid_frames = np.log2(librosa.feature.spectral_centroid(y=y,
                                                                 sr=sr,
                                                                 n_fft=frame_length,
                                                                 hop_length=hop_length)[0][:-2]/440)*12+69
-
     centroid_frames[centroid_frames == -inf] = 0                                                
     n_frames = np.shape(rms_frames)[0]
     sample_indxs = np.arange(start=0, stop=n_frames*hop_length, step=hop_length)
     metadata = np.array([sample_indxs, rms_frames, centroid_frames]).T
-
-    print('    TOTAL NUMBER OF FRAMES: {}'.format(n_frames))
 
     return mfcc_frames, metadata, len(y), sr
 
 def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
     folder_dir = realpath(folder_dir)
     corpus_name = basename(folder_dir)
-
     if isdir(folder_dir):
-        print('...building corpus dictionary from {}...'.format(corpus_name))
+        print('Building {}_corpus.json'.format(corpus_name))
+        counter = Counter()
         dictionary = {
             'corpus_info': {
                 'name': corpus_name,
@@ -86,22 +80,22 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
                         mfcc_frames.append(mf)
                         dictionary['data_samples'].append([file_id] + md.tolist())
                     dictionary['corpus_info']['files'].append([sr, file_path])
+                    counter.write('        Number of analyzed samples: {}'.format(file_id + 1))
                     file_id += 1
         n_frames = len(mfcc_frames)
         if kd is None:
             kd = max(int(log(n_frames)/log(4)), 1)
         dictionary['corpus_info']['n_frames'] = n_frames
         dictionary['KDTree'] = build_KDTree(mfcc_frames, kd=kd)
-        print('\nDONE building corpus {}.json'.format(corpus_name))
+        print('        DONE\n')
         return dictionary
     else:
         raise ValueError("ERROR: {} must be a folder!".format(basename(folder_dir)))
 
 def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, k=3):
-    print('    ...loading corpus...')
+    print('Making recipe for {}\n        ...loading corpus...'.format(basename(target_path)))
     corpus_dict = load_JSON(corpus_db)
-
-    print('    ...analyzing target...')
+    print('        ...analyzing target...')
     target_mfcc, target_extras, target_size, sr = get_features(target_path,
                                                             duration=duration,
                                                             n_mfcc=n_mfcc,
@@ -139,7 +133,7 @@ def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_lengt
     corpus_tree_posns = [np.array(corpus_tree['position_branches'][str(x)], dtype='int') for x in range(tree_size)]
     corpus_tree_mfccs = [np.array(corpus_tree['data_branches'][str(x)], dtype='int') for x in range(tree_size)]
 
-    print('    ...finding best matches...')
+    bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc))
 
     for tm, tex in zip(target_mfcc, target_extras):
         branch_id = neighborhood_index(tm, corpus_tree)
@@ -149,13 +143,15 @@ def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_lengt
         sorted_positions = nearest_neighbors(tex[1:], metadata[:,[2,3]],k=k)
         mfcc_options = metadata[sorted_positions]
         dictionary['data_samples'].append(mfcc_options[:,[0,1]].astype(int).tolist())
-
-    print('DONE making recipe')
+        bar.next()
+    bar.finish()
+    print('        DONE\n')
     return dictionary
 
 def build_KDTree(data, kd=2):
-    print('\n  ...building KDTree with {} branches...'.format(2**kd))
     data = np.array(data)
+    print()
+    bar = IncrementalBar('        Building KDTree: ', max=len(data))
     nodes = np.median(data, axis=0)[:kd]
     tree_size =2**len(nodes)
     tree = {
@@ -167,13 +163,13 @@ def build_KDTree(data, kd=2):
     for i in range(tree_size):
         tree['position_branches'][str(i)] = list()
         tree['data_branches'][str(i)] = list()
-    print("  ...populating branches...")
     for pos, datum in enumerate(data):
         branch_id = get_branch_id(datum[:kd], nodes)
         tree['position_branches'][str(branch_id)].append(pos)
         tree['data_branches'][str(branch_id)].append(datum.tolist())
-
-    print("    KDTree built")
+        bar.next()
+    bar.finish()
+    print("        Total number of branches: {}".format(2**kd))
     return tree
 
 def neighborhood_index(item, tree):
@@ -204,24 +200,27 @@ def get_branch_id(vector, nodes):
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
 def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5):
-    print('...loading recipe...')
+    print('Cooking {}\n        ...loading recipe...'.format(basename(recipe_path)))
     recipe_dict = load_JSON(recipe_path)
     target_sr = recipe_dict['target_info']['sr']
     sr_ratio = sr/target_sr
      
-    print('...loading corpus sounds...')
     corpus_size = len(recipe_dict['corpus_info']['files'])
     sounds = [[]] * corpus_size
     snd_idxs = np.unique(np.concatenate([[y[0] for y in x] for x in recipe_dict['data_samples']]))
     max_duration = recipe_dict['corpus_info']['max_duration']
+    snd_counter = IncrementalBar('        Loading corpus sounds: ', max=len(snd_idxs) + 1)
     for i in snd_idxs:
         sounds[i] = librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=max_duration, sr=sr)[0]
+        snd_counter.next()
     sounds[-1] = librosa.load(recipe_dict['corpus_info']['files'][-1][1], duration=None, sr=sr)[0]
+    snd_counter.next()
+    snd_counter.finish()
     hop_length = int(recipe_dict['target_info']['hop_length'] * sr_ratio) 
     data_samples = recipe_dict['data_samples']
     n_segments = recipe_dict['target_info']['n_samples']
 
-    print("...creating dynamic control tables...")
+    print("        ...creating dynamic control tables...")
     # populate target mix table
     tmix_type = type(target_mix)
     if tmix_type is list:
@@ -244,7 +243,7 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
         samp_onset_table.fill(hop_length*stretch_factor)
     if type(stretch_factor) is list:
         samp_onset_table = array_resampling(stretch_factor, n_segments)*hop_length   
-    samp_onset_table = np.concatenate([[0], np.round(samp_onset_table)]).astype('int64').cumsum()[:-1]    
+    samp_onset_table = np.concatenate([[0], np.round(samp_onset_table)], ).astype('int64').cumsum()[:-1]    
 
     onset_var_type = type(onset_var)
     if onset_var_type is float or onset_var_type is int:
@@ -287,7 +286,7 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     buffer = np.empty(shape=(buffer_length, n_chans))
     buffer.fill(0)
 
-    print("...concatenating grains...")
+    grain_counter = IncrementalBar('        Concatenating grains: ', max=len(data_samples))
     for n, (ds, so, fl, p, tm) in enumerate(zip(data_samples, samp_onset_table, frame_length_table, pan_table, target_mix_table)):
         if random() > tm:
             num_frames = len(ds[:kn])
@@ -308,7 +307,10 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
         else:
             segment = segment * window
         buffer[so:so+seg_size] = buffer[so:so+seg_size] + (segment*p)
+        grain_counter.next()
 
+    grain_counter.finish()
+    print('        DONE\n')    
     # return normalized buffer
     return (buffer / np.amax(np.abs(buffer))) * sqrt(0.5)
 
@@ -327,7 +329,3 @@ def nearest_neighbors(item, data, k=8):
 
 if __name__ == '__main__':
     print('----- running utilities.py')
-    '''
-    TODO: 
-
-    '''
