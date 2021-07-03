@@ -2,7 +2,7 @@
 
 ### Description
 
-CAMus is a _corpus-based audio musaicing engine_ implemented in Python.
+CAMus is a _Corpus-based Audio Musaicing Engine_ implemented in Python.
 It consists of three main functions: 
 - `build_corpus()`: takes a folder directory (i.e. a path) containing audio samples (`.wav`, `.aif`, or `.aiff`) and returns a dictionary object, intended to be saved as a `JSON` file with the `save_JSON()` function.
 
