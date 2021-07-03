@@ -208,7 +208,6 @@ def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_len
         bar.next()
     bar.finish()
     print('        DONE\n')
-    
     return dictionary
 
 def nearest_neighbors(item, data, k=8):
