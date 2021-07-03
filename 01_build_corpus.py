@@ -30,8 +30,8 @@ outpath = os.path.join(outdir, outname)
 if not os.path.exists(outdir):
     os.mkdir(outdir)
 
+print('...saving corpus {}...'.format(outname))
 save_JSON(corpus_dictionary, outpath)
-print('\n...saving corpus {}...'.format(outname))
 
 end = time.time()
 print('\ncorpus built in {} seconds'.format(round(end-st, 2)))

@@ -11,6 +11,7 @@ from scipy.signal import get_window, resample
 from sklearn.neighbors import NearestNeighbors
 from progress.bar import IncrementalBar
 from progress.counter import Counter
+import timeit 
 
 np.seterr(divide='ignore')
 
@@ -58,7 +59,7 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
     folder_dir = realpath(folder_dir)
     corpus_name = basename(folder_dir)
     if isdir(folder_dir):
-        print('\nBuilding {}_corpus.json'.format(corpus_name))
+        print('\nBuilding corpus dictionary from {}'.format(corpus_name))
         counter = Counter(message='        Number of analyzed samples: ')
         dictionary = {
             'corpus_info': {
@@ -90,7 +91,6 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
                         mfcc_frames.append(mf)
                         dictionary['data_samples'].append([file_id] + md.tolist())
                     dictionary['corpus_info']['files'].append([sr, file_path])
-                    # counter.write('        Number of analyzed samples: {}'.format(file_id + 1))
                     counter.write(str(file_id + 1))
                     file_id += 1
         n_frames = len(mfcc_frames)
@@ -210,11 +210,10 @@ def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_len
     print('        DONE\n')
     return dictionary
 
-def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5):
+def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5):
     '''Takes a `JSON` file directory/path (i.e. the _recipe_), and returns an array of audio samples, to be written as an audio file.'''
 
-    print('\nCooking {}\n        ...loading recipe...'.format(basename(recipe_path)))
-    recipe_dict = load_JSON(recipe_path)
+    print('\nCooking recipe for {}\n        ...loading recipe...'.format(recipe_dict['target_info']['name']))
     target_sr = recipe_dict['target_info']['sr']
     sr_ratio = sr/target_sr
      
@@ -328,9 +327,9 @@ def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     return (buffer / np.amax(np.abs(buffer))) * sqrt(0.5)
 
 def array_resampling(array, N):
-        x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)
-        x_coor2 = np.arange(0, len(array))
-        return np.interp(x_coor1, x_coor2, array)
+    x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)
+    x_coor2 = np.arange(0, len(array))
+    return np.interp(x_coor1, x_coor2, array)
 
 def nearest_neighbors(item, data, k=8):
     datasize = len(data)
@@ -340,6 +339,14 @@ def nearest_neighbors(item, data, k=8):
     positions = np.array(nn.kneighbors(np.array([item]), n_neighbors=k)[1][0])
     return positions
 
+def make_table(x, N):
+    t = type(x)
+    if t == int or t == float:
+        out = np.empty(shape=N)
+        out.fill(x)
+        return out
+    if t == list or t == 'ndarray':
+        return array_resampling(x, N)
+
 if __name__ == '__main__':
-    print('----- running utilities.py')
-    get_audio_recipe()
+    print('----- running utilities.py')         

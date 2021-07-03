@@ -22,7 +22,7 @@ sr = 44100
 
 # ------------------ MAIN ------------------------
 # MODULES
-from camus import cook_recipe
+from camus import cook_recipe, load_JSON
 import soundfile as sf
 import os
 import time
@@ -45,7 +45,8 @@ else:
     envtag = env_types[env_type]
 
 # COOK SOUND
-output = cook_recipe(recipe_path, 
+recipe_dict = load_JSON(recipe_path)
+output = cook_recipe(recipe_dict=recipe_dict, 
                     envelope=env_types[env_type],
                     grain_dur=grain_dur,
                     stretch_factor=stretch_factor,

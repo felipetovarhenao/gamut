@@ -35,6 +35,7 @@ recipe_name = splitext(basename(target))[0] + '_from_' + basename(corpus_path)
 if not exists(recipe_dir):
     mkdir(recipe_dir)
 output = join(recipe_dir, recipe_name)
+print('...saving recipe {}...'.format(recipe_name))
 save_JSON(recipe, output)
 end = time.time()
-print('DONE writing {}\nElapsed time: {}'.format(recipe_name, round(end-st, 2)))
+print('\nDONE writing {}\nElapsed time: {} seconds'.format(recipe_name, round(end-st, 2)))
