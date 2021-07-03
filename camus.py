@@ -15,14 +15,22 @@ from progress.counter import Counter
 np.seterr(divide='ignore')
 
 def save_JSON(dict, outpath):
+    """writes a dictionary object as a .JSON file."""
     with open(outpath, 'w') as fp:
         json.dump(dict, fp, indent=4)
 
 def load_JSON(file):
+    """returns a `.JSON` file as a dictionary object."""    
     with open(file, 'r') as fp:
         return json.load(fp)
 
 def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_length=1024):
+    '''Returns a 4-tuple, consisting of:
+            - MFCC frames of target (list)
+            - Metadata (list) - i.e. [sample_index, rms value, pitch centroid]
+            - Length of target in samples (int)
+            - Sampling rate of target (int).'''
+            
     file_path = realpath(file_path)
     y, sr = librosa.load(file_path, duration=duration, sr=None)
     mfcc_frames = librosa.feature.mfcc(y=y,
@@ -45,6 +53,8 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
     return mfcc_frames, metadata, len(y), sr
 
 def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
+    '''Takes a folder directory (i.e. a path) containing audio samples (`.wav`, `.aif`, or `.aiff`) and returns a dictionary object, intended to be saved as a `JSON` file with the `save_JSON()` function.'''
+
     folder_dir = realpath(folder_dir)
     corpus_name = basename(folder_dir)
     if isdir(folder_dir):
@@ -93,6 +103,8 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
         raise ValueError("ERROR: {} must be a folder!".format(basename(folder_dir)))
 
 def get_audio_recipe(target_path, corpus_db, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, k=3):
+    '''Takes an audio sample directory/path (i.e. the _target_) and a `JSON` file directory/path (i.e. the _corpus_), and returns another directory containing the necessary information to rebuild the _target_ using grains from the _corpus_. The recipe is intended to be saved as a `JSON` file with the `save_JSON()` function.'''
+
     print('Making recipe for {}\n        ...loading corpus...'.format(basename(target_path)))
     corpus_dict = load_JSON(corpus_db)
     print('        ...analyzing target...')
@@ -200,6 +212,8 @@ def get_branch_id(vector, nodes):
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
 def cook_recipe(recipe_path, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5):
+    '''Takes a `JSON` file directory/path (i.e. the _recipe_), and returns an array of audio samples, to be written as an audio file.'''
+
     print('Cooking {}\n        ...loading recipe...'.format(basename(recipe_path)))
     recipe_dict = load_JSON(recipe_path)
     target_sr = recipe_dict['target_info']['sr']
