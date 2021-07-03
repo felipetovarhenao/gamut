@@ -3,7 +3,7 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/poeme_verlaine_from_Violin_notes_corpus.json'
+recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/poeme_verlaine_from_Berklee44v2_corpus.camus'
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
@@ -18,11 +18,11 @@ sustain = 0.1
 env_array = [0, 1, 0.85]
 sharpness = 10
 stereo = 1
-sr = 48000
+sr = 44100
 
 # ------------------ MAIN ------------------------
 # MODULES
-from camus import cook_recipe, load_JSON
+from camus import cook_recipe, read_dictionary
 import soundfile as sf
 import os
 import time
@@ -45,7 +45,7 @@ else:
     envtag = env_types[env_type]
 
 # COOK SOUND
-recipe_dict = load_JSON(recipe_path)
+recipe_dict = read_dictionary(recipe_path)
 output = cook_recipe(recipe_dict=recipe_dict, 
                     envelope=env_types[env_type],
                     grain_dur=grain_dur,

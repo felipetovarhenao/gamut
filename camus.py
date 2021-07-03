@@ -1,5 +1,5 @@
 from os.path import realpath, basename, isdir, splitext, join
-from os import walk
+from os import walk, rename
 import librosa
 import json
 import numpy as np
@@ -13,16 +13,28 @@ from progress.bar import IncrementalBar
 from progress.counter import Counter
 
 np.seterr(divide='ignore')
+FILE_EXT = '.camus'
 
 def save_JSON(dict, outpath):
     """writes a dictionary object as a .JSON file."""
     with open(outpath, 'w') as fp:
         json.dump(dict, fp, indent=4)
 
+def write_dictionary(dict, outpath):
+    np.save(outpath, dict)
+    rename(outpath+'.npy', outpath+FILE_EXT)
+
 def load_JSON(file):
     """returns a `.JSON` file as a dictionary object."""    
     with open(file, 'r') as fp:
         return json.load(fp)
+
+def read_dictionary(path):
+    ext = basename(path)[-6:]
+    if ext == FILE_EXT:
+        return np.load(path, allow_pickle=True).item()
+    else:
+        raise ValueError('Wrong file extension. Provide a path for a {} file'.format(FILE_EXT))
 
 def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_length=1024):
     '''Returns a 4-tuple, consisting of:
@@ -88,10 +100,11 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
                     mfcc_stream, metadata, _, sr = get_features(file_path, duration=duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
                     for mf, md in zip(mfcc_stream, metadata):
                         mfcc_frames.append(mf)
-                        dictionary['data_samples'].append([file_id] + md.tolist())
+                        dictionary['data_samples'].append(np.array(np.concatenate([[file_id],  md])))
                     dictionary['corpus_info']['files'].append([sr, file_path])
                     counter.write(str(file_id + 1))
                     file_id += 1
+        dictionary['data_samples'] = np.array(dictionary['data_samples'])
         n_frames = len(mfcc_frames)
         if kd is None:
             kd = max(int(log(n_frames)/log(4)), 1)
@@ -109,21 +122,27 @@ def build_KDTree(data, kd=2):
     nodes = np.median(data, axis=0)[:kd]
     tree_size =2**len(nodes)
     tree = {
-        'nodes': nodes.tolist(),
+        'nodes': nodes,
         'dims': kd,
         'position_branches': dict(),
         'data_branches': dict()
     }
+    # populate branches    
     for i in range(tree_size):
         tree['position_branches'][str(i)] = list()
         tree['data_branches'][str(i)] = list()
+    # populate branches
     for pos, datum in enumerate(data):
         branch_id = get_branch_id(datum[:kd], nodes)
         tree['position_branches'][str(branch_id)].append(pos)
-        tree['data_branches'][str(branch_id)].append(datum.tolist())
+        tree['data_branches'][str(branch_id)].append(datum)
         bar.next()
+    # convert branches to numpy arrays
+    for b in range(tree_size):
+        tree['position_branches'][str(b)] = np.array(tree['position_branches'][str(b)])
+        tree['data_branches'][str(b)] = np.array(tree['data_branches'][str(b)])
     bar.finish()
-    print("        Total number of data clusters: {}".format(2**kd))
+    print("        Total number of data clusters: {}".format(tree_size))
     return tree
 
 def neighborhood_index(item, tree):
@@ -185,22 +204,22 @@ def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_len
     corpus_dict['corpus_info']['files'].append([sr, target_path])
     [dictionary['target_info']['data_samples'].append([file_id, int(te[0])]) for te in target_extras]
 
-    corpus_metadata = np.array(corpus_dict['data_samples'])
-    corpus_tree = corpus_dict['KDTree']
-    tree_size = 2**corpus_tree['dims']
-    corpus_tree_posns = [np.array(corpus_tree['position_branches'][str(x)], dtype='int') for x in range(tree_size)]
-    corpus_tree_mfccs = [np.array(corpus_tree['data_branches'][str(x)]) for x in range(tree_size)]
+    corpus_metadata = corpus_dict['data_samples']
 
+    corpus_tree = corpus_dict['KDTree']
+    corpus_tree_mfccs = corpus_tree['data_branches']
+    corpus_tree_posns = corpus_tree['position_branches']
+    
     bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc), suffix='%(index)d/%(max)d frames')
 
     for tm, tex in zip(target_mfcc, target_extras):
-        branch_id = neighborhood_index(tm, corpus_tree)
-        mfcc_indxs = nearest_neighbors(tm, corpus_tree_mfccs[branch_id], k=k)
+        branch_id = str(neighborhood_index(tm, corpus_tree))
+        mfcc_indxs = nearest_neighbors([tm], corpus_tree_mfccs[branch_id], k=k)
         original_positions = [corpus_tree_posns[branch_id][j] for j in mfcc_indxs]
         metadata = corpus_metadata[original_positions]
-        sorted_positions = nearest_neighbors(tex[1:], metadata[:,[2,3]],k=k)
+        sorted_positions = nearest_neighbors([tex[1:]], metadata[:,[2,3]],k=k)
         mfcc_options = metadata[sorted_positions]
-        dictionary['data_samples'].append(mfcc_options[:,[0,1]].astype(int).tolist())
+        dictionary['data_samples'].append(mfcc_options[:,[0,1]].astype(int))
         bar.next()
     bar.finish()
     print('        DONE\n')
@@ -334,8 +353,8 @@ def nearest_neighbors(item, data, k=8):
     if datasize < k:
         k = datasize
     nn = NearestNeighbors(n_neighbors=k, algorithm='brute').fit(data)
-    positions = np.array(nn.kneighbors(np.array([item]), n_neighbors=k)[1][0])
+    positions = nn.kneighbors(item, n_neighbors=k)[1][0]
     return positions
 
 if __name__ == '__main__':
-    print('----- running utilities.py')         
+    print('----- running utilities.py')   
