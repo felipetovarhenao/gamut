@@ -3,7 +3,7 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/Violin_notes'
+audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/_OrchideaSOL2020_release/OrchideaSOL2020/PluckedStrings'
 output_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/'
 duration = None
 hop_length = 512
@@ -11,7 +11,7 @@ frame_length = 1024
 
 # ------------------ MAIN ------------------------
 # MODULES
-from camus import build_corpus, write_dictionary
+from camus import build_corpus, dict_to_camus
 import os
 import time
 
@@ -31,7 +31,7 @@ if not os.path.exists(outdir):
     os.mkdir(outdir)
 
 print('...saving corpus {}...'.format(outname))
-write_dictionary(corpus_dictionary, outpath)
+dict_to_camus(corpus_dictionary, outpath)
 
 end = time.time()
 print('\ncorpus built in {} seconds'.format(round(end-st, 2)))

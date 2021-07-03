@@ -10,22 +10,28 @@ from scipy.signal import get_window, resample
 from sklearn.neighbors import NearestNeighbors
 from progress.bar import IncrementalBar
 from progress.counter import Counter
-import time
+from soundfile import write
 
 np.seterr(divide='ignore')
 
 FILE_EXT = '.camus'
 
-def write_dictionary(dict, outpath):
+def dict_to_camus(dict, outpath):
+    '''Writes `dict` object into a `.camus` file. This function is a simple wrapper of `np.save()`.'''
     np.save(outpath, dict)
     rename(outpath+'.npy', outpath+FILE_EXT)
 
-def read_dictionary(path):
+def dict_from_camus(path):
+    '''Reads a `.camus` file as a `dict` object. This function is a simple wrapper of `np.load()`.'''
     ext = basename(path)[-6:]
     if ext == FILE_EXT:
         return np.load(path, allow_pickle=True).item()
     else:
         raise ValueError('Wrong file extension. Provide a path for a {} file'.format(FILE_EXT))
+
+def write_audio(path, ndarray, sr=44100, bit_depth=24):
+    """Writes a `ndarray` as audio. This function is a simple wrapper of `sf.write()`."""
+    write(path, ndarray, sr, 'PCM_{}'.format(bit_depth))
 
 def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_length=1024):
     '''Returns a 4-tuple of ndarrays, consisting of:
@@ -55,7 +61,7 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
     return mfcc_frames, metadata, len(y), sr
 
 def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
-    '''Takes a folder directory (i.e. a path) containing audio samples (`.wav`, `.aif`, or `.aiff`) and returns a dictionary object, intended to be saved as a `JSON` file with the `save_JSON()` function.'''
+    '''Takes a folder directory (i.e. a path) containing audio samples (`.wav`, `.aif`, or `.aiff`) and returns a `dict` object. The output can be saved as a `.camus` file with the `write_camus()` function, for later use in `get_audio_recipe()`.'''
 
     folder_dir = realpath(folder_dir)
     corpus_name = basename(folder_dir)
@@ -162,7 +168,7 @@ def get_branch_id(vector, nodes):
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
 def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, k=3):
-    '''Takes an audio sample directory/path (i.e. the _target_) and a dictionary object (i.e. the _corpus_), and returns another directory containing the necessary information to rebuild the _target_ using grains from the _corpus_. The recipe is intended to be saved as a `JSON` file with the `save_JSON()` function.'''
+    '''Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.camus` file with the `write_camus()` function, for later use in `cook_recipe()`.'''
 
     print('\nMaking recipe for {}\n        ...loading corpus...\n        ...analyzing target...'.format(basename(target_path)))
     target_mfcc, target_extras, target_size, sr = get_features(target_path,
@@ -219,7 +225,7 @@ def nearest_neighbors(item, data, k=8):
     return positions
 
 def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5):
-    '''Takes a `JSON` file directory/path (i.e. the _recipe_), and returns an array of audio samples, to be written as an audio file.'''
+    '''Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.'''
 
     print('\nCooking recipe for {}\n        ...loading recipe...'.format(recipe_dict['target_info']['name']))
     target_sr = recipe_dict['target_info']['sr']
@@ -311,7 +317,7 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     buffer = np.empty(shape=(buffer_length, n_chans))
     buffer.fill(0)
 
-    grain_counter = IncrementalBar('        Concatenating grains: ', max=len(data_samples), suffix='%(index)d/%(max)d grains')
+    grain_counter = IncrementalBar('        Concatenating grains:  ', max=len(data_samples), suffix='%(index)d/%(max)d grains')
     for n, (ds, so, fl, p, tm) in enumerate(zip(data_samples, samp_onset_table, frame_length_table, pan_table, target_mix_table)):
         if random() > tm:
             num_frames = len(ds[:kn])
