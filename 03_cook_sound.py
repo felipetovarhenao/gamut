@@ -11,7 +11,7 @@ grain_dur = 0.7
 onset_var = 0.1
 stretch_factor = 1
 kn = 8
-target_mix = [0, 0.25, 1]
+target_mix = 0.25
 # envelope settings
 env_type = 0
 sustain = 0.1

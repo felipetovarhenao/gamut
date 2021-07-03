@@ -30,7 +30,7 @@ recipe = get_audio_recipe(target, corpus,
                             duration=duration,
                             k=k)
 
-# WRITE JSON RECIPE
+# WRITE RECIPE
 recipe_name = splitext(basename(target))[0] + '_from_' + splitext(basename(corpus_path))[0]
 if not exists(recipe_dir):
     mkdir(recipe_dir)

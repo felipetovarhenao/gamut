@@ -3,7 +3,7 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/Berklee44v2/'
+audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/Violin_notes'
 output_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/'
 duration = None
 hop_length = 512
@@ -23,7 +23,7 @@ corpus_dictionary = build_corpus(audio_samples,
                                 duration=duration,
                                 hop_length=hop_length)
 
-### WRITE JSON CORPUS
+### WRITE CORPUS
 outname =  os.path.basename(audio_samples) + '_corpus'
 outdir = os.path.realpath(output_path)
 outpath = os.path.join(outdir, outname)
