@@ -4,7 +4,7 @@
 
 # PATHS
 target = '/Users/felipe-tovar-henao/Documents/Camus files/target_samples/poeme_verlaine.wav'
-corpus_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/Berklee44v2_corpus.camus'
+corpus_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/Violin_notes_corpus.camus'
 recipe_dir = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/'
 
 # RECIPE SETTINGS

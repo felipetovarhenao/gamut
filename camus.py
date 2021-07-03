@@ -189,11 +189,11 @@ def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_len
         'corpus_info': corpus_dict['corpus_info'],
         'data_samples': list()
     } 
-
+    
     # include target data samples for cooking mix parameter
     corpus_dict['corpus_info']['files'].append([sr, target_path])
     dictionary['target_info']['data_samples'] = target_extras[:,[0, 0]].astype('int32')
-    dictionary['target_info']['data_samples'][:, 0] = len(corpus_dict['corpus_info']['files'])
+    dictionary['target_info']['data_samples'][:, 0] = len(corpus_dict['corpus_info']['files']) - 1
 
     bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc), suffix='%(index)d/%(max)d frames')
 
@@ -204,7 +204,7 @@ def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_len
         metadata = corpus_dict['data_samples'][knn_positions]
         sorted_positions = nearest_neighbors([tex[1:]], metadata[:,[2,3]],k=k)
         mfcc_options = metadata[sorted_positions]
-        dictionary['data_samples'].append(mfcc_options[:,[0,1]])
+        dictionary['data_samples'].append(mfcc_options[:,[0,1]].astype('int32'))
         bar.next()
     bar.finish()
     print('        DONE\n')
@@ -227,15 +227,18 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
      
     corpus_size = len(recipe_dict['corpus_info']['files'])
     sounds = [[]] * corpus_size
-    snd_idxs = np.unique(np.concatenate([[y[0] for y in x] for x in recipe_dict['data_samples']]))
+    snd_idxs = np.unique(np.concatenate([[y[0] for y in x] for x in recipe_dict['data_samples']])).astype(int)
     max_duration = recipe_dict['corpus_info']['max_duration']
     snd_counter = IncrementalBar('        Loading corpus sounds: ', max=len(snd_idxs) + 1, suffix='%(index)d/%(max)d files')
+    
     for i in snd_idxs:
         sounds[i] = librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=max_duration, sr=sr)[0]
         snd_counter.next()
+
     sounds[-1] = librosa.load(recipe_dict['corpus_info']['files'][-1][1], duration=None, sr=sr)[0]
     snd_counter.next()
     snd_counter.finish()
+
     hop_length = int(recipe_dict['target_info']['hop_length'] * sr_ratio) 
     data_samples = recipe_dict['data_samples']
     n_segments = recipe_dict['target_info']['n_samples']
@@ -343,3 +346,8 @@ def array_resampling(array, N):
 
 if __name__ == '__main__':
     print('----- running utilities.py')   
+    # a = np.array([[0]]*10)
+    # b = np.array([[2]]*10)
+    # idx = [0, 1, 4, 5]
+    # a[idx] = b[idx]
+    # print(a)

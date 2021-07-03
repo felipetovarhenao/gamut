@@ -3,12 +3,12 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/poeme_verlaine_from_Berklee44v2_corpus.camus'
+recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/poeme_verlaine_from_Violin_notes_corpus.camus'
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
-grain_dur = 0.7
-onset_var = 0.1
+grain_dur = 0.5
+onset_var = 0
 stretch_factor = 1
 kn = 8
 target_mix = 0.25
@@ -18,7 +18,7 @@ sustain = 0.1
 env_array = [0, 1, 0.85]
 sharpness = 10
 stereo = 1
-sr = 44100
+sr = 48000
 
 # ------------------ MAIN ------------------------
 # MODULES
