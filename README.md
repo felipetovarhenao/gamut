@@ -8,7 +8,7 @@ It consists of three main functions:
 
 - `get_audio_recipe()`: takes a audio sample directory/path (i.e. the _target_) and a `JSON` file directory/path (i.e. the _corpus_), and returns another directory containing the necessary information to rebuild the _target_ using grains from the _corpus_. The recipe is intended to be saved as a `JSON` file with the `save_JSON()` function.
 
-- `cook_sound()`: takes a `JSON` file directory/path (i.e. the _recipe_), and returns an array of audio samples, to be written as an audio file.
+- `cook_recipe()`: takes a `JSON` file directory/path (i.e. the _recipe_), and returns an array of audio samples, to be written as an audio file.
 
 ### System requirements
 
