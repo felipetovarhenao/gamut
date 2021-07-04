@@ -347,6 +347,3 @@ def array_resampling(array, N):
     x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)
     x_coor2 = np.arange(0, len(array))
     return np.interp(x_coor1, x_coor2, array)
-
-if __name__ == '__main__':
-    print('----- running utilities.py')
