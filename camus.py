@@ -238,12 +238,10 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     snd_idxs = np.unique(snd_idxs).astype(int)    
     max_duration = recipe_dict['corpus_info']['max_duration']
     snd_counter = IncrementalBar('        Loading corpus sounds: ', max=len(snd_idxs) + 1, suffix='%(index)d/%(max)d files')
-    
     for i in snd_idxs:
-        sounds[i] = librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=max_duration, sr=sr)[0]
+        sounds[i] = np.repeat(np.array([librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=max_duration, sr=sr)[0]]).T, n_chans, axis=1)
         snd_counter.next()
-
-    sounds[-1] = librosa.load(recipe_dict['corpus_info']['files'][-1][1], duration=None, sr=sr)[0]
+    sounds[-1] = np.repeat(np.array([librosa.load(recipe_dict['corpus_info']['files'][-1][1], duration=None, sr=sr)[0]]).T, n_chans, axis=1)
     snd_counter.next()
     snd_counter.finish()
 
@@ -333,7 +331,7 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
         max_idx = len(snd) - 1
         samp_st = int(f[1] * snd_sr_ratio)
         samp_end = min(max_idx, samp_st+fl)
-        segment = np.repeat(np.array([snd[samp_st:samp_end]]).T, n_chans, axis=1)
+        segment = snd[samp_st:samp_end]
         seg_size = len(segment)
         if seg_size != len(window):
             segment = segment * resample(window, seg_size)
