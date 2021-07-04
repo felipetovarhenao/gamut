@@ -4,7 +4,7 @@
 
 # PATHS
 target = '/Users/felipe-tovar-henao/Documents/Camus files/target_samples/Je respire ou tu palpites.wav'
-corpus_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/PluckedStrings_corpus.camus'
+corpus_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/Berklee44v11_corpus.camus'
 recipe_dir = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/'
 
 # RECIPE SETTINGS
