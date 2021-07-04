@@ -5,7 +5,7 @@ import numpy as np
 from numpy import inf
 from math import floor, log, sqrt
 from random import choices, random
-import scipy
+from scipy.stats import mode
 from scipy.signal import get_window, resample
 from sklearn.neighbors import NearestNeighbors
 from progress.bar import IncrementalBar
@@ -286,7 +286,7 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
 
     # compute window with default size
     env_type = type(envelope)
-    default_length = int(scipy.stats.mode(frame_length_table)[0])
+    default_length = int(mode(frame_length_table)[0])
     if env_type == str:
         window = get_window(envelope, Nx=default_length)
     if env_type == np.ndarray or env_type == list:
