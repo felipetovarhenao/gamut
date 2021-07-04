@@ -34,10 +34,9 @@ def write_audio(path, ndarray, sr=44100, bit_depth=24):
     write(path, ndarray, sr, 'PCM_{}'.format(bit_depth))
 
 def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_length=1024):
-    '''Returns a 4-tuple of ndarrays, consisting of:
+    '''Returns a 3-tuple of ndarrays, consisting of:
             - MFCC frames of audio target (ndarray)
             - Audio target meta-data (ndarray) - i.e. [`sample_index`, `rms_amplitude`, `pitch_centroid`]
-            - Length of audio target in samples (int)
             - Sampling rate of target (int).'''
     file_path = realpath(file_path)
     y, sr = librosa.load(file_path, duration=duration, sr=None)
