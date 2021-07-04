@@ -1,13 +1,10 @@
 from os.path import realpath, basename, isdir, splitext, join
 from os import walk, rename
 import librosa
-from librosa.util.utils import frame
 import numpy as np
-from numpy import dtype, inf
 from math import floor, log, sqrt
 from random import choices, random
-from scipy.stats import mode
-from scipy.signal import get_window, resample
+from scipy.signal import get_window
 from sklearn.neighbors import NearestNeighbors
 from progress.bar import IncrementalBar
 from progress.counter import Counter
@@ -53,7 +50,7 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
                                                                 sr=sr,
                                                                 n_fft=frame_length,
                                                                 hop_length=hop_length)[0][:-2]/440)*12+69
-    centroid_frames[centroid_frames == -inf] = 0                                                
+    centroid_frames[centroid_frames < 0] = 0                                                
     n_frames = len(rms_frames)
     sample_indxs = np.arange(start=0, stop=n_frames*hop_length, step=hop_length)
     metadata = np.array([sample_indxs, rms_frames, centroid_frames]).T
@@ -129,7 +126,7 @@ def build_KDTree(data, kd=2):
         tree['data_branches'][str(i)] = list()
     # populate branches
     for pos, datum in enumerate(data):
-        branch_id = get_branch_id(datum[:kd], nodes)
+        branch_id = get_branch_id(datum[:kd], nodes[:kd])
         tree['position_branches'][str(branch_id)].append(pos)
         tree['data_branches'][str(branch_id)].append(datum)
         bar.next()
@@ -223,22 +220,18 @@ def nearest_neighbors(item, data, k=8):
     positions = nn.kneighbors(item, n_neighbors=k)[1][0]
     return positions
 
-def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5, frame_length_res=500):
+def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5, frame_length_res=256):
     '''Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.'''
 
     print('\nCooking recipe for {}\n        ...loading recipe...'.format(recipe_dict['target_info']['name']))
-    target_sr = recipe_dict['target_info']['sr']
-    sr_ratio = sr/target_sr
-     
-    corpus_size = len(recipe_dict['corpus_info']['files'])
-    sounds = [[]] * corpus_size
+    sr_ratio = sr/recipe_dict['target_info']['sr']
+    sounds = [[]] * len(recipe_dict['corpus_info']['files'])
     snd_idxs = list()
     [[snd_idxs.append(y[0]) for y in x] for x in recipe_dict['data_samples']]
     snd_idxs = np.unique(snd_idxs).astype(int)    
-    max_duration = recipe_dict['corpus_info']['max_duration']
     snd_counter = IncrementalBar('        Loading corpus sounds: ', max=len(snd_idxs) + 1, suffix='%(index)d/%(max)d files')
     for i in snd_idxs:
-        sounds[i] = np.repeat(np.array([librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=max_duration, sr=sr)[0]]).T, n_chans, axis=1)
+        sounds[i] = np.repeat(np.array([librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=recipe_dict['corpus_info']['max_duration'], sr=sr)[0]]).T, n_chans, axis=1)
         snd_counter.next()
     sounds[-1] = np.repeat(np.array([librosa.load(recipe_dict['corpus_info']['files'][-1][1], duration=None, sr=sr)[0]]).T, n_chans, axis=1)
     snd_counter.next()
@@ -258,19 +251,21 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
         target_mix_table.fill(target_mix)
 
     # populate frame length table
-    if type(grain_dur) is list:
+    grain_dur_type = type(grain_dur)
+    if grain_dur_type is list:
         frame_length_table = np.round(array_resampling(np.array(grain_dur) * sr, n_segments)/frame_length_res) * frame_length_res
-    if type(grain_dur) is float or type(grain_dur) is int:
+    if grain_dur_type is float or grain_dur_type is int:
         frame_length_table = np.empty(n_segments)
         frame_length_table.fill(round((grain_dur * sr)/frame_length_res)*frame_length_res) 
     frame_length_table = frame_length_table.astype('int64')
     frame_lengths = np.arange(frame_length_res, np.amax(frame_length_table)+frame_length_res, frame_length_res, dtype='int64')
 
     # populate sample index table   
-    if type(stretch_factor) is int or type(stretch_factor) is float:
+    stretch_type = type(stretch_factor)
+    if stretch_type is int or stretch_type is float:
         samp_onset_table = np.empty(n_segments)
         samp_onset_table.fill(hop_length*stretch_factor)
-    if type(stretch_factor) is list:
+    if stretch_type is list:
         samp_onset_table = array_resampling(stretch_factor, n_segments)*hop_length   
     samp_onset_table = np.concatenate([[0], np.round(samp_onset_table)], ).astype('int64').cumsum()[:-1]
     
@@ -308,11 +303,8 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
         kn = recipe_dict['target_info']['frame_dims']
     weigths = np.arange(kn, 0, -1)
 
-    # get total duration
-    buffer_length = int(np.amax(samp_onset_table) + np.amax(frame_length_table))
-
     # make buffer array
-    buffer = np.empty(shape=(buffer_length, n_chans))
+    buffer = np.empty(shape=(int(np.amax(samp_onset_table) + np.amax(frame_length_table)), n_chans))
     buffer.fill(0)
 
     grain_counter = IncrementalBar('        Concatenating grains:  ', max=len(data_samples), suffix='%(index)d/%(max)d grains')
@@ -325,19 +317,17 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
             f = recipe_dict['target_info']['data_samples'][n]
         snd_id = f[0]
         snd = sounds[snd_id]
-        snd_sr = recipe_dict['corpus_info']['files'][snd_id][0]
-        snd_sr_ratio = sr/snd_sr
+        snd_sr_ratio = sr/recipe_dict['corpus_info']['files'][snd_id][0]
         max_idx = len(snd) - 1
         samp_st = int(f[1] * snd_sr_ratio)
         samp_end = min(max_idx, samp_st+fl)
-        seg_size = samp_end-samp_st
-        best_size = round(seg_size/frame_length_res) * frame_length_res
-        best_end = samp_st+best_size
-        if best_size != 0 and best_end <= max_idx:
-            idx = int(np.where(frame_lengths == best_size)[0])
+        seg_size = round((samp_end-samp_st)/frame_length_res) * frame_length_res
+        samp_end = samp_st+seg_size
+        if seg_size != 0 and samp_end <= max_idx:
+            idx = int(np.where(frame_lengths == seg_size)[0])
             window = windows[idx] 
-            segment = (snd[samp_st:best_end] * window) * p
-            buffer[so:so+best_size] = buffer[so:so+best_size] + segment
+            segment = (snd[samp_st:samp_end] * window) * p
+            buffer[so:so+seg_size] = buffer[so:so+seg_size] + segment
         grain_counter.next()
 
     grain_counter.finish()
