@@ -233,7 +233,9 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
      
     corpus_size = len(recipe_dict['corpus_info']['files'])
     sounds = [[]] * corpus_size
-    snd_idxs = np.unique(np.concatenate([[y[0] for y in x] for x in recipe_dict['data_samples']])).astype(int)
+    snd_idxs = list()
+    [[snd_idxs.append(y[0]) for y in x] for x in recipe_dict['data_samples']]
+    snd_idxs = np.unique(snd_idxs).astype(int)    
     max_duration = recipe_dict['corpus_info']['max_duration']
     snd_counter = IncrementalBar('        Loading corpus sounds: ', max=len(snd_idxs) + 1, suffix='%(index)d/%(max)d files')
     
