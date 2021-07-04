@@ -1,7 +1,6 @@
 from os.path import realpath, basename, isdir, splitext, join
-from os import walk
+from os import walk, rename
 import librosa
-import json
 import numpy as np
 from numpy import inf
 from math import floor, log, sqrt
@@ -11,26 +10,35 @@ from scipy.signal import get_window, resample
 from sklearn.neighbors import NearestNeighbors
 from progress.bar import IncrementalBar
 from progress.counter import Counter
+from soundfile import write
 
 np.seterr(divide='ignore')
 
-def save_JSON(dict, outpath):
-    """writes a dictionary object as a .JSON file."""
-    with open(outpath, 'w') as fp:
-        json.dump(dict, fp, indent=4)
+FILE_EXT = '.camus'
 
-def load_JSON(file):
-    """returns a `.JSON` file as a dictionary object."""    
-    with open(file, 'r') as fp:
-        return json.load(fp)
+def dict_to_camus(dict, outpath):
+    '''Writes `dict` object into a `.camus` file. This function is a simple wrapper of `np.save()`.'''
+    np.save(outpath, dict)
+    rename(outpath+'.npy', outpath+FILE_EXT)
+
+def dict_from_camus(path):
+    '''Reads a `.camus` file as a `dict` object. This function is a simple wrapper of `np.load()`.'''
+    ext = basename(path)[-6:]
+    if ext == FILE_EXT:
+        return np.load(path, allow_pickle=True).item()
+    else:
+        raise ValueError('Wrong file extension. Provide a path for a {} file'.format(FILE_EXT))
+
+def write_audio(path, ndarray, sr=44100, bit_depth=24):
+    """Writes a `ndarray` as audio. This function is a simple wrapper of `sf.write()`."""
+    write(path, ndarray, sr, 'PCM_{}'.format(bit_depth))
 
 def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_length=1024):
-    '''Returns a 4-tuple, consisting of:
-            - MFCC frames of audio target (list)
-            - Audio target meta-data (list) - i.e. [`sample_index`, `rms_amplitude`, `pitch_centroid`]
+    '''Returns a 4-tuple of ndarrays, consisting of:
+            - MFCC frames of audio target (ndarray)
+            - Audio target meta-data (ndarray) - i.e. [`sample_index`, `rms_amplitude`, `pitch_centroid`]
             - Length of audio target in samples (int)
             - Sampling rate of target (int).'''
-            
     file_path = realpath(file_path)
     y, sr = librosa.load(file_path, duration=duration, sr=None)
     mfcc_frames = librosa.feature.mfcc(y=y,
@@ -53,7 +61,7 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
     return mfcc_frames, metadata, len(y), sr
 
 def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
-    '''Takes a folder directory (i.e. a path) containing audio samples (`.wav`, `.aif`, or `.aiff`) and returns a dictionary object, intended to be saved as a `JSON` file with the `save_JSON()` function.'''
+    '''Takes a folder directory (i.e. a path) containing audio samples (`.wav`, `.aif`, or `.aiff`) and returns a `dict` object. The output can be saved as a `.camus` file with the `write_camus()` function, for later use in `get_audio_recipe()`.'''
 
     folder_dir = realpath(folder_dir)
     corpus_name = basename(folder_dir)
@@ -88,10 +96,11 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
                     mfcc_stream, metadata, _, sr = get_features(file_path, duration=duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
                     for mf, md in zip(mfcc_stream, metadata):
                         mfcc_frames.append(mf)
-                        dictionary['data_samples'].append([file_id] + md.tolist())
+                        dictionary['data_samples'].append(np.array(np.concatenate([[file_id],  md])))
                     dictionary['corpus_info']['files'].append([sr, file_path])
                     counter.write(str(file_id + 1))
                     file_id += 1
+        dictionary['data_samples'] = np.array(dictionary['data_samples'])
         n_frames = len(mfcc_frames)
         if kd is None:
             kd = max(int(log(n_frames)/log(4)), 1)
@@ -109,21 +118,27 @@ def build_KDTree(data, kd=2):
     nodes = np.median(data, axis=0)[:kd]
     tree_size =2**len(nodes)
     tree = {
-        'nodes': nodes.tolist(),
+        'nodes': nodes,
         'dims': kd,
         'position_branches': dict(),
         'data_branches': dict()
     }
+    # populate branches    
     for i in range(tree_size):
         tree['position_branches'][str(i)] = list()
         tree['data_branches'][str(i)] = list()
+    # populate branches
     for pos, datum in enumerate(data):
         branch_id = get_branch_id(datum[:kd], nodes)
         tree['position_branches'][str(branch_id)].append(pos)
-        tree['data_branches'][str(branch_id)].append(datum.tolist())
+        tree['data_branches'][str(branch_id)].append(datum)
         bar.next()
+    # convert branches to numpy arrays
+    for b in range(tree_size):
+        tree['position_branches'][str(b)] = np.array(tree['position_branches'][str(b)])
+        tree['data_branches'][str(b)] = np.array(tree['data_branches'][str(b)])
     bar.finish()
-    print("        Total number of data clusters: {}".format(2**kd))
+    print("        Total number of data clusters: {}".format(tree_size))
     return tree
 
 def neighborhood_index(item, tree):
@@ -153,7 +168,7 @@ def get_branch_id(vector, nodes):
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
 def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, k=3):
-    '''Takes an audio sample directory/path (i.e. the _target_) and a dictionary object (i.e. the _corpus_), and returns another directory containing the necessary information to rebuild the _target_ using grains from the _corpus_. The recipe is intended to be saved as a `JSON` file with the `save_JSON()` function.'''
+    '''Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.camus` file with the `write_camus()` function, for later use in `cook_recipe()`.'''
 
     print('\nMaking recipe for {}\n        ...loading corpus...\n        ...analyzing target...'.format(basename(target_path)))
     target_mfcc, target_extras, target_size, sr = get_features(target_path,
@@ -161,6 +176,7 @@ def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_len
                                                             n_mfcc=n_mfcc,
                                                             hop_length=hop_length,
                                                             frame_length=frame_length) 
+    n_samples = len(target_extras)                                                            
     dictionary = {
         'target_info': {
             'name': splitext(basename(target_path))[0],
@@ -173,41 +189,43 @@ def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_len
             ],
             'data_dims': k,
             'target_size': target_size,
-            'n_samples': len(target_mfcc),
-            'data_samples': list()
+            'n_samples': n_samples,
+            'data_samples': np.empty(shape=(0, 2))
         },
         'corpus_info': corpus_dict['corpus_info'],
         'data_samples': list()
     } 
-
+    
     # include target data samples for cooking mix parameter
-    file_id = len(corpus_dict['corpus_info']['files'])
     corpus_dict['corpus_info']['files'].append([sr, target_path])
-    [dictionary['target_info']['data_samples'].append([file_id, int(te[0])]) for te in target_extras]
-
-    corpus_metadata = np.array(corpus_dict['data_samples'])
-    corpus_tree = corpus_dict['KDTree']
-    tree_size = 2**corpus_tree['dims']
-    corpus_tree_posns = [np.array(corpus_tree['position_branches'][str(x)], dtype='int') for x in range(tree_size)]
-    corpus_tree_mfccs = [np.array(corpus_tree['data_branches'][str(x)]) for x in range(tree_size)]
+    dictionary['target_info']['data_samples'] = target_extras[:,[0, 0]].astype('int32')
+    dictionary['target_info']['data_samples'][:, 0] = len(corpus_dict['corpus_info']['files']) - 1
 
     bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc), suffix='%(index)d/%(max)d frames')
 
     for tm, tex in zip(target_mfcc, target_extras):
-        branch_id = neighborhood_index(tm, corpus_tree)
-        mfcc_indxs = nearest_neighbors(tm, corpus_tree_mfccs[branch_id], k=k)
-        original_positions = [corpus_tree_posns[branch_id][j] for j in mfcc_indxs]
-        metadata = corpus_metadata[original_positions]
-        sorted_positions = nearest_neighbors(tex[1:], metadata[:,[2,3]],k=k)
+        branch_id = str(neighborhood_index(tm, corpus_dict['KDTree']))
+        mfcc_idxs = nearest_neighbors([tm], corpus_dict['KDTree']['data_branches'][branch_id], k=k)
+        knn_positions = corpus_dict['KDTree']['position_branches'][branch_id][mfcc_idxs]
+        metadata = corpus_dict['data_samples'][knn_positions]
+        sorted_positions = nearest_neighbors([tex[1:]], metadata[:,[2,3]],k=k)
         mfcc_options = metadata[sorted_positions]
-        dictionary['data_samples'].append(mfcc_options[:,[0,1]].astype(int).tolist())
+        dictionary['data_samples'].append(mfcc_options[:,[0,1]].astype('int32'))
         bar.next()
     bar.finish()
     print('        DONE\n')
     return dictionary
 
+def nearest_neighbors(item, data, k=8):
+    datasize = len(data)
+    if datasize < k:
+        k = datasize
+    nn = NearestNeighbors(n_neighbors=k, algorithm='brute').fit(data)
+    positions = nn.kneighbors(item, n_neighbors=k)[1][0]
+    return positions
+
 def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5):
-    '''Takes a `JSON` file directory/path (i.e. the _recipe_), and returns an array of audio samples, to be written as an audio file.'''
+    '''Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.'''
 
     print('\nCooking recipe for {}\n        ...loading recipe...'.format(recipe_dict['target_info']['name']))
     target_sr = recipe_dict['target_info']['sr']
@@ -215,15 +233,18 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
      
     corpus_size = len(recipe_dict['corpus_info']['files'])
     sounds = [[]] * corpus_size
-    snd_idxs = np.unique(np.concatenate([[y[0] for y in x] for x in recipe_dict['data_samples']]))
+    snd_idxs = np.unique(np.concatenate([[y[0] for y in x] for x in recipe_dict['data_samples']])).astype(int)
     max_duration = recipe_dict['corpus_info']['max_duration']
     snd_counter = IncrementalBar('        Loading corpus sounds: ', max=len(snd_idxs) + 1, suffix='%(index)d/%(max)d files')
+    
     for i in snd_idxs:
         sounds[i] = librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=max_duration, sr=sr)[0]
         snd_counter.next()
+
     sounds[-1] = librosa.load(recipe_dict['corpus_info']['files'][-1][1], duration=None, sr=sr)[0]
     snd_counter.next()
     snd_counter.finish()
+
     hop_length = int(recipe_dict['target_info']['hop_length'] * sr_ratio) 
     data_samples = recipe_dict['data_samples']
     n_segments = recipe_dict['target_info']['n_samples']
@@ -296,7 +317,7 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     buffer = np.empty(shape=(buffer_length, n_chans))
     buffer.fill(0)
 
-    grain_counter = IncrementalBar('        Concatenating grains: ', max=len(data_samples), suffix='%(index)d/%(max)d grains')
+    grain_counter = IncrementalBar('        Concatenating grains:  ', max=len(data_samples), suffix='%(index)d/%(max)d grains')
     for n, (ds, so, fl, p, tm) in enumerate(zip(data_samples, samp_onset_table, frame_length_table, pan_table, target_mix_table)):
         if random() > tm:
             num_frames = len(ds[:kn])
@@ -329,13 +350,10 @@ def array_resampling(array, N):
     x_coor2 = np.arange(0, len(array))
     return np.interp(x_coor1, x_coor2, array)
 
-def nearest_neighbors(item, data, k=8):
-    datasize = len(data)
-    if datasize < k:
-        k = datasize
-    nn = NearestNeighbors(n_neighbors=k, algorithm='brute').fit(data)
-    positions = np.array(nn.kneighbors(np.array([item]), n_neighbors=k)[1][0])
-    return positions
-
 if __name__ == '__main__':
-    print('----- running utilities.py')         
+    print('----- running utilities.py')   
+    # a = np.array([[0]]*10)
+    # b = np.array([[2]]*10)
+    # idx = [0, 1, 4, 5]
+    # a[idx] = b[idx]
+    # print(a)

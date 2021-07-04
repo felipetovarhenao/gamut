@@ -3,7 +3,7 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/Berklee44v11/'
+audio_samples = '/Users/felipe-tovar-henao/Documents/Sample collections/Berklee44v11'
 output_path = '/Users/felipe-tovar-henao/Documents/Camus files/corpora/'
 duration = None
 hop_length = 512
@@ -11,7 +11,7 @@ frame_length = 1024
 
 # ------------------ MAIN ------------------------
 # MODULES
-from camus import build_corpus, save_JSON
+from camus import build_corpus, dict_to_camus
 import os
 import time
 
@@ -23,15 +23,15 @@ corpus_dictionary = build_corpus(audio_samples,
                                 duration=duration,
                                 hop_length=hop_length)
 
-### WRITE JSON CORPUS
-outname =  os.path.basename(audio_samples) + '_corpus.json'
+### WRITE CORPUS
+outname =  os.path.basename(audio_samples) + '_corpus'
 outdir = os.path.realpath(output_path)
 outpath = os.path.join(outdir, outname)
 if not os.path.exists(outdir):
     os.mkdir(outdir)
 
 print('...saving corpus {}...'.format(outname))
-save_JSON(corpus_dictionary, outpath)
+dict_to_camus(corpus_dictionary, outpath)
 
 end = time.time()
 print('\ncorpus built in {} seconds'.format(round(end-st, 2)))

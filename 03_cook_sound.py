@@ -3,27 +3,26 @@
 #   ---------------------------------------------------------------------- 
 
 # PATHS
-recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/poeme_verlaine_from_Violin_notes_corpus.json'
+recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/Je respire ou tu palpites_from_Berklee44v11_corpus.camus'
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
 grain_dur = 0.7
-onset_var = 0.1
+onset_var = 0
 stretch_factor = 1
 kn = 8
-target_mix = [0, 0.25, 1]
+target_mix = [0, 0.33, 1]
 # envelope settings
 env_type = 0
 sustain = 0.1
 env_array = [0, 1, 0.85]
-sharpness = 10
+sharpness = 20
 stereo = 1
-sr = 48000
+sr = 44100
 
 # ------------------ MAIN ------------------------
 # MODULES
-from camus import cook_recipe, load_JSON
-import soundfile as sf
+from camus import cook_recipe, dict_from_camus, write_audio
 import os
 import time
 
@@ -45,7 +44,7 @@ else:
     envtag = env_types[env_type]
 
 # COOK SOUND
-recipe_dict = load_JSON(recipe_path)
+recipe_dict = dict_from_camus(recipe_path)
 output = cook_recipe(recipe_dict=recipe_dict, 
                     envelope=env_types[env_type],
                     grain_dur=grain_dur,
@@ -71,6 +70,9 @@ outdir = sound_out + basename
 if not os.path.exists(outdir):
     os.makedirs(outdir)
 
-sf.write(os.path.join(outdir, filename), output, sr, 'PCM_24')
+write_audio(path=os.path.join(outdir, filename), 
+            ndarray=output, 
+            sr=sr, 
+            bit_depth=24)
 end = time.time()
 print('DONE cooking {}.\nElapsed time: {}'.format(filename, round(end-st, 2)))
