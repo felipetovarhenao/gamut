@@ -1,8 +1,9 @@
 from os.path import realpath, basename, isdir, splitext, join
 from os import walk, rename
 import librosa
+from librosa.util.utils import frame
 import numpy as np
-from numpy import inf
+from numpy import dtype, inf
 from math import floor, log, sqrt
 from random import choices, random
 from scipy.stats import mode
@@ -222,7 +223,7 @@ def nearest_neighbors(item, data, k=8):
     positions = nn.kneighbors(item, n_neighbors=k)[1][0]
     return positions
 
-def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5):
+def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5, frame_length_res=500):
     '''Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.'''
 
     print('\nCooking recipe for {}\n        ...loading recipe...'.format(recipe_dict['target_info']['name']))
@@ -258,11 +259,12 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
 
     # populate frame length table
     if type(grain_dur) is list:
-        frame_length_table = np.round(array_resampling(np.array(grain_dur) * sr, n_segments))
+        frame_length_table = np.round(array_resampling(np.array(grain_dur) * sr, n_segments)/frame_length_res) * frame_length_res
     if type(grain_dur) is float or type(grain_dur) is int:
         frame_length_table = np.empty(n_segments)
-        frame_length_table.fill(grain_dur * sr) 
+        frame_length_table.fill(round((grain_dur * sr)/frame_length_res)*frame_length_res) 
     frame_length_table = frame_length_table.astype('int64')
+    frame_lengths = np.arange(frame_length_res, np.amax(frame_length_table)+frame_length_res, frame_length_res, dtype='int64')
 
     # populate sample index table   
     if type(stretch_factor) is int or type(stretch_factor) is float:
@@ -286,12 +288,10 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
 
     # compute window with default size
     env_type = type(envelope)
-    default_length = int(mode(frame_length_table)[0])
     if env_type == str:
-        window = get_window(envelope, Nx=default_length)
+        windows = [np.repeat(np.array([get_window(envelope, Nx=wl)]).T, n_chans, axis=1) for wl in frame_lengths]
     if env_type == np.ndarray or env_type == list:
-        window = array_resampling(envelope, N=default_length)
-    window = np.repeat(np.array([window]).T, n_chans, axis=1)
+        windows = [np.repeat(np.array([array_resampling(envelope, N=wl)]).T, n_chans, axis=1) for wl in frame_lengths]
 
     # compute panning table
     pan_type = type(stereo)
@@ -316,6 +316,7 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     buffer.fill(0)
 
     grain_counter = IncrementalBar('        Concatenating grains:  ', max=len(data_samples), suffix='%(index)d/%(max)d grains')
+
     for n, (ds, so, fl, p, tm) in enumerate(zip(data_samples, samp_onset_table, frame_length_table, pan_table, target_mix_table)):
         if random() > tm:
             num_frames = len(ds[:kn])
@@ -329,13 +330,14 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
         max_idx = len(snd) - 1
         samp_st = int(f[1] * snd_sr_ratio)
         samp_end = min(max_idx, samp_st+fl)
-        segment = snd[samp_st:samp_end]
-        seg_size = len(segment)
-        if seg_size != len(window):
-            segment = segment * resample(window, seg_size)
-        else:
-            segment = segment * window
-        buffer[so:so+seg_size] = buffer[so:so+seg_size] + (segment*p)
+        seg_size = samp_end-samp_st
+        best_size = round(seg_size/frame_length_res) * frame_length_res
+        best_end = samp_st+best_size
+        if best_size != 0 and best_end <= max_idx:
+            idx = int(np.where(frame_lengths == best_size)[0])
+            window = windows[idx] 
+            segment = (snd[samp_st:best_end] * window) * p
+            buffer[so:so+best_size] = buffer[so:so+best_size] + segment
         grain_counter.next()
 
     grain_counter.finish()
@@ -344,6 +346,6 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     return (buffer / np.amax(np.abs(buffer))) * sqrt(0.5)
 
 def array_resampling(array, N):
-    x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)
+    x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)[:N]
     x_coor2 = np.arange(0, len(array))
     return np.interp(x_coor1, x_coor2, array)
