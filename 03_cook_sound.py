@@ -7,7 +7,7 @@ recipe_path = '/Users/felipe-tovar-henao/Documents/Camus files/recipes/Je respir
 sound_out = '/Users/felipe-tovar-henao/Documents/Camus files/output samples/'
 
 # COOKING SETTINGS
-grain_dur = 0.7
+grain_dur = [0.5, 1.5]
 onset_var = 0
 stretch_factor = 1
 kn = 8
