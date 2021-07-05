@@ -1,6 +1,8 @@
 .*
 __pycache__
+!**/__pycache__/
 *.pyc
+*.pyo
 !/.gitignore
 .DS_Store
 /**/reference/*.*
