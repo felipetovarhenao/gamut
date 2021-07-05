@@ -31,6 +31,11 @@ def write_audio(path, ndarray, sr=44100, bit_depth=24):
     """Writes a `ndarray` as audio. This function is a simple wrapper of `sf.write()`."""
     write(path, ndarray, sr, 'PCM_{}'.format(bit_depth))
 
+def array_resampling(array, N):
+    x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)[:N]
+    x_coor2 = np.arange(0, len(array))
+    return np.interp(x_coor1, x_coor2, array)    
+
 def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_length=1024):
     '''Returns a 3-tuple of ndarrays, consisting of:
             - MFCC frames of audio target (ndarray)
@@ -100,7 +105,7 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
         dictionary['data_samples'] = np.array(dictionary['data_samples'])
         n_frames = len(mfcc_frames)
         if kd is None:
-            kd = max(int(log(n_frames)/log(4)), 1)
+            kd = min(n_mfcc, max(int(log(n_frames)/log(4)), 1))
         dictionary['corpus_info']['n_frames'] = n_frames
         dictionary['data_tree'] = build_data_tree(mfcc_frames, kd=kd)
         print('        DONE\n')
@@ -334,8 +339,3 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     print('        DONE\n')    
     # return normalized buffer
     return (buffer / np.amax(np.abs(buffer))) * sqrt(0.5)
-
-def array_resampling(array, N):
-    x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)[:N]
-    x_coor2 = np.arange(0, len(array))
-    return np.interp(x_coor1, x_coor2, array)
