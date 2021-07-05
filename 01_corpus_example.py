@@ -3,17 +3,17 @@
 #   ---------------------------------------------------------------------- 
 
 # imports
-from ..camus import build_corpus, dict_to_camus
+from camus import camus
 
 # set path to audio folder
-audio_folder = '/MyAudioFolder'
+audio_folder = '/Users/felipe-tovar-henao/Documents/Sample collections/Violin_notes'
 
 # build corpus from folder
-my_corpus = build_corpus(folder_dir=audio_folder)
+my_corpus = camus.build_corpus(folder_dir=audio_folder)
 
 # set corpus output path
-outfile_path = './MyCorpus'
+outfile_path = '/Users/felipe-tovar-henao/Desktop/MyCorpus'
 
 # write corpus into disk
-dict_to_camus(dict=my_corpus, outpath=outfile_path)
+camus.dict_to_camus(dict=my_corpus, outpath=outfile_path)
 
