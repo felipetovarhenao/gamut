@@ -2,18 +2,18 @@
 #   ------------------ BUILD AUDIO MOSAICING CORPUS ----------------------
 #   ---------------------------------------------------------------------- 
 
-# import modules
+# imports
 from ..camus import build_corpus, dict_to_camus
 
 # set path to audio folder
-audio_folder = '/'
+audio_folder = '/MyAudioFolder'
 
 # build corpus from folder
 my_corpus = build_corpus(folder_dir=audio_folder)
 
 # set corpus output path
-output_path = './'
+outfile_path = './MyCorpus'
 
 # write corpus into disk
-dict_to_camus(my_corpus, output_path)
+dict_to_camus(dict=my_corpus, outpath=outfile_path)
 
