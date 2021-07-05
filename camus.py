@@ -81,7 +81,7 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
                 'files': list()
             },
             'data_samples': list(),
-            'KDTree': dict()
+            'data_tree': dict()
         }
         file_id = 0
         mfcc_frames = list()
@@ -102,13 +102,13 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
         if kd is None:
             kd = max(int(log(n_frames)/log(4)), 1)
         dictionary['corpus_info']['n_frames'] = n_frames
-        dictionary['KDTree'] = build_KDTree(mfcc_frames, kd=kd)
+        dictionary['data_tree'] = build_data_tree(mfcc_frames, kd=kd)
         print('        DONE\n')
         return dictionary
     else:
         raise ValueError("ERROR: {} must be a folder!".format(basename(folder_dir)))
 
-def build_KDTree(data, kd=2):
+def build_data_tree(data, kd=2):
     print()
     data = np.array(data)
     bar = IncrementalBar('        Classifying data frames: ', max=len(data), suffix='%(index)d/%(max)d frames')
@@ -200,9 +200,9 @@ def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_len
     bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc), suffix='%(index)d/%(max)d frames')
 
     for tm, tex in zip(target_mfcc, target_extras):
-        branch_id = str(neighborhood_index(tm, corpus_dict['KDTree']))
-        mfcc_idxs = nearest_neighbors([tm], corpus_dict['KDTree']['data_branches'][branch_id], k=k)
-        knn_positions = corpus_dict['KDTree']['position_branches'][branch_id][mfcc_idxs]
+        branch_id = str(neighborhood_index(tm, corpus_dict['data_tree']))
+        mfcc_idxs = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], k=k)
+        knn_positions = corpus_dict['data_tree']['position_branches'][branch_id][mfcc_idxs]
         metadata = corpus_dict['data_samples'][knn_positions]
         sorted_positions = nearest_neighbors([tex[1:]], metadata[:,[2,3]],k=k)
         mfcc_options = metadata[sorted_positions]
