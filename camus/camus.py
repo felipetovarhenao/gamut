@@ -1,5 +1,6 @@
 from os.path import realpath, basename, isdir, splitext, join
 from os import walk, rename
+from time import time
 import librosa
 import numpy as np
 from math import floor, log, sqrt
@@ -339,3 +340,30 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     print('        DONE\n')    
     # return normalized buffer
     return (buffer / np.amax(np.abs(buffer))) * sqrt(0.5)
+
+def beat_analysis(file_path, hop_length=512, frame_length=1024, duration=None, sr=None):
+    y, sr = librosa.load(file_path, sr=sr, duration=duration)
+
+    onset_env = librosa.onset.onset_strength(y=y, sr=sr)
+    onsets = np.concatenate([librosa.onset.onset_detect(onset_envelope=onset_env, backtrack=True, units='samples'), [y[-1]]])
+    durations = np.diff(onsets)
+    centroid = librosa.feature.spectral_centroid(y=y, sr=sr, n_fft=frame_length, hop_length=hop_length).T
+    bandwidth = librosa.feature.spectral_bandwidth(y=y, sr=sr, n_fft=frame_length, hop_length=hop_length).T
+    contrast = librosa.feature.spectral_contrast(y=y, sr=sr, n_fft=frame_length, hop_length=hop_length).T
+    flatness = librosa.feature.spectral_flatness(y=y, n_fft=frame_length, hop_length=hop_length).T
+    print(onsets.shape, durations.shape)
+    print(onsets)
+    print(np.concatenate([centroid, bandwidth, contrast, flatness], axis=1).shape)
+    return 
+
+
+# def segment_corpus(folder_path, hop_length=512, frame_length=1024, duration=None):
+#     for path, _, files in walk(folder_path):
+#         for f in files:
+
+if __name__ == '__main__':
+    st = time()
+    beat_analysis('/Users/felipe-tovar-henao/Desktop/EC Miniworkshop/Samples/badinerie.wav', duration=1)
+    end = time()
+    print(end-st)
+    print()
