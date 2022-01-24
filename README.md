@@ -4,7 +4,7 @@
 
 ### **Description**
 
-CAMus is a _Corpus-based Audio Musaicing Engine_ implemented in Python.
+CAMus is a _Corpus-based Audio Musaicing_ engine implemented in Python.
 
 ---
 
