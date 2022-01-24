@@ -30,8 +30,10 @@ Additionally, the following functions are included to read and write audio and `
 
 The following python libraries are required for CAMus to work:
 
-- `librosa`
-- `progress`
+- `librosa (v0.8.1)`
+- `progress (v1.5)`
+- `scikit-learn (v0.24.2)`
+- `scipy (v1.7.0)`
 
 To install them, use the `pip install` command.
 
