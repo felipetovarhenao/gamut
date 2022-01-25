@@ -170,6 +170,14 @@ def get_branch_id(vector, nodes):
     size = len(vector)-1
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
+def nearest_neighbors(item, data, k=8):
+    datasize = len(data)
+    if datasize < k:
+        k = datasize
+    nn = NearestNeighbors(n_neighbors=k, algorithm='brute').fit(data)
+    positions = nn.kneighbors(item, n_neighbors=k)[1][0]
+    return positions
+
 def get_audio_recipe(target_path, corpus_dict, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, k=3):
     '''Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.camus` file with the `write_camus()` function, for later use in `cook_recipe()`.'''
 
@@ -217,14 +225,6 @@ def get_audio_recipe(target_path, corpus_dict, max_duration=None, n_mfcc=13, hop
     bar.finish()
     print('        DONE\n')
     return dictionary
-
-def nearest_neighbors(item, data, k=8):
-    datasize = len(data)
-    if datasize < k:
-        k = datasize
-    nn = NearestNeighbors(n_neighbors=k, algorithm='brute').fit(data)
-    positions = nn.kneighbors(item, n_neighbors=k)[1][0]
-    return positions
 
 def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5, frame_length_res=256):
     '''Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.'''
@@ -340,30 +340,3 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     print('        DONE\n')    
     # return normalized buffer
     return (buffer / np.amax(np.abs(buffer))) * sqrt(0.5)
-
-def beat_analysis(file_path, hop_length=512, frame_length=1024, duration=None, sr=None):
-    y, sr = librosa.load(file_path, sr=sr, duration=duration)
-
-    onset_env = librosa.onset.onset_strength(y=y, sr=sr)
-    onsets = np.concatenate([librosa.onset.onset_detect(onset_envelope=onset_env, backtrack=True, units='samples'), [y[-1]]])
-    durations = np.diff(onsets)
-    centroid = librosa.feature.spectral_centroid(y=y, sr=sr, n_fft=frame_length, hop_length=hop_length).T
-    bandwidth = librosa.feature.spectral_bandwidth(y=y, sr=sr, n_fft=frame_length, hop_length=hop_length).T
-    contrast = librosa.feature.spectral_contrast(y=y, sr=sr, n_fft=frame_length, hop_length=hop_length).T
-    flatness = librosa.feature.spectral_flatness(y=y, n_fft=frame_length, hop_length=hop_length).T
-    print(onsets.shape, durations.shape)
-    print(onsets)
-    print(np.concatenate([centroid, bandwidth, contrast, flatness], axis=1).shape)
-    return 
-
-
-# def segment_corpus(folder_path, hop_length=512, frame_length=1024, duration=None):
-#     for path, _, files in walk(folder_path):
-#         for f in files:
-
-if __name__ == '__main__':
-    st = time()
-    beat_analysis('/Users/felipe-tovar-henao/Desktop/EC Miniworkshop/Samples/badinerie.wav', duration=1)
-    end = time()
-    print(end-st)
-    print()
