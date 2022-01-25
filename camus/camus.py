@@ -63,7 +63,7 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
 
     return mfcc_frames, metadata, sr
 
-def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
+def build_corpus(folder_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
     '''Takes a folder directory (i.e. a path) containing audio samples (`.wav`, `.aif`, or `.aiff`) and returns a `dict` object. The output can be saved as a `.camus` file with the `write_camus()` function, for later use in `get_audio_recipe()`.'''
 
     folder_dir = realpath(folder_dir)
@@ -74,7 +74,7 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
         dictionary = {
             'corpus_info': {
                 'name': corpus_name,
-                'max_duration': duration,
+                'max_duration': max_duration,
                 'frame_length': frame_length,
                 'hop_length': hop_length,
                 'data_format': [
@@ -96,7 +96,7 @@ def build_corpus(folder_dir, duration=None, n_mfcc=13, hop_length=512, frame_len
                 file_ext = splitext(f)[1]
                 if file_ext == '.wav' or file_ext == '.aif' or file_ext == '.aiff':
                     file_path = join(path, f)
-                    mfcc_stream, metadata, sr = get_features(file_path, duration=duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
+                    mfcc_stream, metadata, sr = get_features(file_path, duration=max_duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
                     for mf, md in zip(mfcc_stream, metadata):
                         mfcc_frames.append(mf)
                         dictionary['data_samples'].append(np.array(np.concatenate([[file_id],  md])))
@@ -170,12 +170,12 @@ def get_branch_id(vector, nodes):
     size = len(vector)-1
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector,nodes))])
 
-def get_audio_recipe(target_path, corpus_dict, duration=None, n_mfcc=13, hop_length=512, frame_length=1024, k=3):
+def get_audio_recipe(target_path, corpus_dict, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, k=3):
     '''Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.camus` file with the `write_camus()` function, for later use in `cook_recipe()`.'''
 
     print('\nMaking recipe for {}\n        ...loading corpus...\n        ...analyzing target...'.format(basename(target_path)))
     target_mfcc, target_extras, sr = get_features(target_path,
-                                                            duration=duration,
+                                                            duration=max_duration,
                                                             n_mfcc=n_mfcc,
                                                             hop_length=hop_length,
                                                             frame_length=frame_length) 
