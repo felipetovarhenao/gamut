@@ -8,6 +8,12 @@ GAMuT is a high-level, user-friendly _[granular audio musaicing](https://www.fra
 
 ---
 
+### Installation
+
+To install `gamut`, run the `pip install gamut` command in the terminal.
+
+---
+
 #### **Main functions**
 
 - `build_corpus()`: Takes a folder directory (i.e. a path) containing audio samples (`.wav`, `.aif`, or `.aiff`) and returns a `dict` object. The output can be saved as a `.gamut` file with the `write_gamut()` function, for later use in `get_audio_recipe()`.
@@ -26,20 +32,33 @@ Additionally, the following functions are included to read and write audio and `
 
 ---
 
-### System requirements
+### Examples
 
-The following python libraries are required for GAMuT to work:
+- **Basic**: generates _corpus_, _recipe_, and _audio_ in a single script — _not recommended_.
+```python
+# imports
+from gamut import gamut
 
-- `librosa (>= v0.8.1)`
-- `progress (>= v1.5)`
-- `scikit-learn (>= v0.24.2)`
-- `scipy (>= v1.7.0)`
+# set target sound
+target = './soundfile.wav'
 
-To install `gamut`, run the `pip install gamut` command in the terminal.
+# set corpus folder containing audio samples
+audio_files = './audio_folder'
 
-### Basic examples
+ # build corpus
+corpus = gamut.build_corpus(audio_files)
 
-- Building a corpus
+ # make target recipe
+recipe = gamut.get_audio_recipe(target, corpus)
+
+# cook target recipe
+output = gamut.cook_recipe(recipe)
+
+# write output into audio file
+gamut.write_audio('./output.wav',output)
+```
+
+- **Build corpus**: Builds and writes `.gamut` corpus into file for future reuse.
 
 ```python
 # imports
@@ -58,13 +77,9 @@ outfile_path = '/Users/felipe-tovar-henao/Desktop/Violin_notes_corpus'
 gamut.dict_to_gamut(dict=my_corpus, outpath=outfile_path)
 ```
 
-- Making a recipe
+- **Make recipe**: Makes and writes `.gamut` recipe into file for future reuse.
 
 ```python
-#   ----------------------------------------------------------------------
-#   ------------------ MAKE AUDIO MOSAICING RECIPE -----------------------
-#   ----------------------------------------------------------------------
-
 # imports
 from gamut import gamut
 
@@ -87,13 +102,9 @@ outfile_path = '/Users/felipe-tovar-henao/Desktop/MyRecipe.gamut'
 gamut.dict_to_gamut(dict=target_recipe, outpath=outfile_path)
 ```
 
-- Cooking a recipe
+- **Cook recipe**: Generates and writes audio file (`.wav`, `.aif`. or `.aif`) `gamut` from recipe.
 
 ```python
-#   ------------------------------------------------------------------
-#   ------------------ COOK AUDIO FROM RECIPE ------------------------
-#   ------------------------------------------------------------------
-
 # imports
 from gamut import gamut
 
