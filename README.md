@@ -16,7 +16,7 @@ To install `gamut`, run the `pip install gamut` command in the terminal.
 
 #### **Main functions**
 
-- `build_corpus()`: Takes a folder directory (i.e. a path) containing audio samples (`.wav`, `.aif`, or `.aiff`) and returns a `dict` object. The output can be saved as a `.gamut` file with the `write_gamut()` function, for later use in `get_audio_recipe()`.
+- `build_corpus()`: Takes a folder directory, or an audio file directory, or a list of directories to audio files, and returns a `dict` object (i.e. the _corpus_). The output can be saved as a `.gamut` file with the `write_gamut()` function, for later use in `get_audio_recipe()`.
 
 - `get_audio_recipe()`: Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.gamut` file with the `write_gamut()` function, for later use in `cook_recipe()`.
 

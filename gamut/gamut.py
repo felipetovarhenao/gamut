@@ -74,60 +74,6 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
     return mfcc_frames, metadata, sr
 
 
-# def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
-#     '''Takes a folder directory (i.e. a path) containing audio samples (`.wav`, `.aif`, or `.aiff`) and returns a `dict` object. The output can be saved as a `.gamut` file with the `write_gamut()` function, for later use in `get_audio_recipe()`.'''
-
-#     input_dir = realpath(input_dir)
-#     corpus_name = basename(input_dir)
-#     if isdir(input_dir):
-#         print('\nBuilding corpus dictionary from {}'.format(corpus_name))
-#         counter = Counter(message='        Number of analyzed samples: ')
-#         dictionary = {
-#             'corpus_info': {
-#                 'name': corpus_name,
-#                 'max_duration': max_duration,
-#                 'frame_length': frame_length,
-#                 'hop_length': hop_length,
-#                 'data_format': [
-#                     'file_id',
-#                     'sample_index',
-#                     'rms',
-#                     'pitch_centroid'
-#                 ],
-#                 'n_frames': int(),
-#                 'files': list()
-#             },
-#             'data_samples': list(),
-#             'data_tree': dict()
-#         }
-#         file_id = 0
-#         mfcc_frames = list()
-#         for path, _, files in walk(input_dir):
-#             for f in files:
-#                 file_ext = splitext(f)[1]
-#                 if file_ext == '.wav' or file_ext == '.aif' or file_ext == '.aiff':
-#                     file_path = join(path, f)
-#                     mfcc_stream, metadata, sr = get_features(
-#                         file_path, duration=max_duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
-#                     for mf, md in zip(mfcc_stream, metadata):
-#                         mfcc_frames.append(mf)
-#                         dictionary['data_samples'].append(
-#                             np.array(np.concatenate([[file_id],  md])))
-#                     dictionary['corpus_info']['files'].append([sr, file_path])
-#                     counter.write(str(file_id + 1))
-#                     file_id += 1
-#         dictionary['data_samples'] = np.array(dictionary['data_samples'])
-#         n_frames = len(mfcc_frames)
-#         if kd is None:
-#             kd = min(n_mfcc, max(int(log(n_frames)/log(4)), 1))
-#         dictionary['corpus_info']['n_frames'] = n_frames
-#         dictionary['data_tree'] = build_data_tree(mfcc_frames, kd=kd)
-#         print('        DONE\n')
-#         return dictionary
-#     else:
-#         raise ValueError(
-#             "ERROR: {} must be a folder!".format(basename(input_dir)))
-
 def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
     '''Takes a folder directory, or an audio file directory, or a list of directories to audio files, and returns a `dict` object. The output can be saved as a `.gamut` file with the `write_gamut()` function, for later use in `get_audio_recipe()`.'''
    
