@@ -88,8 +88,8 @@ def build_corpus(folder_dir, max_duration=None, n_mfcc=13, hop_length=512, frame
                 'data_format': [
                     'file_id',
                     'sample_index',
-                    'RMS',
-                    'centroid_pitch'
+                    'rms',
+                    'pitch_centroid'
                 ],
                 'n_frames': int(),
                 'files': list()
@@ -254,7 +254,7 @@ def get_audio_recipe(target_path, corpus_dict, max_duration=None, n_mfcc=13, hop
     return dictionary
 
 
-def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, stereo=0.5, frame_length_res=256):
+def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, pan_width=0.5, frame_length_res=512):
     '''Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.'''
 
     print('\nCooking recipe for {}\n        ...loading recipe...'.format(
@@ -336,14 +336,14 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
             [array_resampling(envelope, N=wl)]).T, n_chans, axis=1) for wl in frame_lengths]
 
     # compute panning table
-    pan_type = type(stereo)
+    pan_type = type(pan_width)
     pan_table = np.random.randint(low=1, high=16, size=(n_segments, n_chans))
     if pan_type is int or pan_type is float:
-        pan_table = pan_table * stereo
+        pan_table = pan_table * pan_width
     if pan_type is list:
         pan_table = pan_table * \
             np.repeat(
-                np.array([array_resampling(stereo, n_segments)]).T, n_chans, axis=1)
+                np.array([array_resampling(pan_width, n_segments)]).T, n_chans, axis=1)
     pan_table[pan_table < 1] = 1
     row_sums = pan_table.sum(axis=1)
     pan_table = pan_table / row_sums[:, np.newaxis]
