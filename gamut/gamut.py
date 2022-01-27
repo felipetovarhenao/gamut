@@ -1,3 +1,4 @@
+from distutils.command.build import build
 from os.path import realpath, basename, isdir, splitext, join
 from os import walk, rename
 import librosa
@@ -13,6 +14,7 @@ from soundfile import write
 np.seterr(divide='ignore')
 
 FILE_EXT = '.gamut'
+AUDIO_FORMATS = ['.wav', '.aif', '.aiff']
 
 def dict_to_gamut(dict, outpath):
     '''Writes `dict` object into a `.gamut` file. This function is a simple wrapper of `np.save()`.'''
@@ -33,7 +35,7 @@ def dict_from_gamut(path):
 
 def write_audio(path, ndarray, sr=44100, bit_depth=24):
     """Writes a `ndarray` as audio. This function is a simple wrapper of `sf.write()`."""
-    if splitext(path)[1] not in ['.wav', '.aif', '.aiff']:
+    if splitext(path)[1] not in AUDIO_FORMATS:
         raise ValueError('Audio file format must be .wav, .aif, or .aiff')
     write(path, ndarray, sr, 'PCM_{}'.format(bit_depth))
 
@@ -72,60 +74,133 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
     return mfcc_frames, metadata, sr
 
 
-def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
-    '''Takes a folder directory (i.e. a path) containing audio samples (`.wav`, `.aif`, or `.aiff`) and returns a `dict` object. The output can be saved as a `.gamut` file with the `write_gamut()` function, for later use in `get_audio_recipe()`.'''
+# def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
+#     '''Takes a folder directory (i.e. a path) containing audio samples (`.wav`, `.aif`, or `.aiff`) and returns a `dict` object. The output can be saved as a `.gamut` file with the `write_gamut()` function, for later use in `get_audio_recipe()`.'''
 
-    input_dir = realpath(input_dir)
-    corpus_name = basename(input_dir)
-    if isdir(input_dir):
-        print('\nBuilding corpus dictionary from {}'.format(corpus_name))
-        counter = Counter(message='        Number of analyzed samples: ')
-        dictionary = {
-            'corpus_info': {
-                'name': corpus_name,
-                'max_duration': max_duration,
-                'frame_length': frame_length,
-                'hop_length': hop_length,
-                'data_format': [
-                    'file_id',
-                    'sample_index',
-                    'rms',
-                    'pitch_centroid'
-                ],
-                'n_frames': int(),
-                'files': list()
-            },
-            'data_samples': list(),
-            'data_tree': dict()
-        }
-        file_id = 0
-        mfcc_frames = list()
-        for path, _, files in walk(input_dir):
-            for f in files:
-                file_ext = splitext(f)[1]
-                if file_ext == '.wav' or file_ext == '.aif' or file_ext == '.aiff':
-                    file_path = join(path, f)
-                    mfcc_stream, metadata, sr = get_features(
-                        file_path, duration=max_duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
-                    for mf, md in zip(mfcc_stream, metadata):
-                        mfcc_frames.append(mf)
-                        dictionary['data_samples'].append(
-                            np.array(np.concatenate([[file_id],  md])))
-                    dictionary['corpus_info']['files'].append([sr, file_path])
-                    counter.write(str(file_id + 1))
-                    file_id += 1
-        dictionary['data_samples'] = np.array(dictionary['data_samples'])
-        n_frames = len(mfcc_frames)
-        if kd is None:
-            kd = min(n_mfcc, max(int(log(n_frames)/log(4)), 1))
-        dictionary['corpus_info']['n_frames'] = n_frames
-        dictionary['data_tree'] = build_data_tree(mfcc_frames, kd=kd)
-        print('        DONE\n')
-        return dictionary
+#     input_dir = realpath(input_dir)
+#     corpus_name = basename(input_dir)
+#     if isdir(input_dir):
+#         print('\nBuilding corpus dictionary from {}'.format(corpus_name))
+#         counter = Counter(message='        Number of analyzed samples: ')
+#         dictionary = {
+#             'corpus_info': {
+#                 'name': corpus_name,
+#                 'max_duration': max_duration,
+#                 'frame_length': frame_length,
+#                 'hop_length': hop_length,
+#                 'data_format': [
+#                     'file_id',
+#                     'sample_index',
+#                     'rms',
+#                     'pitch_centroid'
+#                 ],
+#                 'n_frames': int(),
+#                 'files': list()
+#             },
+#             'data_samples': list(),
+#             'data_tree': dict()
+#         }
+#         file_id = 0
+#         mfcc_frames = list()
+#         for path, _, files in walk(input_dir):
+#             for f in files:
+#                 file_ext = splitext(f)[1]
+#                 if file_ext == '.wav' or file_ext == '.aif' or file_ext == '.aiff':
+#                     file_path = join(path, f)
+#                     mfcc_stream, metadata, sr = get_features(
+#                         file_path, duration=max_duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
+#                     for mf, md in zip(mfcc_stream, metadata):
+#                         mfcc_frames.append(mf)
+#                         dictionary['data_samples'].append(
+#                             np.array(np.concatenate([[file_id],  md])))
+#                     dictionary['corpus_info']['files'].append([sr, file_path])
+#                     counter.write(str(file_id + 1))
+#                     file_id += 1
+#         dictionary['data_samples'] = np.array(dictionary['data_samples'])
+#         n_frames = len(mfcc_frames)
+#         if kd is None:
+#             kd = min(n_mfcc, max(int(log(n_frames)/log(4)), 1))
+#         dictionary['corpus_info']['n_frames'] = n_frames
+#         dictionary['data_tree'] = build_data_tree(mfcc_frames, kd=kd)
+#         print('        DONE\n')
+#         return dictionary
+#     else:
+#         raise ValueError(
+#             "ERROR: {} must be a folder!".format(basename(input_dir)))
+
+def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
+    '''Takes a folder directory, or an audio file directory, or a list of directories to audio files, and returns a `dict` object. The output can be saved as a `.gamut` file with the `write_gamut()` function, for later use in `get_audio_recipe()`.'''
+   
+    soundfiles = list() 
+   
+    # check if input_dir is folder or list of paths
+    if type(input_dir) is str: 
+        input_dir = realpath(input_dir)
+        if isdir(input_dir):
+            read_mode = 'folder'
+        elif splitext(input_dir)[1] in AUDIO_FORMATS:
+            read_mode = 'audio file'
+            soundfiles.append(input_dir)
+        corpus_name = '{}: {}'.format(read_mode, basename(input_dir))
+    elif type(input_dir) is list:
+        corpus_name = 'audio file list'
+        soundfiles = input_dir
+        read_mode = 'list'
     else:
         raise ValueError(
-            "ERROR: {} must be a folder!".format(basename(input_dir)))
+            "ERROR: {} should be a folder, an audio file, or a list of path names!".format(basename(input_dir)))
 
+    print('\nBuilding corpus dictionary from {}'.format(corpus_name))
+    counter = Counter(message='        Number of analyzed samples: ')
+
+    # create corpus dictionary
+    dictionary = {
+        'corpus_info': {
+            'max_duration': max_duration,
+            'frame_length': frame_length,
+            'hop_length': hop_length,
+            'data_format': [
+                'file_id',
+                'sample_index',
+                'rms',
+                'pitch_centroid'
+            ],
+            'n_frames': int(),
+            'files': list()
+        },
+        'data_samples': list(),
+        'data_tree': dict()
+    }
+    file_id = 0
+    mfcc_frames = list()
+
+    # if input is a folder directory, collect all files from folder and append to soundfiles list
+    if read_mode == 'folder':
+        [[soundfiles.append(join(root, f)) for f in files] for root, _, files in walk(input_dir)]
+
+    # iterate through paths in soundfiles, select audio files, and extract features
+    for sf in soundfiles:
+        sf = realpath(sf)
+        if splitext(sf)[1] in AUDIO_FORMATS:
+            mfcc_stream, metadata, sr = get_features(
+                sf, duration=max_duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
+            for mf, md in zip(mfcc_stream, metadata):
+                mfcc_frames.append(mf)
+                dictionary['data_samples'].append(
+                    np.array(np.concatenate([[file_id],  md])))
+            dictionary['corpus_info']['files'].append([sr, sf])
+            counter.write(str(file_id + 1))
+            file_id += 1
+
+    # build data tree for mfcc frames
+    dictionary['data_samples'] = np.array(dictionary['data_samples'])
+    n_frames = len(mfcc_frames)
+    if kd is None:
+        kd = min(n_mfcc, max(int(log(n_frames)/log(4)), 1))
+    dictionary['corpus_info']['n_frames'] = n_frames
+    dictionary['data_tree'] = build_data_tree(mfcc_frames, kd=kd)
+    print('        DONE\n')
+    return dictionary
 
 def build_data_tree(data, kd=2):
     print()
@@ -387,3 +462,19 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     print('        DONE\n')
     # return normalized buffer
     return (buffer / np.amax(np.abs(buffer))) * sqrt(0.5)
+
+if __name__ == '__main__':
+    inputs = [
+        '/Users/felipe-tovar-henao/Documents/Sample collections/Berklee44v2/',
+        '/Users/felipe-tovar-henao/Documents/Sample collections/Berklee44v2/bass_string1.wav',
+        ["/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Bass_Tuba/blow/BTb-blow-N-p-N-N.wav" ,
+        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Bass_Tuba/breath/BTb-breath-N-pp-N-N.wav" ,
+        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Bass_Tuba/flatterzunge/BTb-flatt-E4-pp-N-N.wav" ,
+        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Bass_Tuba/ordinario/BTb-ord-E4-pp-N-N.wav" ,
+        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Horn/flatterzunge/Hn-flatt-E4-pp-N-N.wav" ,
+        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Horn/ordinario/Hn-ord-E4-pp-N-N.wav" ,
+        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Trombone/flatterzunge/Tbn-flatt-E4-pp-N-N.wav" ,
+        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Trombone/ordinario/Tbn-ord-E4-pp-N-N.wav"]
+    ]
+    build_corpus(inputs[1])
+
