@@ -137,7 +137,7 @@ outfile_path = '/Users/felipe-tovar-henao/Desktop/MyRecipe.gamut'
 gamut.dict_to_gamut(dict=target_recipe, outpath=outfile_path)
 ```
 
-- **Cook recipe**: Generates and writes audio file (`.wav`, `.aif`. or `.aif`) `gamut` from recipe.
+- **Cook recipe**: Generates and writes audio file (`.wav`, `.aif`. or `.aif`) from `.gamut` recipe.
 
 ```python
 # imports
