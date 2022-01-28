@@ -16,21 +16,21 @@ np.seterr(divide='ignore')
 FILE_EXT = '.gamut'
 AUDIO_FORMATS = ['.wav', '.aif', '.aiff']
 
-def dict_to_gamut(dict, outpath):
+def dict_to_gamut(dict, output_dir):
     '''Writes `dict` object into a `.gamut` file. This function is a simple wrapper of `np.save()`.'''
-    outpath = splitext(outpath)[0]
-    np.save(outpath, dict)
-    rename(outpath+'.npy', outpath+FILE_EXT)
+    output_dir = splitext(output_dir)[0]
+    np.save(output_dir, dict)
+    rename(output_dir+'.npy', output_dir+FILE_EXT)
 
 
-def dict_from_gamut(path):
+def dict_from_gamut(input_dir):
     '''Reads a `.gamut` file as a `dict` object. This function is a simple wrapper of `np.load()`.'''
-    ext = basename(path)[-6:]
+    ext = basename(input_dir)[-6:]
     if ext == FILE_EXT:
-        return np.load(path, allow_pickle=True).item()
+        return np.load(input_dir, allow_pickle=True).item()
     else:
         raise ValueError(
-            'Wrong file extension. Provide a path for a {} file'.format(FILE_EXT))
+            'Wrong file extension. Provide a directory for a {} file'.format(FILE_EXT))
 
 
 def write_audio(path, ndarray, sr=44100, bit_depth=24):
@@ -103,6 +103,7 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
     dictionary = {
         'corpus_info': {
             'max_duration': max_duration,
+            'n_mfcc': n_mfcc,
             'frame_length': frame_length,
             'hop_length': hop_length,
             'data_format': [
@@ -220,14 +221,14 @@ def nearest_neighbors(item, data, k=8):
     return positions
 
 
-def get_audio_recipe(target_path, corpus_dict, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, k=3):
+def get_audio_recipe(target_path, corpus_dict, max_duration=None, hop_length=512, frame_length=1024, k=8):
     '''Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.gamut` file with the `write_gamut()` function, for later use in `cook_recipe()`.'''
 
     print('\nMaking recipe for {}\n        ...loading corpus...\n        ...analyzing target...'.format(
         basename(target_path)))
     target_mfcc, target_extras, sr = get_features(target_path,
                                                   duration=max_duration,
-                                                  n_mfcc=n_mfcc,
+                                                  n_mfcc=corpus_dict['n_mfcc'],
                                                   hop_length=hop_length,
                                                   frame_length=frame_length)
     n_samples = len(target_extras)
@@ -261,27 +262,30 @@ def get_audio_recipe(target_path, corpus_dict, max_duration=None, n_mfcc=13, hop
 
     for tm, tex in zip(target_mfcc, target_extras):
         branch_id = str(neighborhood_index(tm, corpus_dict['data_tree']))
-        mfcc_idxs = nearest_neighbors(
-            [tm], corpus_dict['data_tree']['data_branches'][branch_id], k=k)
+        mfcc_idxs = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], k=k)
         knn_positions = corpus_dict['data_tree']['position_branches'][branch_id][mfcc_idxs]
         metadata = corpus_dict['data_samples'][knn_positions]
-        sorted_positions = nearest_neighbors(
-            [tex[1:]], metadata[:, [2, 3]], k=k)
+        sorted_positions = nearest_neighbors([tex[1:]], metadata[:, [2, 3]], k=k)
         mfcc_options = metadata[sorted_positions]
-        dictionary['data_samples'].append(
-            mfcc_options[:, [0, 1]].astype('int32'))
+        dictionary['data_samples'].append(mfcc_options[:, [0, 1]].astype('int32'))
         bar.next()
     bar.finish()
     print('        DONE\n')
     return dictionary
 
 
-def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=44100, target_mix=0, pan_width=0.5, frame_length_res=512):
+def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=None, target_mix=0, pan_width=0.5, frame_length_res=512):
     '''Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.'''
 
     print('\nCooking recipe for {}\n        ...loading recipe...'.format(
         recipe_dict['target_info']['name']))
-    sr_ratio = sr/recipe_dict['target_info']['sr']
+    # if None, use sr from recipe
+    if sr is None:
+        sr = recipe_dict['target_info']['sr']
+        sr_ratio = 1
+    else:
+        sr_ratio = sr/recipe_dict['target_info']['sr']
+
     sounds = [[]] * len(recipe_dict['corpus_info']['files'])
     snd_idxs = list()
     [[snd_idxs.append(y[0]) for y in x] for x in recipe_dict['data_samples']]

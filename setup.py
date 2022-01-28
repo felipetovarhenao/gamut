@@ -4,7 +4,7 @@ from pathlib import Path
 long_description = (Path(__file__).parent / "README.md").read_text()
 
 MODULE = 'gamut'
-VERSION = '0.1'
+VERSION = '0.1.1'
 DESCRIPTION = 'Granular Audio Musaicing Toolkit for Python'
 
 setup(
@@ -15,7 +15,7 @@ setup(
 	description=DESCRIPTION,
 	packages=find_packages(),
 	install_requires=['progress', 'librosa'],
-	keywords=['DSP', 'audio musaicing', 'granulation', 'machine learning', 'ML', "MIR", 'music', 'sound design'],
+	keywords=['DSP', 'audio musaicing', 'granulation', 'machine learning', 'ML', "MIR", 'music', 'sound design', 'concatenative synthesis'],
 	classifiers=[
 		'Development Status :: 4 - Beta',
 		'Intended Audience :: Developers',

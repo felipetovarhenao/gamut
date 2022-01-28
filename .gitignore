@@ -10,3 +10,4 @@ __pycache__
 /dist/
 /build/
 /gamut.egg-info/
+/audio_examples/
