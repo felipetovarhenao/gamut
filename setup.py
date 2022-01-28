@@ -14,6 +14,7 @@ setup(
 	author_email='<felipe.tovar.henao@gmail.com>',
 	description=DESCRIPTION,
 	packages=find_packages(),
+	license='OSI Approved :: BSD License',
 	install_requires=['progress', 'librosa'],
 	keywords=['DSP', 'audio musaicing', 'granulation', 'machine learning', 'ML', "MIR", 'music', 'sound design', 'concatenative synthesis'],
 	classifiers=[
