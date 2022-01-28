@@ -35,8 +35,9 @@ def dict_from_gamut(input_dir):
 
 def write_audio(path, ndarray, sr=44100, bit_depth=24):
     """Writes a `ndarray` as audio. This function is a simple wrapper of `sf.write()`."""
-    if splitext(path)[1] not in AUDIO_FORMATS:
-        raise ValueError('Audio file format must be .wav, .aif, or .aiff')
+    ext = splitext(path)[1]
+    if ext not in AUDIO_FORMATS:
+        raise ValueError('Output file format must be .wav, .aif, or .aiff')
     write(path, ndarray, sr, 'PCM_{}'.format(bit_depth))
 
 
@@ -363,14 +364,14 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
 
     # compute panning table
     pan_type = type(pan_width)
-    pan_table = np.random.randint(low=1, high=16, size=(n_segments, n_chans))
+    pan_table = np.random.randint(low=1, high=5, size=(n_segments, n_chans))
+    pan_table *= pan_table
     if pan_type is int or pan_type is float:
-        pan_table = pan_table * pan_width
+        pan_width = min(1, max(0, pan_width))
+        pan_table = np.power(pan_table, pan_width)
     if pan_type is list:
-        pan_table = pan_table * \
-            np.repeat(
-                np.array([array_resampling(pan_width, n_segments)]).T, n_chans, axis=1)
-    pan_table[pan_table < 1] = 1
+        pan_width = np.array(pan_width)
+        pan_table = np.power(pan_table, np.repeat(np.array([array_resampling(pan_width, n_segments)]).T, n_chans, axis=1))
     row_sums = pan_table.sum(axis=1)
     pan_table = pan_table / row_sums[:, np.newaxis]
 

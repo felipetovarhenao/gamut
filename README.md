@@ -40,7 +40,7 @@ To install `gamut`, run the `pip install gamut` command in the terminal.
   - **Arguments**:
     - `recipe_dict` (`dict`): directory object containing audio recipe.
     - `grain_dur` (`int`, `float` or `list`): fixed value or envelope break points for grain duration, in seconds. (_Default: 0.1_)
-    - `stretch_factor` (`int`, `float` or `list`): fixed value or envelope break points for strech factor, in seconds.  (_Default: 1_)
+    - `stretch_factor` (`int`, `float` or `list`): fixed value or envelope break points for strech factor (i.e. speed).  (_Default: 1_)
     - `onset_var` (`int`, `float` or `list`): fixed value or envelope break points for grain onset variation, in seconds. (_Default: 0_)
     - `target_mix` (`int`, `float` or `list`)*: fixed value or envelope break points for wet/dry mix, in the range of 0.0 to 1.0. (_Default: 0_)
     - `pan_width` (`int`, `float` or `list`): fixed value or envelope break points for panning width, in the range of 0.0 to 1.0. (_Default: 0.5_)
