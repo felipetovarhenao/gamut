@@ -75,7 +75,7 @@ def get_features(file_path, duration=None, n_mfcc=13, hop_length=512, frame_leng
 
 
 def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
-    '''Takes a folder directory, or an audio file directory, or a list of directories to audio files, and returns a `dict` object. The output can be saved as a `.gamut` file with the `write_gamut()` function, for later use in `get_audio_recipe()`.'''
+    '''Takes a folder directory, or an audio file directory, or a list of directories to audio files, and returns a `dict` object. The output can be saved as a `.gamut` file with the `dict_to_gamut()` function, for later use in `get_audio_recipe()`.'''
    
     soundfiles = list() 
    
@@ -104,8 +104,8 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
         'corpus_info': {
             'max_duration': max_duration,
             'n_mfcc': n_mfcc,
-            'frame_length': frame_length,
             'hop_length': hop_length,
+            'frame_length': frame_length,
             'data_format': [
                 'file_id',
                 'sample_index',
@@ -212,23 +212,23 @@ def get_branch_id(vector, nodes):
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector, nodes))])
 
 
-def nearest_neighbors(item, data, k=8):
+def nearest_neighbors(item, data, kn=8):
     datasize = len(data)
-    if datasize < k:
-        k = datasize
-    nn = NearestNeighbors(n_neighbors=k, algorithm='brute').fit(data)
-    positions = nn.kneighbors(item, n_neighbors=k)[1][0]
+    if datasize < kn:
+        kn = datasize
+    nn = NearestNeighbors(n_neighbors=kn, algorithm='brute').fit(data)
+    positions = nn.kneighbors(item, n_neighbors=kn)[1][0]
     return positions
 
 
-def get_audio_recipe(target_path, corpus_dict, max_duration=None, hop_length=512, frame_length=1024, k=8):
-    '''Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.gamut` file with the `write_gamut()` function, for later use in `cook_recipe()`.'''
+def get_audio_recipe(target_path, corpus_dict, max_duration=None, hop_length=512, frame_length=1024, kn=8):
+    '''Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.gamut` file with the `dict_to_gamut()` function, for later use in `cook_recipe()`.'''
 
     print('\nMaking recipe for {}\n        ...loading corpus...\n        ...analyzing target...'.format(
         basename(target_path)))
     target_mfcc, target_extras, sr = get_features(target_path,
                                                   duration=max_duration,
-                                                  n_mfcc=corpus_dict['n_mfcc'],
+                                                  n_mfcc=corpus_dict['corpus_info']['n_mfcc'],
                                                   hop_length=hop_length,
                                                   frame_length=frame_length)
     n_samples = len(target_extras)
@@ -242,7 +242,7 @@ def get_audio_recipe(target_path, corpus_dict, max_duration=None, hop_length=512
                 'file_id',
                 'sample_index'
             ],
-            'data_dims': k,
+            'data_dims': kn,
             'n_samples': n_samples,
             'data_samples': np.empty(shape=(0, 2))
         },
@@ -262,10 +262,10 @@ def get_audio_recipe(target_path, corpus_dict, max_duration=None, hop_length=512
 
     for tm, tex in zip(target_mfcc, target_extras):
         branch_id = str(neighborhood_index(tm, corpus_dict['data_tree']))
-        mfcc_idxs = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], k=k)
+        mfcc_idxs = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], kn=kn)
         knn_positions = corpus_dict['data_tree']['position_branches'][branch_id][mfcc_idxs]
         metadata = corpus_dict['data_samples'][knn_positions]
-        sorted_positions = nearest_neighbors([tex[1:]], metadata[:, [2, 3]], k=k)
+        sorted_positions = nearest_neighbors([tex[1:]], metadata[:, [2, 3]], kn=kn)
         mfcc_options = metadata[sorted_positions]
         dictionary['data_samples'].append(mfcc_options[:, [0, 1]].astype('int32'))
         bar.next()
@@ -274,7 +274,7 @@ def get_audio_recipe(target_path, corpus_dict, max_duration=None, hop_length=512
     return dictionary
 
 
-def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, onset_var=0, kn=8, n_chans=2, sr=None, target_mix=0, pan_width=0.5, frame_length_res=512):
+def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, target_mix=0, pan_width=0.5, kn=8, n_chans=2, envelope='hann', sr=None, frame_length_res=512):
     '''Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.'''
 
     print('\nCooking recipe for {}\n        ...loading recipe...'.format(
@@ -414,17 +414,4 @@ def cook_recipe(recipe_dict, envelope='hann', grain_dur=0.1, stretch_factor=1, o
     return (buffer / np.amax(np.abs(buffer))) * sqrt(0.5)
 
 if __name__ == '__main__':
-    inputs = [
-        '/Users/felipe-tovar-henao/Documents/Sample collections/Berklee44v2/',
-        '/Users/felipe-tovar-henao/Documents/Sample collections/Berklee44v2/bass_string1.wav',
-        ["/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Bass_Tuba/blow/BTb-blow-N-p-N-N.wav" ,
-        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Bass_Tuba/breath/BTb-breath-N-pp-N-N.wav" ,
-        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Bass_Tuba/flatterzunge/BTb-flatt-E4-pp-N-N.wav" ,
-        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Bass_Tuba/ordinario/BTb-ord-E4-pp-N-N.wav" ,
-        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Horn/flatterzunge/Hn-flatt-E4-pp-N-N.wav" ,
-        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Horn/ordinario/Hn-ord-E4-pp-N-N.wav" ,
-        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Trombone/flatterzunge/Tbn-flatt-E4-pp-N-N.wav" ,
-        "/Users/felipe-tovar-henao/Desktop/Orchestral_corpus/Brass/Trombone/ordinario/Tbn-ord-E4-pp-N-N.wav"]
-    ]
-    build_corpus(inputs[1])
-
+    print()
