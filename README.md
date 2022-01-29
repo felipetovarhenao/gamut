@@ -17,9 +17,9 @@ To install `gamut`, simply run the `pip install gamut` command in the terminal.
 ### **Documentation**
 
 Broadly speaking, the audio musaicing pipeline with **GAMuT** is the following:
-1. build a **corpus** from one or more soundfiles
-2. create an audio musaicing **recipe**, given a corpus and a sound target.
-3. cook audio musaicing recipe and write into **sound file**.
+1. build a **corpus** from one or more sound files.
+2. get an audio musaicing **recipe** from the **corpus**, given a **target** sound file.
+3. cook the audio musaicing **recipe** and write it into **sound file**.
 
 To do this, a small collection of functions are included:
 
