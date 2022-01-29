@@ -4,15 +4,24 @@
 
 ### **Description**
 
-GAMuT is a high-level, user-friendly _[granular audio musaicing](https://www.francoispachet.fr/musaicing/) toolkit_ implemented in Python.
+**GAMuT** is a high-level, user-friendly [_granular audio musaicing toolkit_](https://www.francoispachet.fr/musaicing/) implemented in Python. Some audio examples of audio musaicing made with **GAMuT** can be found [here](https://www.felipe-tovar-henao.com/projects).
 
 ---
 
-### Installation
+### **Installation**
 
-To install `gamut`, run the `pip install gamut` command in the terminal.
+To install `gamut`, simply run the `pip install gamut` command in the terminal.
 
 ---
+
+### **Documentation**
+
+Broadly speaking, the audio musaicing pipeline with **GAMuT** is the following:
+1. build a **corpus** from one or more soundfiles
+2. create an audio musaicing **recipe**, given a corpus and a sound target.
+3. cook audio musaicing recipe and write into **sound file**.
+
+To do this, a small collection of functions are included:
 
 #### **Main functions**
 
@@ -62,14 +71,20 @@ Additionally, the following functions are included to read and write audio and `
     - `output_dir` (`str`): input directory for `.gamut` file. 
   - **Returns** (`dict`): dictionary containing corpus or recipe data.
 - `write_audio()`: writes a `ndarray` as audio. This function is a simple wrapper of `sf.write()`.
+  - **Arguments**:
+    - `output_dir` (`str`): output directory of audio file. Output file format must be `.wav`, `.aif`, or `.aiff`.
+    - `ndarray` (`ndarray`): numpy array containing audio samples.
+    - `sr` (`int`): audio sampling rate of output file. (_Default: 44100_)
+    - `bit_depth` (`int`): audio bit rate of output file. (_Default: 24_)
+  - **Returns** (`void`)
 
 [1]: `.gamut` is a custom binary data format used for storing **GAMuT** corpora and recipe data. This file is simply a renaming of Numpy's `.npy` file extension.
 
 ---
 
-### Examples
+### **Examples**
 
-- **Basic**: generates _corpus_, _recipe_, and _audio_ in a single script — _not recommended_.
+- **Basic**: generates _corpus_, _recipe_, and _audio_ in a single script — _very slow, not recommended_.
 ```python
 # imports
 from gamut import gamut
