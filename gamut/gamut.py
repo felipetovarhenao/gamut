@@ -1,10 +1,9 @@
-from distutils.command.build import build
 from os.path import realpath, basename, isdir, splitext, join
 from os import walk, rename
-import librosa
-import numpy as np
 from math import floor, log, sqrt
 from random import choices, random
+import numpy as np
+import librosa
 from scipy.signal import get_window
 from sklearn.neighbors import NearestNeighbors
 from progress.bar import IncrementalBar
@@ -151,6 +150,7 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
     return dictionary
 
 def build_data_tree(data, kd=2):
+    '''Creates a KDTree-like data structure.'''
     print()
     data = np.array(data)
     bar = IncrementalBar('        Classifying data frames: ', max=len(

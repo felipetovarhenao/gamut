@@ -1,6 +1,7 @@
 ## **GAMuT: Granular Audio Musaicing Toolkit**
 
 ---
+<div style="text-align:center"><img src="images/logo.png" width="300"/></div>
 
 ### **Description**
 
