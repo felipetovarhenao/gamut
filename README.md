@@ -209,7 +209,7 @@ gamut.write_audio(path=outfile_path,
 ### **License**
 
 ISC License
-Copyright (c) 2022, [Felipe Tovar-Henao](www.felipe-tovar-henao.com)
+Copyright (c) 2022, [Felipe Tovar-Henao](https://www.felipe-tovar-henao.com/)
 
 Permission to use, copy, modify, and/or distribute this software for any purpose with or without fee is hereby granted, provided that the above copyright notice and this permission notice appear in all copies.
 
