@@ -27,28 +27,31 @@ To do this, a small collection of functions are included:
 #### **Main functions**
 
 - `build_corpus()`: Takes a folder directory, or an audio file directory, or a list of directories to audio files, and returns a `dict` object (i.e. the _corpus_). The output can be saved as a `.gamut` file with the `dict_to_gamut()` function, for later use in `get_audio_recipe()`.
-  - **Arguments**:
+  - **Required arguments**:
     -  `input_dir` (`str` or `list`): Input audio file/folder directory, or list of audio file directories, from which to build a corpus.
-    -  `max_duration` (`int`): maximum duration to analyze for all samples in `input_dir`. (_Default: None_)
+  - **Optional arguments**:      
+    -  `max_duration` (`int`): maximum duration to analyze for all sound files in `input_dir`. If set to `None`, all sound files are analyzed in full. (_Default: None_)
     -  `n_mfcc` (`int`): number of MFCC bands. (_Default: 13_)
     -  `hop_length` (`int`): gap between subsequent frames, in samples. (_Default: 512_)
     -  `frame_length` (`int`): size of analysis window, in samples. (_Default: 1024_)
-    -  `kd` (`int`): maximum number of bands to use for data query tree. (_Default: None_)
+    -  `kd` (`int`): maximum number of MFCC bands to use for data query tree. If set to `None`, a number is internally chosen based on the number of data samples.(_Default: None_)
    - **Returns** (`dict`): corpus dictionary object.
 
 - `get_audio_recipe()`: Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.gamut` file with the `dict_to_gamut()` function, for later use in `cook_recipe()`.
-  - **Arguments**:
+  - **Required arguments**:      
     - `target_path` (`str`): directory of target sound file.
     - `corpus_dict` (`dict`): dictionary object containing corpus.
-    - `max_duration` (`int`): maximum duration to analyze for target sound file. (_Default: None_)
+  - **Optional arguments**:
+    - `max_duration` (`int`): maximum duration to analyze for target sound file. If set to `None`, the sound file is analyzed in full.(_Default: None_)
     - `hop_length` (`int`): gap between subsequent frames, in samples. (_Default: 512_)
     - `frame_length`(`int`): size of analysis window, in samples. (_Default: 1024_)
     - `kn`: number of best matches (KNN) to include in recipe. (_Default: 8_)
   - **Returns** (`dict`): target recipe dictionary object. 
 
 - `cook_recipe()`: Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.
-  - **Arguments**:
+  - **Required arguments**:      
     - `recipe_dict` (`dict`): directory object containing audio recipe.
+  - **Optional arguments**:      
     - `grain_dur` (`int`, `float` or `list`): fixed value or envelope break points for grain duration, in seconds. (_Default: 0.1_)
     - `stretch_factor` (`int`, `float` or `list`): fixed value or envelope break points for strech factor (i.e. speed).  (_Default: 1_)
     - `onset_var` (`int`, `float` or `list`): fixed value or envelope break points for grain onset variation, in seconds. (_Default: 0_)
@@ -57,27 +60,35 @@ To do this, a small collection of functions are included:
     - `kn` (`int`): maximum number of best matches to choose from for each grain. (_Default: 8_)
     - `n_chans` (`int`): number of output channels. (_Default: 2_)
     - `envelope` (`str` or `list`): list of envelope break points, or string specifying [window types](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html#scipy.signal.get_window). (_Default: 'hann'_)
-    - `sr` (`int`): sampling rate of output. (_Default: None_)    - `frame_length_res` (`int`): window size quantization unit. Larger windows increase efficiency at the expense of resolution in grain duration. (_Default: 512_)
+    - `sr` (`int`): sampling rate of output. If set to `None`, the target's sampling rate is used. (_Default: None_)    
+    - `frame_length_res` (`int`): window size quantization unit. Larger windows increase efficiency at the expense of resolution in grain duration. (_Default: 512_)
   - **Returns** (`ndarray`): numpy array of audio samples.
 
 Additionally, the following functions are included to read and write audio and `.gamut`[1] files:
 
-- `dict_to_gamut()`: writes `dict` object into a `.gamut` file. This function is a simple wrapper of `np.save()`.
-  - **Arguments**:
+- `dict_to_gamut()`: writes `dict` object into a `.gamut` file. This function is a simple wrapper of `numpy.save()`.
+  - **Required arguments**:
     - `dict` (`dict`): dictionary containing corpus or recipe data.
     - `output_dir` (`str`): output directory for `.gamut` file.
-  - **Returns** (`void`)
-- `dict_from_gamut()`: reads a `.gamut` file as a `dict` object. This function is a simple wrapper of `np.load()`.
-  - **Arguments**:
+  - **Returns** (`NoneType`): None
+- `dict_from_gamut()`: reads a `.gamut` file as a `dict` object. This function is a simple wrapper of `numpy.load()`.
+  - **Required arguments**:      
     - `output_dir` (`str`): input directory for `.gamut` file. 
   - **Returns** (`dict`): dictionary containing corpus or recipe data.
-- `write_audio()`: writes a `ndarray` as audio. This function is a simple wrapper of `sf.write()`.
-  - **Arguments**:
+- `write_audio()`: writes an `ndarray` as audio. This function is a simple wrapper of `soundfile.write()`.
+  - **Required arguments**:      
     - `output_dir` (`str`): output directory of audio file. Output file format must be `.wav`, `.aif`, or `.aiff`.
     - `ndarray` (`ndarray`): numpy array containing audio samples.
+  - **Optional arguments**:      
     - `sr` (`int`): audio sampling rate of output file. (_Default: 44100_)
     - `bit_depth` (`int`): audio bit rate of output file. (_Default: 24_)
-  - **Returns** (`void`)
+  - **Returns** (`NoneType`): None
+- `play_audio()`: plays back an `ndarray` as audio. This function is a simple wrapper of `sounddevice.write()`. 
+  - **Required arguments**:      
+    - `ndarray` (`ndarray`): numpy array containing audio samples.
+  - **Optional arguments**:      
+    - `sr` (`int`): audio sampling rate. (_Default: 44100_)
+  - **Returns** (`NoneType`): None 
 
 [1]: `.gamut` is a custom binary data format used for storing **GAMuT** corpora and recipe data. This file is simply a renaming of Numpy's `.npy` file extension.
 
@@ -107,6 +118,9 @@ output = gamut.cook_recipe(recipe)
 
 # write output into audio file
 gamut.write_audio('./output.wav',output)
+
+# plays back audio file
+gamut.play_audio(output)
 ```
 
 - **Build corpus**: Builds and writes `.gamut` corpus into file for future reuse.

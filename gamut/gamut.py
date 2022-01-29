@@ -9,6 +9,7 @@ from sklearn.neighbors import NearestNeighbors
 from progress.bar import IncrementalBar
 from progress.counter import Counter
 from soundfile import write
+import sounddevice as sd
 
 np.seterr(divide='ignore')
 
@@ -21,16 +22,13 @@ def dict_to_gamut(dict, output_dir):
     np.save(output_dir, dict)
     rename(output_dir+'.npy', output_dir+FILE_EXT)
 
-
 def dict_from_gamut(input_dir):
     '''Reads a `.gamut` file as a `dict` object. This function is a simple wrapper of `np.load()`.'''
     ext = basename(input_dir)[-6:]
     if ext == FILE_EXT:
         return np.load(input_dir, allow_pickle=True).item()
     else:
-        raise ValueError(
-            'Wrong file extension. Provide a directory for a {} file'.format(FILE_EXT))
-
+        raise ValueError('Wrong file extension. Provide a directory for a {} file'.format(FILE_EXT))
 
 def write_audio(output_dir, ndarray, sr=44100, bit_depth=24):
     """Writes a `ndarray` as audio. This function is a simple wrapper of `sf.write()`."""
@@ -39,12 +37,14 @@ def write_audio(output_dir, ndarray, sr=44100, bit_depth=24):
         raise ValueError('Output file format must be .wav, .aif, or .aiff')
     write(output_dir, ndarray, sr, 'PCM_{}'.format(bit_depth))
 
+def play_audio(ndarray, sr=44100):
+    sd.play(ndarray, samplerate=sr)
+    sd.wait()
 
 def array_resampling(array, N):
     x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)[:N]
     x_coor2 = np.arange(0, len(array))
     return np.interp(x_coor1, x_coor2, array)
-
 
 def get_features(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024):
     '''Returns a 3-tuple of ndarrays, consisting of:
@@ -72,7 +72,6 @@ def get_features(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
     metadata = np.array([sample_indxs, rms_frames, centroid_frames]).T
 
     return mfcc_frames, metadata, sr
-
 
 def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
     '''Takes a folder directory, or an audio file directory, or a list of directories to audio files, and returns a `dict` object. The output can be saved as a `.gamut` file with the `dict_to_gamut()` function, for later use in `get_audio_recipe()`.'''
@@ -182,7 +181,6 @@ def build_data_tree(data, kd=2):
     print("        Total number of data clusters: {}".format(tree_size))
     return tree
 
-
 def neighborhood_index(item, tree):
     kd = tree['dims']
     tree_size = 2**kd
@@ -194,21 +192,16 @@ def neighborhood_index(item, tree):
         z += 1
     return file_id
 
-
 def wedgesum(a, b):
     b = (b * -1) if (b % 2 == 0) else (b + 1)
     return a + floor(b/2)
 
-
 def wrap(a, min, max):
-    span = max-min
-    return ((a-min) % span) + min
-
+    return ((a-min) % max-min) + min
 
 def get_branch_id(vector, nodes):
     size = len(vector)-1
     return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector, nodes))])
-
 
 def nearest_neighbors(item, data, kn=8):
     datasize = len(data)
@@ -217,7 +210,6 @@ def nearest_neighbors(item, data, kn=8):
     nn = NearestNeighbors(n_neighbors=kn, algorithm='brute').fit(data)
     positions = nn.kneighbors(item, n_neighbors=kn)[1][0]
     return positions
-
 
 def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512, frame_length=1024, kn=8):
     '''Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.gamut` file with the `dict_to_gamut()` function, for later use in `cook_recipe()`.'''
@@ -270,7 +262,6 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
     bar.finish()
     print('        DONE\n')
     return dictionary
-
 
 def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, target_mix=0, pan_spread=0.5, kn=8, n_chans=2, envelope='hann', sr=None, frame_length_res=512):
     '''Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.'''

@@ -3,25 +3,25 @@
 #   ----------------------------------------------------------------------
 
 # imports 
-from camus import camus
+from gamut import gamut
 
 # path of audio target
-target_path = '/Users/felipe-tovar-henao/Documents/Camus files/target_samples/alfonso.wav'
+target_path = '/Users/felipe-tovar-henao/Documents/GAMuT files/target_samples/poeme_verlaine_48kHz.wav'
 
-# camus corpus path
-corpus_path = '/Users/felipe-tovar-henao/Desktop/MyCorpus.camus'
+# gamut corpus path
+corpus_path = '/Users/felipe-tovar-henao/Documents/GAMuT files/corpora/PreparedPiano_corpus.gamut'
 
 # load corpus
-corpus = camus.dict_from_camus(corpus_path)
+corpus = gamut.dict_from_gamut(corpus_path)
 
 # build audio recipe
-target_recipe = camus.get_audio_recipe(target_path=target_path, corpus_dict=corpus)
+target_recipe = gamut.get_audio_recipe(target_dir=target_path, corpus_dict=corpus)
 
 # set recipe output path
-outfile_path = '/Users/felipe-tovar-henao/Desktop/MyRecipe'
+outfile_path = '/Users/felipe-tovar-henao/Documents/GAMuT files/recipes/poeme_PreparedPiano.gamut'
 
 # write recipe into disk
-camus.dict_to_camus(dict=target_recipe, outpath=outfile_path)
+gamut.dict_to_gamut(dict=target_recipe, output_dir=outfile_path)
 
 
 
