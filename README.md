@@ -102,10 +102,10 @@ Additionally, the following functions are included to read and write audio and `
 from gamut import gamut
 
 # set target sound
-target = './soundfile.wav'
+target = './my_soundfile.wav'
 
 # set corpus folder containing audio samples
-audio_files = './audio_folder'
+audio_files = './my_audio_folder/'
 
  # build corpus
 corpus = gamut.build_corpus(audio_files)
@@ -114,13 +114,13 @@ corpus = gamut.build_corpus(audio_files)
 recipe = gamut.get_audio_recipe(target, corpus)
 
 # cook target recipe
-output = gamut.cook_recipe(recipe)
+audio_array = gamut.cook_recipe(recipe)
 
 # write output into audio file
-gamut.write_audio('./output.wav',output)
+gamut.write_audio('./output.wav', audio_array)
 
 # plays back audio file
-gamut.play_audio(output)
+gamut.play_audio(audio_array)
 ```
 
 - **Build corpus**: Builds and writes `.gamut` corpus into file for future reuse.
@@ -130,13 +130,13 @@ gamut.play_audio(output)
 from gamut import gamut
 
 # set path to audio folder
-audio_folder = '/Users/felipe-tovar-henao/Documents/Sample collections/Violin_notes'
+audio_files = './my_audio_folder/'
 
 # build corpus from folder
-my_corpus = gamut.build_corpus(folder_dir=audio_folder)
+my_corpus = gamut.build_corpus(folder_dir=audio_files)
 
 # set corpus output path
-outfile_path = '/Users/felipe-tovar-henao/Desktop/Violin_notes_corpus'
+outfile_path = './my_corpus.gamut'
 
 # write corpus into disk
 gamut.dict_to_gamut(dict=my_corpus, outpath=outfile_path)
@@ -149,10 +149,10 @@ gamut.dict_to_gamut(dict=my_corpus, outpath=outfile_path)
 from gamut import gamut
 
 # path of audio target
-target_path = '/Users/felipe-tovar-henao/Documents/target_samples/dialogo_44.1Hz.wav'
+target_path = './my_target_sound.wav'
 
 # gamut corpus path
-corpus_path = '/Users/felipe-tovar-henao/Desktop/Violin_notes_corpus'
+corpus_path = './my_corpus.gamut'
 
 # load corpus
 corpus = gamut.dict_from_gamut(corpus_path)
@@ -161,7 +161,7 @@ corpus = gamut.dict_from_gamut(corpus_path)
 target_recipe = gamut.get_audio_recipe(target_path=target_path, corpus_dict=corpus)
 
 # set recipe output path
-outfile_path = '/Users/felipe-tovar-henao/Desktop/MyRecipe.gamut'
+outfile_path = './my_recipe.gamut'
 
 # write recipe into disk
 gamut.dict_to_gamut(dict=target_recipe, outpath=outfile_path)
@@ -174,7 +174,7 @@ gamut.dict_to_gamut(dict=target_recipe, outpath=outfile_path)
 from gamut import gamut
 
 # audio recipe path
-recipe_path = '/Users/felipe-tovar-henao/Desktop/MyRecipe.gamut'
+recipe_path = './my_recipe.gamut'
 
 # load corpus
 recipe = gamut.dict_from_gamut(recipe_path)
@@ -195,13 +195,16 @@ audio_array = gamut.cook_recipe(recipe_dict=recipe,
                         sr=sr)
 
 # set audio output path
-outfile_path = '/Users/felipe-tovar-henao/Desktop/MyAudioMosaicing.wav'
+outfile_path = './output.wav'
 
 # write audio into disk
 gamut.write_audio(path=outfile_path,
             ndarray=audio_array,
             sr=sr,
             bit_depth=24)
+
+# plays back audio file
+gamut.play_audio(audio_array)            
 ```
 
 ---
