@@ -16,11 +16,13 @@ np.seterr(divide='ignore')
 FILE_EXT = '.gamut'
 AUDIO_FORMATS = ['.wav', '.aif', '.aiff']
 
+
 def dict_to_gamut(dict, output_dir):
     '''Writes `dict` object into a `.gamut` file. This function is a simple wrapper of `np.save()`.'''
     output_dir = splitext(output_dir)[0]
     np.save(output_dir, dict)
     rename(output_dir+'.npy', output_dir+FILE_EXT)
+
 
 def dict_from_gamut(input_dir):
     '''Reads a `.gamut` file as a `dict` object. This function is a simple wrapper of `np.load()`.'''
@@ -28,7 +30,9 @@ def dict_from_gamut(input_dir):
     if ext == FILE_EXT:
         return np.load(input_dir, allow_pickle=True).item()
     else:
-        raise ValueError('Wrong file extension. Provide a directory for a {} file'.format(FILE_EXT))
+        raise ValueError(
+            'Wrong file extension. Provide a directory for a {} file'.format(FILE_EXT))
+
 
 def write_audio(output_dir, ndarray, sr=44100, bit_depth=24):
     """Writes a `ndarray` as audio. This function is a simple wrapper of `sf.write()`."""
@@ -37,14 +41,17 @@ def write_audio(output_dir, ndarray, sr=44100, bit_depth=24):
         raise ValueError('Output file format must be .wav, .aif, or .aiff')
     write(output_dir, ndarray, sr, 'PCM_{}'.format(bit_depth))
 
+
 def play_audio(ndarray, sr=44100):
     sd.play(ndarray, samplerate=sr)
     sd.wait()
+
 
 def array_resampling(array, N):
     x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)[:N]
     x_coor2 = np.arange(0, len(array))
     return np.interp(x_coor1, x_coor2, array)
+
 
 def get_features(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024):
     '''Returns a 3-tuple of ndarrays, consisting of:
@@ -73,13 +80,14 @@ def get_features(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
 
     return mfcc_frames, metadata, sr
 
+
 def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
     '''Takes a folder directory, or an audio file directory, or a list of directories to audio files, and returns a `dict` object. The output can be saved as a `.gamut` file with the `dict_to_gamut()` function, for later use in `get_audio_recipe()`.'''
-   
-    soundfiles = list() 
-   
+
+    soundfiles = list()
+
     # check if input_dir is folder or list of s
-    if type(input_dir) is str: 
+    if type(input_dir) is str:
         input_dir = realpath(input_dir)
         if isdir(input_dir):
             read_mode = 'folder'
@@ -122,7 +130,8 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
 
     # if input is a folder directory, collect all files from folder and append to soundfiles list
     if read_mode == 'folder':
-        [[soundfiles.append(join(root, f)) for f in files] for root, _, files in walk(input_dir)]
+        [[soundfiles.append(join(root, f)) for f in files]
+         for root, _, files in walk(input_dir)]
 
     # iterate through paths in soundfiles, select audio files, and extract features
     for sf in soundfiles:
@@ -148,14 +157,56 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
     print('        DONE\n')
     return dictionary
 
+
+def split_by_median(data, i):
+    if len(data) != 0:
+        median = np.median(data[:, i])
+        branches = np.array(
+            [data[data[:, i] <= median],
+            data[data[:, i] > median]], dtype=object)
+    else:
+        median = 0
+        branches = [[], []]
+    return branches, median
+
+def get_nodes(data):
+    samples = [data]
+    nodes = list()
+    backup_nodes = np.median(data, axis=1)
+    for x in range(len(data[0])):
+        temp = list()
+        for s in samples:
+            branches, median = split_by_median(s, x)
+            temp.append(branches[0])
+            temp.append(branches[1])
+            if (median is None):
+                median = backup_nodes[x]
+            nodes.append(median)
+        samples = temp
+    out = list()
+    node_shape = np.cumsum(np.concatenate(
+        [[0], 2**np.arange(0, len(data[0]))]))
+    for x in range(len(node_shape)-1):
+        out.append(nodes[node_shape[x]:node_shape[x+1]])
+    return np.array(out, dtype=object)
+
+
+def get_branch_id(vector, nodes):
+    idx = 0
+    for i, v in enumerate(vector):
+        node = nodes[i][idx]
+        idx = (idx << 1) | 1 if v > node else idx << 1
+    return idx
+
+
 def build_data_tree(data, kd=2):
     '''Creates a KDTree-like data structure.'''
     print()
     data = np.array(data)
     bar = IncrementalBar('        Classifying data frames: ', max=len(
         data), suffix='%(index)d/%(max)d frames')
-    nodes = np.median(data, axis=0)[:kd]
-    tree_size = 2**len(nodes)
+    nodes = get_nodes(data)[:kd]
+    tree_size = 2**len(data[0])
     tree = {
         'nodes': nodes,
         'dims': kd,
@@ -181,6 +232,7 @@ def build_data_tree(data, kd=2):
     print("        Total number of data clusters: {}".format(tree_size))
     return tree
 
+
 def neighborhood_index(item, tree):
     kd = tree['dims']
     tree_size = 2**kd
@@ -192,16 +244,15 @@ def neighborhood_index(item, tree):
         z += 1
     return file_id
 
+
 def wedgesum(a, b):
     b = (b * -1) if (b % 2 == 0) else (b + 1)
     return a + floor(b/2)
 
+
 def wrap(a, min, max):
     return ((a-min) % max-min) + min
 
-def get_branch_id(vector, nodes):
-    size = len(vector)-1
-    return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector, nodes))])
 
 def nearest_neighbors(item, data, kn=8):
     datasize = len(data)
@@ -210,6 +261,7 @@ def nearest_neighbors(item, data, kn=8):
     nn = NearestNeighbors(n_neighbors=kn, algorithm='brute').fit(data)
     positions = nn.kneighbors(item, n_neighbors=kn)[1][0]
     return positions
+
 
 def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512, frame_length=1024, kn=8):
     '''Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.gamut` file with the `dict_to_gamut()` function, for later use in `cook_recipe()`.'''
@@ -252,16 +304,20 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
 
     for tm, tex in zip(target_mfcc, target_extras):
         branch_id = str(neighborhood_index(tm, corpus_dict['data_tree']))
-        mfcc_idxs = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], kn=kn)
+        mfcc_idxs = nearest_neighbors(
+            [tm], corpus_dict['data_tree']['data_branches'][branch_id], kn=kn)
         knn_positions = corpus_dict['data_tree']['position_branches'][branch_id][mfcc_idxs]
         metadata = corpus_dict['data_samples'][knn_positions]
-        sorted_positions = nearest_neighbors([tex[1:]], metadata[:, [2, 3]], kn=kn)
+        sorted_positions = nearest_neighbors(
+            [tex[1:]], metadata[:, [2, 3]], kn=kn)
         mfcc_options = metadata[sorted_positions]
-        dictionary['data_samples'].append(mfcc_options[:, [0, 1]].astype('int32'))
+        dictionary['data_samples'].append(
+            mfcc_options[:, [0, 1]].astype('int32'))
         bar.next()
     bar.finish()
     print('        DONE\n')
     return dictionary
+
 
 def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, target_mix=0, pan_spread=0.5, kn=8, n_chans=2, envelope='hann', sr=None, frame_length_res=512):
     '''Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.'''
@@ -359,7 +415,8 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
         pan_table = np.power(pan_table, pan_spread)
     if pan_type is list:
         pan_spread = np.array(pan_spread)
-        pan_table = np.power(pan_table, np.repeat(np.array([array_resampling(pan_spread, n_segments)]).T, n_chans, axis=1))
+        pan_table = np.power(pan_table, np.repeat(
+            np.array([array_resampling(pan_spread, n_segments)]).T, n_chans, axis=1))
     row_sums = pan_table.sum(axis=1)
     pan_table = pan_table / row_sums[:, np.newaxis]
 
@@ -387,8 +444,7 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
         max_idx = len(snd) - 1
         samp_st = int(f[1] * snd_sr_ratio)
         samp_end = min(max_idx, samp_st+fl)
-        seg_size = round((samp_end-samp_st) /
-                         frame_length_res) * frame_length_res
+        seg_size = round((samp_end-samp_st) / frame_length_res) * frame_length_res
         samp_end = samp_st+seg_size
         if seg_size != 0 and samp_end <= max_idx:
             idx = int(np.where(frame_lengths == seg_size)[0])
@@ -401,6 +457,7 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
     print('        DONE\n')
     # return normalized buffer
     return (buffer / np.amax(np.abs(buffer))) * sqrt(0.5)
+
 
 if __name__ == '__main__':
     print()
