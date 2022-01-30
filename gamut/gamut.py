@@ -159,14 +159,10 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
 
 
 def split_by_median(data, i):
-    if len(data) != 0:
-        median = np.median(data[:, i])
-        branches = np.array(
-            [data[data[:, i] <= median],
-            data[data[:, i] > median]], dtype=object)
-    else:
-        median = 0
-        branches = [[], []]
+    median = np.median(data[:, i])
+    branches = np.array(
+        [data[data[:, i] <= median],
+        data[data[:, i] > median]], dtype=object)
     return branches, median
 
 def get_nodes(data):
@@ -176,11 +172,13 @@ def get_nodes(data):
     for x in range(len(data[0])):
         temp = list()
         for s in samples:
-            branches, median = split_by_median(s, x)
-            temp.append(branches[0])
-            temp.append(branches[1])
-            if (median is None):
+            if len(s) != 0:
+                branches, median = split_by_median(s, x)
+            else:
                 median = backup_nodes[x]
+                branches = [[], []]
+            temp.append(branches[0])
+            temp.append(branches[1])                
             nodes.append(median)
         samples = temp
     out = list()
@@ -304,12 +302,10 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
 
     for tm, tex in zip(target_mfcc, target_extras):
         branch_id = str(neighborhood_index(tm, corpus_dict['data_tree']))
-        mfcc_idxs = nearest_neighbors(
-            [tm], corpus_dict['data_tree']['data_branches'][branch_id], kn=kn)
+        mfcc_idxs = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], kn=kn)
         knn_positions = corpus_dict['data_tree']['position_branches'][branch_id][mfcc_idxs]
         metadata = corpus_dict['data_samples'][knn_positions]
-        sorted_positions = nearest_neighbors(
-            [tex[1:]], metadata[:, [2, 3]], kn=kn)
+        sorted_positions = nearest_neighbors([tex[1:]], metadata[:, [2, 3]], kn=kn)
         mfcc_options = metadata[sorted_positions]
         dictionary['data_samples'].append(
             mfcc_options[:, [0, 1]].astype('int32'))
