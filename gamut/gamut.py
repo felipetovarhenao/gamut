@@ -157,14 +157,6 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
     print('        DONE\n')
     return dictionary
 
-
-def split_by_median(data, i):
-    median = np.median(data[:, i])
-    branches = np.array(
-        [data[data[:, i] <= median],
-        data[data[:, i] > median]], dtype=object)
-    return branches, median
-
 def get_nodes(data):
     samples = [data]
     nodes = list()
@@ -173,7 +165,8 @@ def get_nodes(data):
         temp = list()
         for s in samples:
             if len(s) != 0:
-                branches, median = split_by_median(s, x)
+                median = np.median(data[:, x])
+                branches = np.array([data[data[:, x] <= median], data[data[:, x] > median]], dtype=object)
             else:
                 median = backup_nodes[x]
                 branches = [[], []]
@@ -200,10 +193,10 @@ def get_branch_id(vector, nodes):
 def build_data_tree(data, kd=2):
     '''Creates a KDTree-like data structure.'''
     print()
-    data = np.array(data)
+    data = np.array(data)[:,:kd]
     bar = IncrementalBar('        Classifying data frames: ', max=len(
         data), suffix='%(index)d/%(max)d frames')
-    nodes = get_nodes(data)[:kd]
+    nodes = get_nodes(data)
     tree_size = 2**len(data[0])
     tree = {
         'nodes': nodes,
@@ -217,7 +210,7 @@ def build_data_tree(data, kd=2):
         tree['data_branches'][str(i)] = list()
     # populate branches
     for pos, datum in enumerate(data):
-        branch_id = get_branch_id(datum[:kd], nodes[:kd])
+        branch_id = get_branch_id(datum, nodes)
         tree['position_branches'][str(branch_id)].append(pos)
         tree['data_branches'][str(branch_id)].append(datum)
         bar.next()
@@ -297,10 +290,9 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
     dictionary['target_info']['data_samples'][:, 0] = len(
         corpus_dict['corpus_info']['files']) - 1
 
-    bar = IncrementalBar('        Matching audio frames: ', max=len(
-        target_mfcc), suffix='%(index)d/%(max)d frames')
-
-    for tm, tex in zip(target_mfcc, target_extras):
+    bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc), suffix='%(index)d/%(max)d frames')
+    kd = corpus_dict['data_tree']['dims']
+    for tm, tex in zip(target_mfcc[:,:kd], target_extras):
         branch_id = str(neighborhood_index(tm, corpus_dict['data_tree']))
         mfcc_idxs = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], kn=kn)
         knn_positions = corpus_dict['data_tree']['position_branches'][branch_id][mfcc_idxs]
