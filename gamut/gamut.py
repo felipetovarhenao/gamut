@@ -167,11 +167,10 @@ def get_nodes(data):
             if len(s) != 0:
                 median = np.median(data[:, x])
                 branches = np.array([data[data[:, x] <= median], data[data[:, x] > median]], dtype=object)
+                temp.append(branches[0])
+                temp.append(branches[1])  
             else:
                 median = backup_nodes[x]
-                branches = [[], []]
-            temp.append(branches[0])
-            temp.append(branches[1])                
             nodes.append(median)
         samples = temp
     out = list()
@@ -193,11 +192,11 @@ def get_branch_id(vector, nodes):
 def build_data_tree(data, kd=2):
     '''Creates a KDTree-like data structure.'''
     print()
-    data = np.array(data)[:,:kd]
+    data = np.array(data)
     bar = IncrementalBar('        Classifying data frames: ', max=len(
         data), suffix='%(index)d/%(max)d frames')
-    nodes = get_nodes(data)
-    tree_size = 2**len(data[0])
+    nodes = get_nodes(data[:,:kd])
+    tree_size = 2**len(data[0][:kd])
     tree = {
         'nodes': nodes,
         'dims': kd,
@@ -210,14 +209,13 @@ def build_data_tree(data, kd=2):
         tree['data_branches'][str(i)] = list()
     # populate branches
     for pos, datum in enumerate(data):
-        branch_id = get_branch_id(datum, nodes)
+        branch_id = get_branch_id(datum[:kd], nodes[:kd])
         tree['position_branches'][str(branch_id)].append(pos)
         tree['data_branches'][str(branch_id)].append(datum)
         bar.next()
     # convert branches to numpy arrays
     for b in range(tree_size):
-        tree['position_branches'][str(b)] = np.array(
-            tree['position_branches'][str(b)])
+        tree['position_branches'][str(b)] = np.array(tree['position_branches'][str(b)])
         tree['data_branches'][str(b)] = np.array(tree['data_branches'][str(b)])
     bar.finish()
     print("        Total number of data clusters: {}".format(tree_size))
@@ -291,8 +289,7 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
         corpus_dict['corpus_info']['files']) - 1
 
     bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc), suffix='%(index)d/%(max)d frames')
-    kd = corpus_dict['data_tree']['dims']
-    for tm, tex in zip(target_mfcc[:,:kd], target_extras):
+    for tm, tex in zip(target_mfcc, target_extras):
         branch_id = str(neighborhood_index(tm, corpus_dict['data_tree']))
         mfcc_idxs = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], kn=kn)
         knn_positions = corpus_dict['data_tree']['position_branches'][branch_id][mfcc_idxs]
@@ -445,7 +442,6 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
     print('        DONE\n')
     # return normalized buffer
     return (buffer / np.amax(np.abs(buffer))) * sqrt(0.5)
-
 
 if __name__ == '__main__':
     print()
