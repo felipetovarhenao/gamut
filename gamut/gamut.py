@@ -17,13 +17,11 @@ np.seterr(divide='ignore')
 FILE_EXT = '.gamut'
 AUDIO_FORMATS = ['.wav', '.aif', '.aiff']
 
-
 def dict_to_gamut(dict, output_dir):
     '''Writes `dict` object into a `.gamut` file. This function is a simple wrapper of `np.save()`.'''
     output_dir = splitext(output_dir)[0]
     np.save(output_dir, dict)
     rename(output_dir+'.npy', output_dir+FILE_EXT)
-
 
 def dict_from_gamut(input_dir):
     '''Reads a `.gamut` file as a `dict` object. This function is a simple wrapper of `np.load()`.'''
@@ -34,7 +32,6 @@ def dict_from_gamut(input_dir):
         raise ValueError(
             'Wrong file extension. Provide a directory for a {} file'.format(FILE_EXT))
 
-
 def write_audio(output_dir, ndarray, sr=44100, bit_depth=24):
     """Writes a `ndarray` as audio. This function is a simple wrapper of `sf.write()`."""
     ext = splitext(output_dir)[1]
@@ -42,17 +39,14 @@ def write_audio(output_dir, ndarray, sr=44100, bit_depth=24):
         raise ValueError('Output file format must be .wav, .aif, or .aiff')
     write(output_dir, ndarray, sr, 'PCM_{}'.format(bit_depth))
 
-
 def play_audio(ndarray, sr=44100):
     sd.play(ndarray, samplerate=sr)
     sd.wait()
-
 
 def array_resampling(array, N):
     x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)[:N]
     x_coor2 = np.arange(0, len(array))
     return np.interp(x_coor1, x_coor2, array)
-
 
 def get_features(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024):
     '''Returns a 3-tuple of ndarrays, consisting of:
@@ -80,7 +74,6 @@ def get_features(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
     metadata = np.array([sample_indxs, rms_frames, centroid_frames]).T
 
     return mfcc_frames, metadata, sr
-
 
 def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
     '''Takes a folder directory, or an audio file directory, or a list of directories to audio files, and returns a `dict` object. The output can be saved as a `.gamut` file with the `dict_to_gamut()` function, for later use in `get_audio_recipe()`.'''
@@ -163,12 +156,12 @@ def find_nodes(data, depth=0, kd=None, medians=None, nodes=list(), count=1):
 	# initialize nodes
 	if len(nodes) == 0:
 		nodes = [[]]*kd	
-
+    # pass global median to branch if branch is empty
 	if N <= 0:
 		if depth < kd:
-			nodes[depth] = nodes[depth]+[[medians[depth], count, 'from_median_list']]		
+			nodes[depth] = nodes[depth]+[[medians[depth], count, 'n_flag']]		
 		return nodes
-		
+    # split branches recursively when depth < kd
 	if depth < kd:
 		sorted_data = data[data[:, depth].argsort()]
 		split = floor(int(N/2))
@@ -179,10 +172,10 @@ def find_nodes(data, depth=0, kd=None, medians=None, nodes=list(), count=1):
 		find_nodes(sorted_data[split + 1:], depth+1, kd=kd, medians=medians, nodes=nodes, count=count*2+1)
 		return nodes
 	else:
-		return nodes
+		return nodes # stop recursion
 
 def sort_nodes(tree_nodes, medians=None):
-	return [[(n[j][0] if n[j][1] == (2**i)+j else [medians[i], (2**i)+j, 'from_medians'][0]) if j < len(n) else [medians[i], (2**i)+j, 'from_medians'][0] for j in range(2**i)] for i, n in enumerate(tree_nodes)]
+	return [[(n[j][0] if n[j][1] == (2**i)+j else [medians[i], (2**i)+j, 'n_flag'][0]) if j < len(n) else [medians[i], (2**i)+j, 'n_flag'][0] for j in range(2**i)] for i, n in enumerate(tree_nodes)]
 
 def get_branch_id(vector, nodes):
     idx = 0
@@ -198,13 +191,13 @@ def fit_data(data, data_min=list(), data_max=list()):
     return (data-data_min)/(data_max-data_min), data_min, data_max
 
 def build_data_tree(data, kd=2):
-    '''Creates a KDTree-like data structure.'''
+    '''Creates a KDTree data structure.'''
     print()
     data, data_min, data_max = fit_data(np.array(data))
     bar = IncrementalBar('        Classifying data frames: ', max=len(
         data), suffix='%(index)d/%(max)d frames')
     medians = np.median(data, axis=0)
-    nodes = sort_nodes(find_nodes(data,kd=kd, medians=medians), medians=medians)
+    nodes = sort_nodes(find_nodes(data, kd=kd, medians=medians), medians=medians)
     tree_size = 2**len(data[0][:kd])
     tree = {
         'nodes': nodes,
@@ -232,7 +225,6 @@ def build_data_tree(data, kd=2):
     print("        Total number of data clusters: {}".format(tree_size))
     return tree
 
-
 def neighborhood_index(item, tree):
     kd = tree['dims']
     tree_size = 2**kd
@@ -243,7 +235,6 @@ def neighborhood_index(item, tree):
         file_id = wrap(wedgesum(default_id, z), 0, tree_size)
         z += 1
     return file_id
-
 
 def wedgesum(a, b):
     b = (b * -1) if (b % 2 == 0) else (b + 1)
@@ -258,9 +249,8 @@ def nearest_neighbors(item, data, kn=8):
     if datasize < kn:
         kn = datasize
     nn = NearestNeighbors(n_neighbors=kn, algorithm='brute').fit(data)
-    positions = nn.kneighbors(item, n_neighbors=kn)[1][0]
-    return positions
-
+    dx, positions = nn.kneighbors(item, n_neighbors=kn)
+    return positions[0], dx[0]
 
 def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512, frame_length=1024, kn=8):
     '''Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.gamut` file with the `dict_to_gamut()` function, for later use in `cook_recipe()`.'''
@@ -299,21 +289,23 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
     dictionary['target_info']['data_samples'][:, 0] = len(
         corpus_dict['corpus_info']['files']) - 1
 
+    error_sum = 0
     bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc), suffix='%(index)d/%(max)d frames')
     for tm, tex in zip(target_mfcc, target_extras):
         branch_id = str(neighborhood_index(tm, corpus_dict['data_tree']))
-        mfcc_idxs = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], kn=kn)
+        mfcc_idxs, dx = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], kn=kn)
+        error_sum += dx[0]
         knn_positions = corpus_dict['data_tree']['position_branches'][branch_id][mfcc_idxs]
         metadata = corpus_dict['data_samples'][knn_positions]
-        sorted_positions = nearest_neighbors([tex[1:]], metadata[:, [2, 3]], kn=kn)
+        sorted_positions = nearest_neighbors([tex[1:]], metadata[:, [2, 3]], kn=kn)[0]
         mfcc_options = metadata[sorted_positions]
         dictionary['data_samples'].append(
             mfcc_options[:, [0, 1]].astype('int32'))
         bar.next()
     bar.finish()
-    print('        DONE\n')
+    error_sum = int((error_sum/n_samples)*1000)/1000
+    print('        ...delta average: {}...\n        DONE.\n'.format(error_sum))
     return dictionary
-
 
 def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, target_mix=0, pan_spread=0.5, kn=8, n_chans=2, envelope='hann', sr=None, frame_length_res=512):
     '''Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.'''
