@@ -191,10 +191,16 @@ def get_branch_id(vector, nodes):
         idx = (idx << 1) | 1 if v > node else idx << 1
     return idx
 
+def fit_data(data, data_min=list(), data_max=list()):
+    if len(data_min) * len(data_max) == 0:
+        data_min = np.amin(data, axis=0)
+        data_max = np.amax(data, axis=0)
+    return (data-data_min)/(data_max-data_min), data_min, data_max
+
 def build_data_tree(data, kd=2):
     '''Creates a KDTree-like data structure.'''
     print()
-    data = np.array(data)
+    data, data_min, data_max = fit_data(np.array(data))
     bar = IncrementalBar('        Classifying data frames: ', max=len(
         data), suffix='%(index)d/%(max)d frames')
     medians = np.median(data, axis=0)
@@ -203,6 +209,8 @@ def build_data_tree(data, kd=2):
     tree = {
         'nodes': nodes,
         'dims': kd,
+        'data_min': data_min,
+        'data_max': data_max,
         'position_branches': dict(),
         'data_branches': dict()
     }
@@ -241,10 +249,8 @@ def wedgesum(a, b):
     b = (b * -1) if (b % 2 == 0) else (b + 1)
     return a + floor(b/2)
 
-
 def wrap(a, min, max):
     return ((a-min) % max-min) + min
-
 
 def nearest_neighbors(item, data, kn=8):
     datasize = len(data)
@@ -265,6 +271,7 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
                                                   n_mfcc=corpus_dict['corpus_info']['n_mfcc'],
                                                   hop_length=hop_length,
                                                   frame_length=frame_length)
+    target_mfcc = fit_data(target_mfcc, data_min=corpus_dict['data_tree']['data_min'], data_max=corpus_dict['data_tree']['data_max'])[0]
     n_samples = len(target_extras)
     dictionary = {
         'target_info': {
