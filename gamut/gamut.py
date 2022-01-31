@@ -10,6 +10,7 @@ from progress.bar import IncrementalBar
 from progress.counter import Counter
 from soundfile import write
 import sounddevice as sd
+from itertools import islice
 
 np.seterr(divide='ignore')
 
@@ -157,6 +158,25 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
     print('        DONE\n')
     return dictionary
 
+def find_nodes(data, depth=0, kd=None, nodes=list(), count=1):
+	n = len(data)
+	if n <= 0 or depth >= kd:
+		return None
+	sorted_data = data[data[:, depth].argsort()]
+	split = floor(int(n/2))
+	node = sorted_data[split][depth]
+	if node is not None:
+		nodes.append([node, count])
+	find_nodes(sorted_data[:split], depth+1, kd=kd, nodes=nodes, count=count*2)
+	find_nodes(sorted_data[split + 1:], depth+1, kd=kd, nodes=nodes, count=count*2+1)
+	return nodes
+
+def sort_nodes(tree_nodes, kd):
+	tree_nodes = np.array(tree_nodes)
+	it = iter(tree_nodes[tree_nodes[:,1].argsort()][:,0])
+	sizes = np.power(2, np.arange(kd))
+	return [list(islice(it, 0, i)) for i in sizes]	
+
 def get_nodes(data):
     samples = [data]
     nodes = list()
@@ -195,7 +215,7 @@ def build_data_tree(data, kd=2):
     data = np.array(data)
     bar = IncrementalBar('        Classifying data frames: ', max=len(
         data), suffix='%(index)d/%(max)d frames')
-    nodes = get_nodes(data[:,:kd])
+    nodes = sort_nodes(find_nodes(data[:,:kd], kd=kd), kd=kd) 
     tree_size = 2**len(data[0][:kd])
     tree = {
         'nodes': nodes,
