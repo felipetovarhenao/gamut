@@ -158,48 +158,31 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
     print('        DONE\n')
     return dictionary
 
-def find_nodes(data, depth=0, kd=None, nodes=list(), count=1):
-	n = len(data)
-	if n <= 0 or depth >= kd:
-		return None
-	sorted_data = data[data[:, depth].argsort()]
-	split = floor(int(n/2))
-	node = sorted_data[split][depth]
-	if node is not None:
-		nodes.append([node, count])
-	find_nodes(sorted_data[:split], depth+1, kd=kd, nodes=nodes, count=count*2)
-	find_nodes(sorted_data[split + 1:], depth+1, kd=kd, nodes=nodes, count=count*2+1)
-	return nodes
+def find_nodes(data, depth=0, kd=None, medians=None, nodes=list(), count=1):
+	N = len(data)
+	# initialize nodes
+	if len(nodes) == 0:
+		nodes = [[]]*kd	
 
-def sort_nodes(tree_nodes, kd):
-	tree_nodes = np.array(tree_nodes)
-	it = iter(tree_nodes[tree_nodes[:,1].argsort()][:,0])
-	sizes = np.power(2, np.arange(kd))
-	return [list(islice(it, 0, i)) for i in sizes]	
+	if N <= 0:
+		if depth < kd:
+			nodes[depth] = nodes[depth]+[[medians[depth], count, 'from_median_list']]		
+		return nodes
+		
+	if depth < kd:
+		sorted_data = data[data[:, depth].argsort()]
+		split = floor(int(N/2))
+		node = sorted_data[split][depth]
+		if node is not None:
+			nodes[depth] = nodes[depth]+[[node, count]]
+		find_nodes(sorted_data[:split], depth+1, kd=kd, medians=medians, nodes=nodes, count=count*2)
+		find_nodes(sorted_data[split + 1:], depth+1, kd=kd, medians=medians, nodes=nodes, count=count*2+1)
+		return nodes
+	else:
+		return nodes
 
-def get_nodes(data):
-    samples = [data]
-    nodes = list()
-    backup_nodes = np.median(data, axis=1)
-    for x in range(len(data[0])):
-        temp = list()
-        for s in samples:
-            if len(s) != 0:
-                median = np.median(data[:, x])
-                branches = np.array([data[data[:, x] <= median], data[data[:, x] > median]], dtype=object)
-                temp.append(branches[0])
-                temp.append(branches[1])  
-            else:
-                median = backup_nodes[x]
-            nodes.append(median)
-        samples = temp
-    out = list()
-    node_shape = np.cumsum(np.concatenate(
-        [[0], 2**np.arange(0, len(data[0]))]))
-    for x in range(len(node_shape)-1):
-        out.append(nodes[node_shape[x]:node_shape[x+1]])
-    return np.array(out, dtype=object)
-
+def sort_nodes(tree_nodes, medians=None):
+	return [[(n[j][0] if n[j][1] == (2**i)+j else [medians[i], (2**i)+j, 'from_medians'][0]) if j < len(n) else [medians[i], (2**i)+j, 'from_medians'][0] for j in range(2**i)] for i, n in enumerate(tree_nodes)]
 
 def get_branch_id(vector, nodes):
     idx = 0
@@ -208,14 +191,14 @@ def get_branch_id(vector, nodes):
         idx = (idx << 1) | 1 if v > node else idx << 1
     return idx
 
-
 def build_data_tree(data, kd=2):
     '''Creates a KDTree-like data structure.'''
     print()
     data = np.array(data)
     bar = IncrementalBar('        Classifying data frames: ', max=len(
         data), suffix='%(index)d/%(max)d frames')
-    nodes = sort_nodes(find_nodes(data[:,:kd], kd=kd), kd=kd) 
+    medians = np.median(data, axis=0)
+    nodes = sort_nodes(find_nodes(data,kd=kd, medians=medians), medians=medians)
     tree_size = 2**len(data[0][:kd])
     tree = {
         'nodes': nodes,
