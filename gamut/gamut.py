@@ -10,6 +10,7 @@ from progress.bar import IncrementalBar
 from progress.counter import Counter
 from soundfile import write
 import sounddevice as sd
+from itertools import islice
 
 np.seterr(divide='ignore')
 
@@ -28,7 +29,8 @@ def dict_from_gamut(input_dir):
     if ext == FILE_EXT:
         return np.load(input_dir, allow_pickle=True).item()
     else:
-        raise ValueError('Wrong file extension. Provide a directory for a {} file'.format(FILE_EXT))
+        raise ValueError(
+            'Wrong file extension. Provide a directory for a {} file'.format(FILE_EXT))
 
 def write_audio(output_dir, ndarray, sr=44100, bit_depth=24):
     """Writes a `ndarray` as audio. This function is a simple wrapper of `sf.write()`."""
@@ -74,11 +76,11 @@ def get_features(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
 
 def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_length=1024, kd=None):
     '''Takes a folder directory, or an audio file directory, or a list of directories to audio files, and returns a `dict` object. The output can be saved as a `.gamut` file with the `dict_to_gamut()` function, for later use in `get_audio_recipe()`.'''
-   
-    soundfiles = list() 
-   
+
+    soundfiles = list()
+
     # check if input_dir is folder or list of s
-    if type(input_dir) is str: 
+    if type(input_dir) is str:
         input_dir = realpath(input_dir)
         if isdir(input_dir):
             read_mode = 'folder'
@@ -121,7 +123,8 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
 
     # if input is a folder directory, collect all files from folder and append to soundfiles list
     if read_mode == 'folder':
-        [[soundfiles.append(join(root, f)) for f in files] for root, _, files in walk(input_dir)]
+        [[soundfiles.append(join(root, f)) for f in files]
+         for root, _, files in walk(input_dir)]
 
     # iterate through paths in soundfiles, select audio files, and extract features
     for sf in soundfiles:
@@ -145,16 +148,59 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
     print('        DONE\n')
     return dictionary
 
+def find_nodes(data, depth=0, kd=None, medians=None, nodes=list(), count=1):
+	N = len(data)
+	# initialize nodes
+	if len(nodes) == 0:
+		nodes = [[]]*kd	
+    # pass global median to branch if branch is empty
+	if N <= 0:
+		if depth < kd:
+			nodes[depth] = nodes[depth]+[[medians[depth], count, 'n_flag']]		
+		return nodes
+    # split branches recursively when depth < kd
+	if depth < kd:
+		sorted_data = data[data[:, depth].argsort()]
+		split = floor(int(N/2))
+		node = sorted_data[split][depth]
+		if node is not None:
+			nodes[depth] = nodes[depth]+[[node, count]]
+		find_nodes(sorted_data[:split], depth+1, kd=kd, medians=medians, nodes=nodes, count=count*2)
+		find_nodes(sorted_data[split + 1:], depth+1, kd=kd, medians=medians, nodes=nodes, count=count*2+1)
+		return nodes
+	else:
+		return nodes # stop recursion
+
+def sort_nodes(tree_nodes, medians=None):
+	return [[(n[j][0] if n[j][1] == (2**i)+j else [medians[i], (2**i)+j, 'n_flag'][0]) if j < len(n) else [medians[i], (2**i)+j, 'n_flag'][0] for j in range(2**i)] for i, n in enumerate(tree_nodes)]
+
+def get_branch_id(vector, nodes):
+    idx = 0
+    for i, v in enumerate(vector):
+        node = nodes[i][idx]
+        idx = (idx << 1) | 1 if v > node else idx << 1
+    return idx
+
+def fit_data(data, data_min=list(), data_max=list()):
+    if len(data_min) * len(data_max) == 0:
+        data_min = np.amin(data, axis=0)
+        data_max = np.amax(data, axis=0)
+    return (data-data_min)/(data_max-data_min), data_min, data_max
+
 def build_data_tree(data, kd=2):
-    '''Creates a binary tree data structure.'''
+    '''Creates a KDTree data structure.'''
     print()
-    data = np.array(data)
-    bar = IncrementalBar('        Classifying data frames: ', max=len(data), suffix='%(index)d/%(max)d frames')
-    nodes = np.median(data[:,:kd], axis=0)
-    tree_size = 2**len(nodes)
+    data, data_min, data_max = fit_data(np.array(data))
+    bar = IncrementalBar('        Classifying data frames: ', max=len(
+        data), suffix='%(index)d/%(max)d frames')
+    medians = np.median(data, axis=0)
+    nodes = sort_nodes(find_nodes(data, kd=kd, medians=medians), medians=medians)
+    tree_size = 2**len(data[0][:kd])
     tree = {
         'nodes': nodes,
         'dims': kd,
+        'data_min': data_min,
+        'data_max': data_max,
         'position_branches': dict(),
         'data_branches': dict()
     }
@@ -195,6 +241,7 @@ def wedgesum(a, b):
     b = (b * -1) if (b % 2 == 0) else (b + 1)
     return a + floor(b/2)
 
+
 def wrap(a, min, max):
     return ((a-min) % max-min) + min
 
@@ -203,8 +250,8 @@ def nearest_neighbors(item, data, kn=8):
     if datasize < kn:
         kn = datasize
     nn = NearestNeighbors(n_neighbors=kn, algorithm='brute').fit(data)
-    positions = nn.kneighbors(item, n_neighbors=kn)[1][0]
-    return positions
+    dx, positions = nn.kneighbors(item, n_neighbors=kn)
+    return positions[0], dx[0]
 
 def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512, frame_length=1024, kn=8):
     '''Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.gamut` file with the `dict_to_gamut()` function, for later use in `cook_recipe()`.'''
@@ -215,6 +262,7 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
                                                   n_mfcc=corpus_dict['corpus_info']['n_mfcc'],
                                                   hop_length=hop_length,
                                                   frame_length=frame_length)
+    target_mfcc = fit_data(target_mfcc, data_min=corpus_dict['data_tree']['data_min'], data_max=corpus_dict['data_tree']['data_max'])[0]
     n_samples = len(target_extras)
     dictionary = {
         'target_info': {
@@ -240,20 +288,22 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
     dictionary['target_info']['data_samples'][:, 0] = len(
         corpus_dict['corpus_info']['files']) - 1
 
-    bar = IncrementalBar('        Matching audio frames: ', max=len(
-        target_mfcc), suffix='%(index)d/%(max)d frames')
-
+    error_sum = 0
+    bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc), suffix='%(index)d/%(max)d frames')
     for tm, tex in zip(target_mfcc, target_extras):
         branch_id = str(neighborhood_index(tm, corpus_dict['data_tree']))
-        mfcc_idxs = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], kn=kn)
+        mfcc_idxs, dx = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], kn=kn)
+        error_sum += dx[0]
         knn_positions = corpus_dict['data_tree']['position_branches'][branch_id][mfcc_idxs]
         metadata = corpus_dict['data_samples'][knn_positions]
-        sorted_positions = nearest_neighbors([tex[1:]], metadata[:, [2, 3]], kn=kn)
+        sorted_positions = nearest_neighbors([tex[1:]], metadata[:, [2, 3]], kn=kn)[0]
         mfcc_options = metadata[sorted_positions]
-        dictionary['data_samples'].append(mfcc_options[:, [0, 1]].astype('int32'))
+        dictionary['data_samples'].append(
+            mfcc_options[:, [0, 1]].astype('int32'))
         bar.next()
     bar.finish()
-    print('        DONE\n')
+    error_sum = int((error_sum/n_samples)*1000)/1000
+    print('        ...delta average: {}...\n        DONE.\n'.format(error_sum))
     return dictionary
 
 def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, target_mix=0, pan_spread=0.5, kn=8, n_chans=2, envelope='hann', sr=None, frame_length_res=512):
@@ -340,7 +390,8 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
         pan_table = np.power(pan_table, pan_spread)
     if pan_type is list:
         pan_spread = np.array(pan_spread)
-        pan_table = np.power(pan_table, np.repeat(np.array([array_resampling(pan_spread, n_segments)]).T, n_chans, axis=1))
+        pan_table = np.power(pan_table, np.repeat(
+            np.array([array_resampling(pan_spread, n_segments)]).T, n_chans, axis=1))
     row_sums = pan_table.sum(axis=1)
     pan_table = pan_table / row_sums[:, np.newaxis]
 
