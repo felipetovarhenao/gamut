@@ -249,6 +249,7 @@ def wedgesum(a, b):
     b = (b * -1) if (b % 2 == 0) else (b + 1)
     return a + floor(b/2)
 
+
 def wrap(a, min, max):
     return ((a-min) % max-min) + min
 
@@ -257,8 +258,8 @@ def nearest_neighbors(item, data, kn=8):
     if datasize < kn:
         kn = datasize
     nn = NearestNeighbors(n_neighbors=kn, algorithm='brute').fit(data)
-    dx, positions = nn.kneighbors(item, n_neighbors=kn)
-    return positions[0], dx[0]
+    positions = nn.kneighbors(item, n_neighbors=kn)[1][0]
+    return positions
 
 
 def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512, frame_length=1024, kn=8):
@@ -298,22 +299,19 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
     dictionary['target_info']['data_samples'][:, 0] = len(
         corpus_dict['corpus_info']['files']) - 1
 
-    dx_total = 0
     bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc), suffix='%(index)d/%(max)d frames')
     for tm, tex in zip(target_mfcc, target_extras):
         branch_id = str(neighborhood_index(tm, corpus_dict['data_tree']))
-        mfcc_idxs, _ = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], kn=kn)
-        dx_total += np.sum(_)
+        mfcc_idxs = nearest_neighbors([tm], corpus_dict['data_tree']['data_branches'][branch_id], kn=kn)
         knn_positions = corpus_dict['data_tree']['position_branches'][branch_id][mfcc_idxs]
         metadata = corpus_dict['data_samples'][knn_positions]
-        sorted_positions, _ = nearest_neighbors([tex[1:]], metadata[:, [2, 3]], kn=kn)
+        sorted_positions = nearest_neighbors([tex[1:]], metadata[:, [2, 3]], kn=kn)
         mfcc_options = metadata[sorted_positions]
         dictionary['data_samples'].append(
             mfcc_options[:, [0, 1]].astype('int32'))
         bar.next()
     bar.finish()
     print('        DONE\n')
-    print('DX BECHMARKING FOR KD:\n        {}'.format(dx_total))
     return dictionary
 
 
