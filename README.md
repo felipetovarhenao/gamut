@@ -1,7 +1,7 @@
 ## **GAMuT: Granular Audio Musaicing Toolkit**
 
 ---
-![](https://static.wixstatic.com/media/98a1eb_4dbc341ffab04996a39617bf4e6117bf~mv2.png/v1/fill/w_428,h_267,al_c,q_85,usm_0.66_1.00_0.01/logo.webp)
+![](https://static.wixstatic.com/media/98a1eb_4dbc341ffab04996a39617bf4e6117bf~mv2.png/v1/fill/w_856,h_534,al_c,q_90,usm_0.66_1.00_0.01/logo.webp)
 
 ### **Description**
 
