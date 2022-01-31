@@ -158,7 +158,7 @@ def find_nodes(data, depth=0, kd=None, medians=None, nodes=list(), count=1):
     # pass global median to branch if branch is empty
 	if N <= 0:
 		if depth < kd:
-			nodes[depth] = nodes[depth]+[[medians[depth], count, 'n_flag']]		
+			nodes[depth] = nodes[depth]+[[medians[depth], count]]		
 		return nodes
     # split branches recursively when depth < kd
 	if depth < kd:
@@ -174,7 +174,7 @@ def find_nodes(data, depth=0, kd=None, medians=None, nodes=list(), count=1):
 		return nodes # stop recursion
 
 def sort_nodes(tree_nodes, medians=None):
-	return [[(n[j][0] if n[j][1] == (2**i)+j else [medians[i], (2**i)+j, 'n_flag'][0]) if j < len(n) else [medians[i], (2**i)+j, 'n_flag'][0] for j in range(2**i)] for i, n in enumerate(tree_nodes)]
+	return [[(n[j][0] if n[j][1] == (2**i)+j else medians[i]) if j < len(n) else medians[i] for j in range(2**i)] for i, n in enumerate(tree_nodes)]
 
 def get_branch_id(vector, nodes):
     idx = 0
@@ -303,7 +303,7 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
         bar.next()
     bar.finish()
     error_sum = int((error_sum/n_samples)*1000)/1000
-    print('        ...delta average: {}...\n        DONE.\n'.format(error_sum))
+    print('        Delta average: {}\n        DONE.\n'.format(error_sum))
     return dictionary
 
 def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, target_mix=0, pan_spread=0.5, kn=8, n_chans=2, envelope='hann', sr=None, frame_length_res=512):
