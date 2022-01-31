@@ -67,8 +67,7 @@ def get_features(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
                                                                 hop_length=hop_length)[0][:-2]/440)*12+69
     centroid_frames[centroid_frames < 0] = 0
     n_frames = len(rms_frames)
-    sample_indxs = np.arange(start=0, stop=n_frames *
-                             hop_length, step=hop_length)
+    sample_indxs = np.arange(start=0, stop=n_frames * hop_length, step=hop_length)
     metadata = np.array([sample_indxs, rms_frames, centroid_frames]).T
 
     return mfcc_frames, metadata, sr
@@ -128,12 +127,10 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
     for sf in soundfiles:
         sf = realpath(sf)
         if splitext(sf)[1] in AUDIO_FORMATS:
-            mfcc_stream, metadata, sr = get_features(
-                sf, max_duration=max_duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
+            mfcc_stream, metadata, sr = get_features(sf, max_duration=max_duration, n_mfcc=n_mfcc, hop_length=hop_length, frame_length=frame_length)
             for mf, md in zip(mfcc_stream, metadata):
                 mfcc_frames.append(mf)
-                dictionary['data_samples'].append(
-                    np.array(np.concatenate([[file_id],  md])))
+                dictionary['data_samples'].append(np.array(np.concatenate([[file_id],  md])))
             dictionary['corpus_info']['files'].append([sr, sf])
             counter.write(str(file_id + 1))
             file_id += 1
@@ -149,12 +146,11 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
     return dictionary
 
 def build_data_tree(data, kd=2):
-    '''Creates a KDTree-like data structure.'''
+    '''Creates a binary tree data structure.'''
     print()
     data = np.array(data)
-    bar = IncrementalBar('        Classifying data frames: ', max=len(
-        data), suffix='%(index)d/%(max)d frames')
-    nodes = np.median(data, axis=0)[:kd]
+    bar = IncrementalBar('        Classifying data frames: ', max=len(data), suffix='%(index)d/%(max)d frames')
+    nodes = np.median(data[:,:kd], axis=0)
     tree_size = 2**len(nodes)
     tree = {
         'nodes': nodes,
@@ -162,7 +158,7 @@ def build_data_tree(data, kd=2):
         'position_branches': dict(),
         'data_branches': dict()
     }
-    # populate branches
+    # initialize branches
     for i in range(tree_size):
         tree['position_branches'][str(i)] = list()
         tree['data_branches'][str(i)] = list()
@@ -174,12 +170,15 @@ def build_data_tree(data, kd=2):
         bar.next()
     # convert branches to numpy arrays
     for b in range(tree_size):
-        tree['position_branches'][str(b)] = np.array(
-            tree['position_branches'][str(b)])
+        tree['position_branches'][str(b)] = np.array(tree['position_branches'][str(b)])
         tree['data_branches'][str(b)] = np.array(tree['data_branches'][str(b)])
     bar.finish()
     print("        Total number of data clusters: {}".format(tree_size))
     return tree
+
+def get_branch_id(vector, nodes):
+    size = len(vector)-1
+    return sum([(2<<(size-i))>>1 if v > n else 0 for i, (v, n) in enumerate(zip(vector, nodes))])
 
 def neighborhood_index(item, tree):
     kd = tree['dims']
@@ -199,10 +198,6 @@ def wedgesum(a, b):
 def wrap(a, min, max):
     return ((a-min) % max-min) + min
 
-def get_branch_id(vector, nodes):
-    size = len(vector)-1
-    return sum([0 if v <= n else 2**(size-i) for i, (v, n) in enumerate(zip(vector, nodes))])
-
 def nearest_neighbors(item, data, kn=8):
     datasize = len(data)
     if datasize < kn:
@@ -214,8 +209,7 @@ def nearest_neighbors(item, data, kn=8):
 def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512, frame_length=1024, kn=8):
     '''Takes an audio sample directory/path (i.e. the _target_) and a `dict` object (i.e. the _corpus_), and returns another `dict` object containing the instructions to rebuild the _target_ using grains from the _corpus_. The output can be saved as a `.gamut` file with the `dict_to_gamut()` function, for later use in `cook_recipe()`.'''
 
-    print('\nMaking recipe for {}\n        ...loading corpus...\n        ...analyzing target...'.format(
-        basename(target_dir)))
+    print('\nMaking recipe for {}\n        ...loading corpus...\n        ...analyzing target...'.format(basename(target_dir)))
     target_mfcc, target_extras, sr = get_features(target_dir,
                                                   max_duration=max_duration,
                                                   n_mfcc=corpus_dict['corpus_info']['n_mfcc'],
@@ -242,8 +236,7 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
 
     # include target data samples for cooking mix parameter
     corpus_dict['corpus_info']['files'].append([sr, target_dir])
-    dictionary['target_info']['data_samples'] = target_extras[:,
-                                                              [0, 0]].astype('int32')
+    dictionary['target_info']['data_samples'] = target_extras[:,[0, 0]].astype('int32')
     dictionary['target_info']['data_samples'][:, 0] = len(
         corpus_dict['corpus_info']['files']) - 1
 
@@ -279,14 +272,11 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
     snd_idxs = list()
     [[snd_idxs.append(y[0]) for y in x] for x in recipe_dict['data_samples']]
     snd_idxs = np.unique(snd_idxs).astype(int)
-    snd_counter = IncrementalBar('        Loading corpus sounds: ', max=len(
-        snd_idxs) + 1, suffix='%(index)d/%(max)d files')
+    snd_counter = IncrementalBar('        Loading corpus sounds: ', max=len(snd_idxs) + 1, suffix='%(index)d/%(max)d files')
     for i in snd_idxs:
-        sounds[i] = np.repeat(np.array([librosa.load(recipe_dict['corpus_info']['files'][i][1],
-                              duration=recipe_dict['corpus_info']['max_duration'], sr=sr)[0]]).T, n_chans, axis=1)
+        sounds[i] = np.repeat(np.array([librosa.load(recipe_dict['corpus_info']['files'][i][1], duration=recipe_dict['corpus_info']['max_duration'], sr=sr)[0]]).T, n_chans, axis=1)
         snd_counter.next()
-    sounds[-1] = np.repeat(np.array([librosa.load(recipe_dict['corpus_info']
-                           ['files'][-1][1], duration=None, sr=sr)[0]]).T, n_chans, axis=1)
+    sounds[-1] = np.repeat(np.array([librosa.load(recipe_dict['corpus_info']['files'][-1][1], duration=None, sr=sr)[0]]).T, n_chans, axis=1)
     snd_counter.next()
     snd_counter.finish()
 
@@ -306,15 +296,12 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
     # populate frame length table
     grain_dur_type = type(grain_dur)
     if grain_dur_type is list:
-        frame_length_table = np.round(array_resampling(
-            np.array(grain_dur) * sr, n_segments)/frame_length_res) * frame_length_res
+        frame_length_table = np.round(array_resampling(np.array(grain_dur) * sr, n_segments)/frame_length_res) * frame_length_res
     if grain_dur_type is float or grain_dur_type is int:
         frame_length_table = np.empty(n_segments)
-        frame_length_table.fill(
-            round((grain_dur * sr)/frame_length_res)*frame_length_res)
+        frame_length_table.fill(round((grain_dur * sr)/frame_length_res)*frame_length_res)
     frame_length_table = frame_length_table.astype('int64')
-    frame_lengths = np.arange(frame_length_res, np.amax(
-        frame_length_table)+frame_length_res, frame_length_res, dtype='int64')
+    frame_lengths = np.arange(frame_length_res, np.amax(frame_length_table)+frame_length_res, frame_length_res, dtype='int64')
 
     # populate sample index table
     stretch_type = type(stretch_factor)
@@ -322,33 +309,27 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
         samp_onset_table = np.empty(n_segments)
         samp_onset_table.fill(hop_length*stretch_factor)
     if stretch_type is list:
-        samp_onset_table = array_resampling(
-            stretch_factor, n_segments)*hop_length
-    samp_onset_table = np.concatenate(
-        [[0], np.round(samp_onset_table)], ).astype('int64').cumsum()[:-1]
+        samp_onset_table = array_resampling(stretch_factor, n_segments)*hop_length
+    samp_onset_table = np.concatenate([[0], np.round(samp_onset_table)], ).astype('int64').cumsum()[:-1]
 
     # apply onset variation table
     onset_var_type = type(onset_var)
     if onset_var_type is float or onset_var_type is int:
         if onset_var > 0:
             jitter = int(max(1, abs((onset_var*sr)/2)))
-            onset_var_table = np.random.randint(
-                low=jitter*-1, high=jitter, size=n_segments)
+            onset_var_table = np.random.randint(low=jitter*-1, high=jitter, size=n_segments)
             samp_onset_table = samp_onset_table + onset_var_table
     if onset_var_type is list:
-        onset_var_table = array_resampling(
-            np.array(onset_var)*sr, n_segments) * np.random.rand(n_segments)
+        onset_var_table = array_resampling(np.array(onset_var)*sr, n_segments) * np.random.rand(n_segments)
         samp_onset_table = samp_onset_table + onset_var_table.astype('int64')
     samp_onset_table[samp_onset_table < 0] = 0
 
     # compute window with default size
     env_type = type(envelope)
     if env_type == str:
-        windows = [np.repeat(np.array(
-            [get_window(envelope, Nx=wl)]).T, n_chans, axis=1) for wl in frame_lengths]
+        windows = [np.repeat(np.array([get_window(envelope, Nx=wl)]).T, n_chans, axis=1) for wl in frame_lengths]
     if env_type == np.ndarray or env_type == list:
-        windows = [np.repeat(np.array(
-            [array_resampling(envelope, N=wl)]).T, n_chans, axis=1) for wl in frame_lengths]
+        windows = [np.repeat(np.array([array_resampling(envelope, N=wl)]).T, n_chans, axis=1) for wl in frame_lengths]
 
     # compute panning table
     pan_type = type(pan_spread)
@@ -368,12 +349,10 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
     weigths = np.arange(kn, 0, -1)
 
     # make buffer array
-    buffer = np.empty(
-        shape=(int(np.amax(samp_onset_table) + np.amax(frame_length_table)), n_chans))
+    buffer = np.empty(shape=(int(np.amax(samp_onset_table) + np.amax(frame_length_table)), n_chans))
     buffer.fill(0)
 
-    grain_counter = IncrementalBar('        Concatenating grains:  ', max=len(
-        data_samples), suffix='%(index)d/%(max)d grains')
+    grain_counter = IncrementalBar('        Concatenating grains:  ', max=len(data_samples), suffix='%(index)d/%(max)d grains')
 
     for n, (ds, so, fl, p, tm) in enumerate(zip(data_samples, samp_onset_table, frame_length_table, pan_table, target_mix_table)):
         if random() > tm:
@@ -387,8 +366,7 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
         max_idx = len(snd) - 1
         samp_st = int(f[1] * snd_sr_ratio)
         samp_end = min(max_idx, samp_st+fl)
-        seg_size = round((samp_end-samp_st) /
-                         frame_length_res) * frame_length_res
+        seg_size = round((samp_end-samp_st) / frame_length_res) * frame_length_res
         samp_end = samp_st+seg_size
         if seg_size != 0 and samp_end <= max_idx:
             idx = int(np.where(frame_lengths == seg_size)[0])
