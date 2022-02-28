@@ -303,7 +303,7 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
     print('        Delta average: {}\n        DONE.\n'.format(error_sum))
     return dictionary
 
-def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, target_mix=0, pan_depth=0.5, kn=8, n_chans=2, envelope='hann', sr=None, frame_length_res=512):
+def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, target_mix=0, pan_depth=5, kn=8, n_chans=2, envelope='hann', sr=None, frame_length_res=512):
     '''Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.'''
 
     print('\nCooking recipe for {}\n        ...loading recipe...'.format(
@@ -391,6 +391,7 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
             [array_resampling(envelope, N=wl)]).T, n_chans, axis=1) for wl in frame_lengths]
 
     # compute panning table
+    pan_depth = max(0, pan_depth)
     pan_type = type(pan_depth)
     if pan_type is list:
         pan_depth = np.repeat(np.array([array_resampling(np.array(pan_depth), n_segments)]).T, n_chans, axis=1)
