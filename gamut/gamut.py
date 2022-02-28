@@ -283,10 +283,8 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
 
     # include target data samples for cooking mix parameter
     corpus_dict['corpus_info']['files'].append([sr, target_dir])
-    dictionary['target_info']['data_samples'] = target_extras[:,
-                                                              [0, 0]].astype('int32')
-    dictionary['target_info']['data_samples'][:, 0] = len(
-        corpus_dict['corpus_info']['files']) - 1
+    dictionary['target_info']['data_samples'] = target_extras[:,[0, 0]].astype('int32')
+    dictionary['target_info']['data_samples'][:, 0] = len(corpus_dict['corpus_info']['files']) - 1
 
     error_sum = 0
     bar = IncrementalBar('        Matching audio frames: ', max=len(target_mfcc), suffix='%(index)d/%(max)d frames')
@@ -298,15 +296,14 @@ def get_audio_recipe(target_dir, corpus_dict, max_duration=None, hop_length=512,
         metadata = corpus_dict['data_samples'][knn_positions]
         sorted_positions = nearest_neighbors([tex[1:]], metadata[:, [2, 3]], kn=kn)[0]
         mfcc_options = metadata[sorted_positions]
-        dictionary['data_samples'].append(
-            mfcc_options[:, [0, 1]].astype('int32'))
+        dictionary['data_samples'].append(mfcc_options[:, [0, 1]].astype('int32'))
         bar.next()
     bar.finish()
     error_sum = int((error_sum/n_samples)*1000)/1000
     print('        Delta average: {}\n        DONE.\n'.format(error_sum))
     return dictionary
 
-def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, target_mix=0, pan_spread=0.5, kn=8, n_chans=2, envelope='hann', sr=None, frame_length_res=512):
+def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, target_mix=0, pan_depth=0.5, kn=8, n_chans=2, envelope='hann', sr=None, frame_length_res=512):
     '''Takes a `dict` object (i.e. the _recipe_), and returns an array of audio samples, intended to be written as an audio file.'''
 
     print('\nCooking recipe for {}\n        ...loading recipe...'.format(
@@ -394,16 +391,10 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
             [array_resampling(envelope, N=wl)]).T, n_chans, axis=1) for wl in frame_lengths]
 
     # compute panning table
-    pan_type = type(pan_spread)
-    pan_table = np.random.randint(low=1, high=5, size=(n_segments, n_chans))
-    pan_table *= pan_table
-    if pan_type is int or pan_type is float:
-        pan_spread = min(1, max(0, pan_spread))
-        pan_table = np.power(pan_table, pan_spread)
+    pan_type = type(pan_depth)
     if pan_type is list:
-        pan_spread = np.array(pan_spread)
-        pan_table = np.power(pan_table, np.repeat(
-            np.array([array_resampling(pan_spread, n_segments)]).T, n_chans, axis=1))
+        pan_depth = np.repeat(np.array([array_resampling(np.array(pan_depth), n_segments)]).T, n_chans, axis=1)
+    pan_table = 1 / np.power(2, pan_depth * np.abs(np.repeat(np.array([np.linspace(0, 1, n_chans)]), n_segments, axis=0) - np.random.rand(n_segments, 1)))
     row_sums = pan_table.sum(axis=1)
     pan_table = pan_table / row_sums[:, np.newaxis]
 

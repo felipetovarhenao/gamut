@@ -56,7 +56,7 @@ To do this, a small collection of functions are included:
     - `stretch_factor` (`int`, `float` or `list`): fixed value or envelope break points for strech factor (i.e. speed).  (_Default: 1_)
     - `onset_var` (`int`, `float` or `list`): fixed value or envelope break points for grain onset variation, in seconds. (_Default: 0_)
     - `target_mix` (`int`, `float` or `list`)*: fixed value or envelope break points for wet/dry mix, in the range of 0.0 to 1.0. (_Default: 0_)
-    - `pan_spread` (`int`, `float` or `list`): fixed value or envelope break points for panning spread, in the range of 0.0 to 1.0. (_Default: 0.5_)
+    - `pan_depth` (`int`, `float` or `list`): fixed value or envelope break points for panning spread, in the range of 0.0 to 1.0. (_Default: 0.5_)
     - `kn` (`int`): maximum number of best matches to choose from for each grain. (_Default: 8_)
     - `n_chans` (`int`): number of output channels. (_Default: 2_)
     - `envelope` (`str` or `list`): list of envelope break points, or string specifying [window types](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.get_window.html#scipy.signal.get_window). (_Default: 'hann'_)
@@ -183,14 +183,14 @@ recipe = gamut.dict_from_gamut(recipe_path)
 envelope = [0, 1, 0.5, 0.1, 0] # grain amplitude envelope (type: str, int, float or list -- if str, use scipy.signal.windows types)
 grain_dur = [0.05, 0.25] # grain duration (type: int, float, or list)
 sr = 44100 # output sampling rate (type: int)
-pan_spread = [0.1, 0.9] # spread of panning across channels (0.0-1.0) (type: int, float or list)
+pan_depth = [0.1, 0.9] # spread of panning across channels (0.0-1.0) (type: int, float or list)
 target_mix = [0, 0.5] # dry/wet mix of input target (0.0-1.0) (type: int, float, or list)
 
 # cook audio recipe
 audio_array = gamut.cook_recipe(recipe_dict=recipe,
                         grain_dur=grain_dur,
                         target_mix=target_mix,
-                        pan_spread=pan_spread,
+                        pan_depth=pan_depth,
                         envelope=envelope,
                         sr=sr)
 
