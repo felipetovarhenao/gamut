@@ -337,18 +337,18 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
     print("        ...creating dynamic control tables...")
     # populate target mix table
     tmix_type = type(target_mix)
-    if tmix_type is list:
+    if tmix_type in [list, np.ndarray]:
         target_mix_table = array_resampling(target_mix, n_segments)
-    if tmix_type is float or tmix_type is int:
+    if tmix_type in [int, float]:
         target_mix_table = np.empty(n_segments)
         target_mix_table.fill(target_mix)
 
     # populate frame length table
     grain_dur_type = type(grain_dur)
-    if grain_dur_type is list:
+    if grain_dur_type in [list, np.ndarray]:
         frame_length_table = np.round(array_resampling(
             np.array(grain_dur) * sr, n_segments)/frame_length_res) * frame_length_res
-    if grain_dur_type is float or grain_dur_type is int:
+    if grain_dur_type in [int, float]:
         frame_length_table = np.empty(n_segments)
         frame_length_table.fill(
             round((grain_dur * sr)/frame_length_res)*frame_length_res)
@@ -358,10 +358,10 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
 
     # populate sample index table
     stretch_type = type(stretch_factor)
-    if stretch_type is int or stretch_type is float:
+    if stretch_type in [int, float]:
         samp_onset_table = np.empty(n_segments)
         samp_onset_table.fill(hop_length*stretch_factor)
-    if stretch_type is list:
+    if stretch_type in [list, np.ndarray]:
         samp_onset_table = array_resampling(
             stretch_factor, n_segments)*hop_length
     samp_onset_table = np.concatenate(
@@ -369,13 +369,13 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
 
     # apply onset variation table
     onset_var_type = type(onset_var)
-    if onset_var_type is float or onset_var_type is int:
+    if onset_var_type in [int, float]:
         if onset_var > 0:
             jitter = int(max(1, abs((onset_var*sr)/2)))
             onset_var_table = np.random.randint(
                 low=jitter*-1, high=jitter, size=n_segments)
             samp_onset_table = samp_onset_table + onset_var_table
-    if onset_var_type is list:
+    if onset_var_type in [list, np.ndarray]:
         onset_var_table = array_resampling(
             np.array(onset_var)*sr, n_segments) * np.random.rand(n_segments)
         samp_onset_table = samp_onset_table + onset_var_table.astype('int64')
@@ -386,14 +386,14 @@ def cook_recipe(recipe_dict, grain_dur=0.1, stretch_factor=1, onset_var=0, targe
     if env_type == str:
         windows = [np.repeat(np.array(
             [get_window(envelope, Nx=wl)]).T, n_chans, axis=1) for wl in frame_lengths]
-    if env_type == np.ndarray or env_type == list:
+    if env_type in [list, np.ndarray]:
         windows = [np.repeat(np.array(
             [array_resampling(envelope, N=wl)]).T, n_chans, axis=1) for wl in frame_lengths]
 
     # compute panning table
     pan_depth = max(0, pan_depth)
     pan_type = type(pan_depth)
-    if pan_type is list:
+    if pan_type in [list, np.ndarray]:
         pan_depth = np.repeat(np.array([array_resampling(np.array(pan_depth), n_segments)]).T, n_chans, axis=1)
     pan_table = 1 / np.power(2, pan_depth * np.abs(np.repeat(np.array([np.linspace(0, 1, n_chans)]), n_segments, axis=0) - np.random.rand(n_segments, 1)))
     row_sums = pan_table.sum(axis=1)
