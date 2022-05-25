@@ -137,7 +137,7 @@ def build_corpus(input_dir, max_duration=None, n_mfcc=13, hop_length=512, frame_
                 dictionary['data_samples'].append(
                     np.array(np.concatenate([[file_id],  md])))
             dictionary['corpus_info']['files'].append([sr, sf])
-            counter.write(str(file_id + 1))
+            counter.next()
             file_id += 1
 
     # build data tree for mfcc frames
