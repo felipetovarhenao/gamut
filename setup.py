@@ -4,7 +4,7 @@ from pathlib import Path
 long_description = (Path(__file__).parent / "README.md").read_text()
 
 MODULE = 'gamut'
-VERSION = '0.1.8.3'
+VERSION = '0.1.8.4'
 DESCRIPTION = 'Granular Audio Musaicing Toolkit for Python'
 
 setup(
@@ -13,6 +13,7 @@ setup(
     author='Felipe Tovar-Henao',
     author_email='<felipe.tovar.henao@gmail.com>',
     description=DESCRIPTION,
+    url='https://pypi.org/project/gamut/',
     packages=find_packages(),
     license='OSI Approved :: ISC License (ISCL)',
     install_requires=['progress', 'librosa', 'sounddevice'],
