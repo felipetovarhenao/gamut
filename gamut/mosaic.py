@@ -118,13 +118,16 @@ class Mosaic(AudioAnalyzer):
                 self.counter.next()
         self.counter.finish()
 
-    def __duplicate_channels(self, soundfiles: dict, n_chans: int) -> None:
+    def __duplicate_channels(self, soundfiles: dict, n_chans: int, sr: int) -> None:
         for corpus in soundfiles:
             for source in soundfiles[corpus]:
                 if source == 'source_root':
                     continue
+                y = soundfiles[corpus][source]['y']
+                if soundfiles[corpus][source]['sr'] != sr:
+                    y = resample_array(y, int(len(y) * sr/soundfiles[corpus][source]['sr']))
                 soundfiles[corpus][source]['y'] = np.repeat(
-                    np.array([soundfiles[corpus][source]['y']]).T, n_chans, axis=1)
+                    np.array([y]).T, n_chans, axis=1)
 
     def __make_control_table(self, value, length):
         value_type = type(value)
@@ -157,7 +160,7 @@ class Mosaic(AudioAnalyzer):
         hop_length = int(self.hop_length * sr_ratio)
 
         soundfiles = deepcopy(self.soundfiles)
-        self.__duplicate_channels(soundfiles, n_chans=n_chans)
+        self.__duplicate_channels(soundfiles, n_chans=n_chans, sr=sr)
 
         n_segments = len(self.frames)
 
@@ -233,6 +236,7 @@ class Mosaic(AudioAnalyzer):
             snd_sr_ratio = sr/soundfiles[corpus_id][snd_id]['sr']
             max_idx = len(snd) - 1
             samp_st = int(f['marker'] * snd_sr_ratio)
+            # samp_st = int(f['marker'])
             samp_end = min(max_idx, samp_st+fl)
             seg_size = round((samp_end-samp_st) /
                              frame_length_res) * frame_length_res

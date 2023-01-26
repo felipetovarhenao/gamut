@@ -1,7 +1,7 @@
 import numpy as np
 import sounddevice as sd
 from os.path import splitext
-from .config import AUDIO_FORMATS
+from .config import AUDIO_FORMATS, LOGGER
 from soundfile import write
 
 
@@ -10,9 +10,10 @@ class AudioBuffer:
         self.y = y
         self.sr = sr
 
-    def play(self) -> None:
+    def play(self, wait=True) -> None:
+        LOGGER.process('Playing audio...').print()
         sd.play(self.y, samplerate=self.sr)
-        sd.wait()
+        wait and sd.wait()
 
     def set_sampling_rate(self, sr: int) -> None:
         self.sr = sr
