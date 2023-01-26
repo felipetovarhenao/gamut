@@ -1,7 +1,7 @@
 import numpy as np
 import sounddevice as sd
 from os.path import splitext
-from config import AUDIO_FORMATS
+from .config import AUDIO_FORMATS
 from soundfile import write
 
 

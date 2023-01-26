@@ -1,4 +1,4 @@
-from utils import Logger
+from .utils import Logger
 
 FILE_EXT = '.gamut'
 AUDIO_FORMATS = ['.wav', '.aif', '.aiff']

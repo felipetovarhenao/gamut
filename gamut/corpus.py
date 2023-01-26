@@ -9,9 +9,9 @@ from time import time
 from copy import deepcopy
 
 # gamut
-from trees import KDTree
-from config import AUDIO_FORMATS, LOGGER
-from base import AudioAnalyzer
+from .trees import KDTree
+from .config import AUDIO_FORMATS, LOGGER
+from .base import AudioAnalyzer
 
 
 class Corpus(AudioAnalyzer):
@@ -76,11 +76,13 @@ class Corpus(AudioAnalyzer):
 
     def __build(self):
         """ build corpus from `source` """
+        st = time()
         LOGGER.process('Building audio corpus...').print()
         data = self.__compile()
         self.counter.finish()
         self.__set_source_root()
         self.tree.build(data=data, vector_path='features')
+        LOGGER.elapsed_time(st).print()
 
     def __compile(self, source: list | str | None = None, excuded_files: list = list(), data: list = list()) -> None:
         """ recursively collects and extracts features from all audio files in `source` """
@@ -90,7 +92,7 @@ class Corpus(AudioAnalyzer):
         if source_type == list:
             for x in source:
                 self.__compile(x, excuded_files)
-            return
+            return data
         source_path = realpath(source)
         if isdir(source_path):
             for root, _, files in walk(source_path):

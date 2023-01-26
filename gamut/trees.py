@@ -1,7 +1,7 @@
 import numpy as np
-from utils import inspect_object, deep_update, Logger
 from progress.bar import IncrementalBar
-import pprint as pp
+from .utils import inspect_object, deep_update
+from .config import LOGGER
 
 
 class KDTree:
@@ -73,7 +73,7 @@ class KDTree:
 
         self.norm = np.ones(self.k)
 
-        self.bar = IncrementalBar(Logger().subprocess(
+        self.bar = IncrementalBar(LOGGER.subprocess(
             'Classifying audio grains: '), max=len(data), suffix='%(index)d/%(max)d grains')
 
         # build binary tree and fit data

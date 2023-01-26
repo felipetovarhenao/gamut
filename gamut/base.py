@@ -7,8 +7,8 @@ from os import rename
 from progress.spinner import PieSpinner
 from os.path import basename, splitext
 from time import time
-from config import FILE_EXT, LOGGER
-from utils import Logger
+
+from .config import FILE_EXT, LOGGER
 
 
 class AudioAnalyzer(ABC):

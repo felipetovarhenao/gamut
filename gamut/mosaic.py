@@ -1,6 +1,9 @@
-from base import AudioAnalyzer
-from corpus import Corpus
-from config import FILE_EXT, LOGGER
+from .corpus import Corpus
+from .config import FILE_EXT, LOGGER
+from .audio import AudioBuffer
+from .utils import resample_array
+from .base import AudioAnalyzer
+
 import numpy as np
 from librosa import load
 from os.path import join, basename
@@ -8,10 +11,9 @@ from copy import deepcopy
 from time import time
 from progress.counter import Counter
 from progress.bar import IncrementalBar
-from utils import resample_array
+
 from scipy.signal import get_window
 from random import choices, random
-from audio import AudioBuffer
 
 
 class Mosaic(AudioAnalyzer):
@@ -22,13 +24,15 @@ class Mosaic(AudioAnalyzer):
     def __init__(self,
                  target: str | None = None,
                  corpus: list | Corpus = None,
-                 sr: int | None = None) -> None:
+                 sr: int | None = None,
+                 *args,
+                 **kwargs) -> None:
 
         if any([target, corpus]) and not all([target, corpus]):
             raise ValueError(
                 f'You must either provide both target and corpus attributes, or leave them blank to build Mosaic from {FILE_EXT} file')
 
-        super().__init__()
+        super().__init__(*args, **kwargs)
 
         self.target = target
         self.sr = None
@@ -134,20 +138,20 @@ class Mosaic(AudioAnalyzer):
     def __quantize_array(self, arr, res):
         return np.round(arr / res) * res
 
-    def synthesize(self,
-                   accuracy: float = 1.0,
-                   grain_dur: float = 0.1,
-                   stretch_factor: float = 1.0,
-                   onset_var: float = 0,
-                   target_mix: float = 0,
-                   pan_depth: float = 5,
-                   n_chans: int = 2,
-                   envelope: list | str = 'hann',
-                   sr: int | None = None,
-                   frame_length_res: int = 512) -> AudioBuffer:
+    def to_audio(self,
+                 accuracy: float = 1.0,
+                 grain_dur: float = 0.1,
+                 stretch_factor: float = 1.0,
+                 onset_var: float = 0,
+                 target_mix: float = 0,
+                 pan_depth: float = 5,
+                 n_chans: int = 2,
+                 envelope: list | str = 'hann',
+                 sr: int | None = None,
+                 frame_length_res: int = 512) -> AudioBuffer:
         st = time()
         LOGGER.process(
-            f'Generating audio mosaic for {basename(self.target)}...')
+            f'Generating audio from mosaic target: {basename(self.target)}...').print()
         # playback ratio
         sr, sr_ratio = (self.sr, 1) if not sr else (sr, sr/self.sr)
         hop_length = int(self.hop_length * sr_ratio)
@@ -241,29 +245,6 @@ class Mosaic(AudioAnalyzer):
             grain_counter.next()
 
         grain_counter.finish()
-        LOGGER.elapsed_time(st)
+        LOGGER.elapsed_time(st).print()
         # return normalized buffer
         return AudioBuffer(y=(buffer / np.amax(np.abs(buffer))) * np.sqrt(0.5), sr=sr)
-
-
-if __name__ == '__main__':
-    source = '/Users/felipe-tovar-henao/Documents/Sample collections/Berklee44v11'
-    target = '/Users/felipe-tovar-henao/Documents/GAMuT files/target_samples/angel_poema_44.1kHz.wav'
-    corpus_output = './my_corpus.gamut'
-    corpus_output2 = './my_corpus2.gamut'
-    mosaic_output = './my_mosaic.gamut'
-    # read = True
-    # # # if read:
-    c = Corpus()
-    c.read(corpus_output)
-    c2 = Corpus()
-    c2.read(corpus_output2)
-    # # else:
-    c = Corpus(source)
-    c.write(corpus_output, portable=False)
-    mos = Mosaic(target=target, corpus=[c, c2])
-    mos.write(mosaic_output, portable=False)
-    mos = Mosaic()
-    mos.read(mosaic_output)
-    audio = mos.synthesize(accuracy=0.8, envelope=[0,1,0.5,0.25,0.125,0.006,0.0])
-    audio.play()
