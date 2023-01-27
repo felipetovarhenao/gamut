@@ -16,3 +16,5 @@ logo.ai
 /images/
 TODO.txt
 **/Icon?
+**/*.gamut
+test.py
