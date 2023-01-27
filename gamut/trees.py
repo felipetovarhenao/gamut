@@ -2,6 +2,7 @@ import numpy as np
 from progress.bar import IncrementalBar
 from .utils import inspect_object, deep_update
 from .config import LOGGER
+from random import randint
 
 
 class KDTree:
@@ -77,7 +78,7 @@ class KDTree:
             'Classifying audio grains: '), max=len(data), suffix='%(index)d/%(max)d grains')
 
         # build binary tree and fit data
-        self.data = self.__build(data, vector_path)
+        self.data = self.__build(data, vector_path, k=randint(0, self.k-1))
         self.bar.finish()
         self.norm = self.max - self.min
         self.__fit(vector_path)
