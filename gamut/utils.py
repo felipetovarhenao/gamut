@@ -60,6 +60,8 @@ class Logger:
         self.c4 = f(213)
         self.c5 = f(196)
 
+        self.err = f(160)
+
     def elapsed_time(self, st):
         return self.Log(f'\t{self.c3}{self.italic}Elapsed time: {self.bold}{self.c5}{round((time()-st) * 100) / 100}s{self.normal}\n')
 
@@ -71,3 +73,6 @@ class Logger:
 
     def subprocess(self, text):
         return self.Log(f'\t{self.c1}{text}{self.normal}')
+
+    def error(self, text):
+        return self.Log(f'\n\t{self.err}{self.bold}{text}{self.normal}\n')

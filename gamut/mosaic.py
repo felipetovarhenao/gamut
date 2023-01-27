@@ -1,12 +1,12 @@
 from .corpus import Corpus
-from .config import FILE_EXT, LOGGER
+from .config import FILE_EXT, LOGGER, AUDIO_FORMATS
 from .audio import AudioBuffer
 from .utils import resample_array
 from .base import AudioAnalyzer
 
 import numpy as np
 from librosa import load
-from os.path import join, basename
+from os.path import join, basename, splitext, realpath, isdir
 from copy import deepcopy
 from time import time
 from progress.counter import Counter
@@ -28,10 +28,7 @@ class Mosaic(AudioAnalyzer):
                  *args,
                  **kwargs) -> None:
 
-        if any([target, corpus]) and not all([target, corpus]):
-            raise ValueError(
-                f'You must either provide both target and corpus attributes, or leave them blank to build Mosaic from {FILE_EXT} file')
-
+        self.__validate(target, corpus)
         super().__init__(*args, **kwargs)
 
         self.target = target
@@ -44,6 +41,20 @@ class Mosaic(AudioAnalyzer):
         self.soundfiles = {i: dict() for i in range(len(corpora or []))}
         if self.target and corpora:
             self.__build(corpora=corpora, sr=sr)
+
+    def __validate(self, target, corpus):
+        if any([target, corpus]) and not all([target, corpus]):
+            raise ValueError(
+                f'You must either provide both target and corpus attributes, or leave them blank to build Mosaic from {FILE_EXT} file')
+        if not target:
+            return
+        if isdir(realpath(target)):
+            raise ValueError(LOGGER.error(
+                f'{target} is not a valid audio file path'))
+        file = basename(target)
+        if splitext(file)[1] not in AUDIO_FORMATS:
+            raise ValueError(LOGGER.error(
+                f'{file} is an invalid or unsupported audio file format.'))
 
     def __parse_corpus(self, corpus: list | Corpus, corpora: list = list()):
         if not corpus:
@@ -118,16 +129,20 @@ class Mosaic(AudioAnalyzer):
                 self.counter.next()
         self.counter.finish()
 
-    def __duplicate_channels(self, soundfiles: dict, n_chans: int, sr: int) -> None:
+    def __preprocess_samples(self, soundfiles: dict, n_chans: int, sr: int) -> None:
+        c = Counter(LOGGER.subprocess('Preprocessing audio files: '))
         for corpus in soundfiles:
             for source in soundfiles[corpus]:
                 if source == 'source_root':
                     continue
                 y = soundfiles[corpus][source]['y']
+                c.next()
                 if soundfiles[corpus][source]['sr'] != sr:
-                    y = resample_array(y, int(len(y) * sr/soundfiles[corpus][source]['sr']))
+                    y = resample_array(
+                        y, int(len(y) * sr/soundfiles[corpus][source]['sr']))
                 soundfiles[corpus][source]['y'] = np.repeat(
                     np.array([y]).T, n_chans, axis=1)
+        c.finish()
 
     def __make_control_table(self, value, length):
         value_type = type(value)
@@ -160,7 +175,7 @@ class Mosaic(AudioAnalyzer):
         hop_length = int(self.hop_length * sr_ratio)
 
         soundfiles = deepcopy(self.soundfiles)
-        self.__duplicate_channels(soundfiles, n_chans=n_chans, sr=sr)
+        self.__preprocess_samples(soundfiles, n_chans=n_chans, sr=sr)
 
         n_segments = len(self.frames)
 
@@ -250,5 +265,6 @@ class Mosaic(AudioAnalyzer):
 
         grain_counter.finish()
         LOGGER.elapsed_time(st).print()
+
         # return normalized buffer
         return AudioBuffer(y=(buffer / np.amax(np.abs(buffer))) * np.sqrt(0.5), sr=sr)
