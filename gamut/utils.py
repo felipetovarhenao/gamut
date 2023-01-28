@@ -34,9 +34,7 @@ def deep_update(obj, path, replace, separator: str = '.'):
 
 
 def resample_array(array, N):
-    x_coor1 = np.arange(0, len(array)-1, (len(array)-1)/N)[:N]
-    x_coor2 = np.arange(0, len(array))
-    return np.interp(x_coor1, x_coor2, array)
+    return np.interp(np.linspace(0, len(array) - 1, N), np.arange(0, len(array)), array)
 
 
 class Logger:
