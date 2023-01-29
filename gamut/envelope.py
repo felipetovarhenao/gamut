@@ -63,3 +63,8 @@ class Envelope:
     @property
     def points(self):
         return self._points
+
+    def get_points(self, N):
+        if self.type:
+            return Points(get_window(self.type, N))
+        return self._points.resample(N)

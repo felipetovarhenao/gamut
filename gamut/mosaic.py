@@ -3,6 +3,8 @@ from .config import FILE_EXT, LOGGER, AUDIO_FORMATS
 from .audio import AudioBuffer
 from .utils import resample_array
 from .base import AudioAnalyzer
+from .envelope import Envelope
+from .envelope import Points
 
 import numpy as np
 from librosa import load
@@ -153,6 +155,12 @@ class Mosaic(AudioAnalyzer):
             arr.fill(value)
             return arr
 
+    def __get_control_points(self, param, N):
+        if isinstance(param, Envelope):
+            return param.points.resample(N)
+        else:
+            return Points().fill(N, param)
+
     def __quantize_array(self, arr, res):
         return np.round(arr / res) * res
 
@@ -164,7 +172,7 @@ class Mosaic(AudioAnalyzer):
                  target_mix: float = 0,
                  pan_depth: float = 5,
                  n_chans: int = 2,
-                 envelope: list | str = 'hann',
+                 envelope: Envelope = Envelope(),
                  sr: int | None = None,
                  frame_length_res: int = 512) -> AudioBuffer:
         st = time()
@@ -210,13 +218,7 @@ class Mosaic(AudioAnalyzer):
                 onset_var_table.astype('int64')
         samp_onset_table[samp_onset_table < 0] = 0
 
-        env_type = type(envelope)
-        if env_type == str:
-            windows = [np.repeat(np.array(
-                [get_window(envelope, Nx=wl)]).T, n_chans, axis=1) for wl in frame_lengths]
-        elif env_type in [list, np.ndarray]:
-            windows = [np.repeat(np.array(
-                [resample_array(envelope, N=wl)]).T, n_chans, axis=1) for wl in frame_lengths]
+        windows = [envelope.get_points(wl).replicate(n_chans) for wl in frame_lengths]
 
         # compute panning table
         pan_depth = max(0, pan_depth)
