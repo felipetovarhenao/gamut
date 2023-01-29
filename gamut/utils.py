@@ -41,12 +41,28 @@ class Logger:
     """ utility class for logging colored messages"""
 
     class Log(str):
-
         def print(self):
             print(self)
 
     def __init__(self) -> None:
         def f(c): return u'\u001b[38;5;' + f'{c}m'
+        def rgb(r, g, b): return f'\u001b[38;2;{r};{g};{b}m'
+
+        spectrum = np.array([
+            (246, 90, 62),
+            (249, 164, 69),
+            (240, 232, 72),
+            (130, 230, 96),
+            (52, 202, 197),
+            (141, 126, 179),
+            (246, 90, 62),
+        ])
+
+        self.gamut = "~ GAMuT: Granular Audio Musaicing Toolkit ~"
+        self.spectrum = [rgb(*col) for col in np.array([resample_array(val, len(self.gamut))
+                                                        for val in spectrum.T]).T.astype('int32')]
+
+        self.reset = 'u\u001b[0m'
 
         self.normal = '\033[0m' + f(153)
         self.bold = '\033[1m'
@@ -59,18 +75,27 @@ class Logger:
         self.c5 = f(196)
 
         self.err = f(160)
+        self.header().print()
 
     def elapsed_time(self, st):
-        return self.Log(f'\t{self.c3}{self.italic}Elapsed time: {self.bold}{self.c5}{round((time()-st) * 100) / 100}s{self.normal}\n')
+        return self.Log(
+            f'\t{self.c3}{self.italic}Elapsed time: {self.bold}{self.c5}{round((time()-st) * 100) / 100}s{self.normal}\n')
 
     def process(self, text):
         return self.Log(f'{self.bold}{self.c2}{text}{self.normal}')
 
     def disk(self, object_name, filename, read=False):
-        return self.process(f'{"Reading" if read else "Writing"} {self.c4}{object_name.upper()}{self.c2} {"from" if read else "to"} disk: {self.c4}{self.bold}{filename}{self.c2}...{self.normal} ')
+        return self.process(
+            f'{"Reading" if read else "Writing"} {self.c4}{object_name.upper()}{self.c2} {"from" if read else "to"} disk: {self.c4}{self.bold}{filename}{self.c2}...{self.normal} ')
 
     def subprocess(self, text):
         return self.Log(f'\t{self.c1}{text}{self.normal}')
 
     def error(self, text):
         return self.Log(f'\n\t{self.err}{self.bold}{text}{self.normal}\n')
+
+    def header(self):
+        header = ""
+        for char, col in zip(self.gamut, self.spectrum):
+            header += f'{col}{self.bold}{char}'
+        return self.Log(f'{header}{self.normal}\n')
