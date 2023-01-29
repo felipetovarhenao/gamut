@@ -18,3 +18,8 @@ TODO.txt
 **/Icon?
 **/*.gamut
 **/*.wav
+**/*.html
+**/source/_*
+**/build
+**/*.rst
+!**/index.rst

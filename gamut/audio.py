@@ -6,6 +6,10 @@ from soundfile import write
 
 
 class AudioBuffer:
+    """
+    Audio Buffer class
+    """
+
     def __init__(self, y: np.ndarray, sr: int) -> None:
         self.y = y
         self.sr = sr

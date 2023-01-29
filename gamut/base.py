@@ -12,6 +12,9 @@ from .config import FILE_EXT, LOGGER
 
 
 class AudioAnalyzer(ABC):
+    """ 
+    Audio Analyzer class
+    """
     def __init__(self,
                  n_mfcc: int = 13,
                  hop_length: int = 512,
