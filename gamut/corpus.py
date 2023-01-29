@@ -7,14 +7,15 @@ from os import walk
 from progress.counter import Counter
 from time import time
 from copy import deepcopy
+import re
 
 # gamut
 from .trees import KDTree
 from .config import AUDIO_FORMATS, LOGGER
-from .base import AudioAnalyzer
+from .base import Analyzer
 
 
-class Corpus(AudioAnalyzer):
+class Corpus(Analyzer):
     """ 
     Audio corpus class 
 
@@ -127,7 +128,8 @@ class Corpus(AudioAnalyzer):
             raise BufferError('Input source does not contain any audio files')
         if len(self.soundfiles) == 1:
             return
-        self.source_root = commonprefix([sf['file'] for sf in self.soundfiles])
+        pattern = re.compile(r'(\/.*)*/')
+        self.source_root = pattern.search(commonprefix([sf['file'] for sf in self.soundfiles])).group()
         for i, sf in enumerate(self.soundfiles):
             self.soundfiles[i]['file'] = relpath(sf['file'], self.source_root)
 

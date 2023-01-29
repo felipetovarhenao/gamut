@@ -1,29 +1,34 @@
 from abc import ABC
 from librosa import magphase, stft
-from librosa.feature import mfcc
-from librosa import samples_like
+from librosa.feature import mfcc, chroma_stft, tonnetz
+from librosa import samples_like, pyin, note_to_hz
 import numpy as np
 from os import rename
 from progress.spinner import PieSpinner
 from os.path import basename, splitext
 from time import time
+from collections.abc import Iterable
 
 from .config import FILE_EXT, LOGGER
 
 
-class AudioAnalyzer(ABC):
+class Analyzer(ABC):
     """ 
-    Audio Analyzer class
+    Analyzer class
     """
+
     def __init__(self,
                  n_mfcc: int = 13,
                  hop_length: int = 512,
                  frame_length: int = 1024,
-                 n_fft: int = 512) -> None:
+                 n_fft: int = 1024,
+                 features: Iterable = ['mfcc'],
+                 ) -> None:
         self.n_mfcc = n_mfcc
         self.hop_length = hop_length
         self.n_fft = n_fft
         self.frame_length = frame_length
+        self.features = features
         self.type = self.__get_type()
 
     def serialize(self, *args, **kwargs):
@@ -80,13 +85,32 @@ class AudioAnalyzer(ABC):
 
     def _analyze_audio_file(self, y: np.ndarray, sr: int | None = None) -> tuple:
         """ perform mfcc analysis on input `ndarray` """
-        S = magphase(stft(y=y, n_fft=self.n_fft,
+        S = magphase(stft(y=y,
+                          n_fft=self.n_fft,
+                          win_length=self.frame_length,
                           hop_length=self.hop_length))[0]
         analysis = mfcc(S=S,
                         sr=sr,
                         n_mfcc=self.n_mfcc,
-                        n_fft=self.frame_length,
                         hop_length=self.hop_length).T[:-2, 0:]
+
+        if 'mfcc_' in self.features:
+            _mfcc = mfcc(S=S,
+                         sr=sr,
+                         n_mfcc=self.n_mfcc,
+                         hop_length=self.hop_length)
+        if 'chroma' in self.features:
+            _chroma = chroma_stft(S=S,
+                                  sr=sr,
+                                  n_mfcc=self.n_mfcc,
+                                  n_fft=self.n_fft,
+                                  win_length=self.frame_length,
+                                  hop_length=self.hop_length)
+        if 'pyin' in self.features:
+            f0, voiced_flag, voiced_probs = pyin(y,
+                                                 fmin=note_to_hz('C2'),
+                                                 fmax=note_to_hz('C7'))
+
         markers = samples_like(X=analysis,
                                hop_length=self.hop_length,
                                n_fft=self.n_fft,

@@ -2,7 +2,7 @@ from .corpus import Corpus
 from .config import FILE_EXT, LOGGER, AUDIO_FORMATS
 from .audio import AudioBuffer
 from .utils import resample_array
-from .base import AudioAnalyzer
+from .base import Analyzer
 from .envelope import Envelope
 from .envelope import Points
 
@@ -18,7 +18,7 @@ from collections.abc import Iterable
 from random import choices, random
 
 
-class Mosaic(AudioAnalyzer):
+class Mosaic(Analyzer):
     """ 
     Audio Mosaic class
     """
@@ -167,7 +167,7 @@ class Mosaic(AudioAnalyzer):
                  target_mix: float | int | Envelope | Iterable = 0,
                  pan_depth: float | int | Envelope | Iterable = 5,
                  grain_envelope: Envelope | str | Iterable = Envelope(),
-                 
+
                  # static parameters
                  n_chans: int = 2,
                  sr: int | None = None,
@@ -194,7 +194,7 @@ class Mosaic(AudioAnalyzer):
 
         # DYNAMIC CONTROL TABLES
         LOGGER.subprocess('Creating parameter envelopes...').print()
-        target_mix_table = as_points(target_mix)
+        target_mix_table = as_points(target_mix).clip(0.0, 1.0)
 
         frame_length_table = (as_points(grain_dur) * sr).quantize(frame_length_res).astype('int64')
 
@@ -239,12 +239,14 @@ class Mosaic(AudioAnalyzer):
                 num_frames = max(1, int(len(ds) * (1 - ac)))
                 weights = np.linspace(1.0, 0.0, num_frames)
                 f = choices(ds[:num_frames], weights=weights)[0]
+                amp = 1.0
             else:
                 f = {
                     'corpus': -1,
                     'source': 0,
                     'marker': n * self.hop_length,
                 }
+                amp = tm
             source_id = f['source']
             corpus_id = f['corpus']
             source = soundfiles[corpus_id]['samples'][source_id]['y']
@@ -257,7 +259,7 @@ class Mosaic(AudioAnalyzer):
             if seg_size != 0 and samp_end <= max_idx:
                 idx = int(np.where(frame_lengths == seg_size)[0])
                 window = windows[idx]
-                segment = (source[samp_st:samp_end] * window) * p
+                segment = source[samp_st:samp_end] * window * p * amp
                 buffer[so:so+seg_size] = buffer[so:so+seg_size] + segment
             grain_counter.next()
 
