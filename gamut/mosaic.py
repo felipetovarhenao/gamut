@@ -40,7 +40,8 @@ class Mosaic(AudioAnalyzer):
         self.counter = Counter()
 
         corpora = self.__parse_corpus(corpus)
-        self.soundfiles = {i: dict() for i in range(len(corpora or []))}
+        self.soundfiles = {i: dict() for i in range(-1, len(corpora or []))}
+
         if self.target and corpora:
             self.__build(corpora=corpora, sr=sr)
 
@@ -73,6 +74,11 @@ class Mosaic(AudioAnalyzer):
     def __build(self, corpora: list, sr: int | None = None) -> None:
         y, self.sr = load(self.target, sr=sr)
         target_analysis = self._analyze_audio_file(y=y, sr=self.sr)[0]
+        self.soundfiles[-1][0] = {
+            'file': self.target,
+            'sr': self.sr,
+            'y': y,
+        }
         for x in target_analysis:
             matches = list()
             for corpus_id, corpus in enumerate(corpora):
@@ -191,8 +197,8 @@ class Mosaic(AudioAnalyzer):
 
         target_mix_table = self.__make_control_table(target_mix, n_segments)
 
-        frame_length_table = self.__make_control_table(
-            grain_dur * sr, n_segments)
+        frame_length_table = self.__make_control_table(grain_dur, n_segments) * sr
+
         frame_length_table = self.__quantize_array(
             frame_length_table, frame_length_res).astype('int64')
 
@@ -218,7 +224,8 @@ class Mosaic(AudioAnalyzer):
                 onset_var_table.astype('int64')
         samp_onset_table[samp_onset_table < 0] = 0
 
-        windows = [envelope.get_points(wl).replicate(n_chans) for wl in frame_lengths]
+        windows = [envelope.get_points(wl).replicate(n_chans)
+                   for wl in frame_lengths]
 
         # compute panning table
         pan_depth = max(0, pan_depth)
@@ -240,20 +247,22 @@ class Mosaic(AudioAnalyzer):
             self.frames), suffix='%(index)d/%(max)d grains')
 
         for n, (ds, so, fl, p, tm) in enumerate(zip(self.frames, samp_onset_table, frame_length_table, pan_table, target_mix_table)):
-            if random() > tm*0:
+            if random() > tm:
                 num_frames = max(1, int(len(ds) * (1 - accuracy)))
                 weights = np.linspace(1.0, 0.0, num_frames)
                 f = choices(ds[:num_frames], weights=weights)[0]
             else:
-                pass
-                # f = recipe_dict['target_info']['data_samples'][n]
+                f = {
+                    'corpus': -1,
+                    'source': 0,
+                    'marker': n * self.hop_length,
+                }
             snd_id = f['source']
             corpus_id = f['corpus']
             snd = soundfiles[corpus_id][snd_id]['y']
             snd_sr_ratio = sr/soundfiles[corpus_id][snd_id]['sr']
             max_idx = len(snd) - 1
             samp_st = int(f['marker'] * snd_sr_ratio)
-            # samp_st = int(f['marker'])
             samp_end = min(max_idx, samp_st+fl)
             seg_size = round((samp_end-samp_st) /
                              frame_length_res) * frame_length_res
