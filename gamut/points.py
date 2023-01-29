@@ -15,8 +15,8 @@ class Points(np.ndarray):
         tmp.fill(value)
         return Points(tmp)
 
-    def concat(self, x):
-        return Points(np.concatenate([self, x]))
+    def concat(self, x, prepend: bool = False):
+        return Points(np.concatenate([x, self] if prepend else [self, x]))
 
     def resample(self, N):
         if len(self) == N:
@@ -36,13 +36,15 @@ class Points(np.ndarray):
             out = Points([out])
         return out
 
-    def quantize(self, n):
+    def quantize(self, n: float | int = 1):
         return Points(np.round(self / n) * n)
-
-    def perturb(self, jitter, uniform: bool = True):
-        if jitter == 0:
-            return self
-        return self + Points(np.random.rand(*((self.shape[0], 1) if uniform else self.shape))).scale(-jitter, jitter)
 
     def abs(self):
         return Points(np.abs(self))
+
+    def clip(self, min: float | int | None = None, max: float | int | None = None):
+        if min:
+            self[self < min] = min
+        if max:
+            self[self > max] = max
+        return self

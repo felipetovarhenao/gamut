@@ -45,6 +45,7 @@ class AudioAnalyzer(ABC):
         rename(output_dir + '.npy', output_dir+FILE_EXT)
         spinner.finish()
         LOGGER.elapsed_time(st).print()
+        return self
 
     def read(self, file: str, warn_user=False) -> None:
         """ Reads a `.gamut` file from disk """
@@ -69,6 +70,7 @@ class AudioAnalyzer(ABC):
                 setattr(self, attr, serialized_object[attr])
 
         LOGGER.elapsed_time(st).print()
+        return self
 
     def __get_type(self):
         return self.__class__.__name__.lower()
