@@ -129,7 +129,7 @@ class Mosaic(AudioAnalyzer):
                     continue
                 corpus = soundfiles[corpus_id]
                 source = corpus[source_id]
-                path = join(corpus['source_root'], source['file'])
+                path = join(corpus['source_root'], source['file']) if corpus_id != -1 else source['file']
                 if 'y' in soundfiles[corpus_id][source_id]:
                     continue
                 soundfiles[corpus_id][source_id]['y'] = load(
@@ -144,12 +144,12 @@ class Mosaic(AudioAnalyzer):
                 if source == 'source_root':
                     continue
                 y = soundfiles[corpus][source]['y']
-                c.next()
                 if soundfiles[corpus][source]['sr'] != sr:
                     y = resample_array(
                         y, int(len(y) * sr/soundfiles[corpus][source]['sr']))
                 soundfiles[corpus][source]['y'] = np.repeat(
                     np.array([y]).T, n_chans, axis=1)
+                c.next()
         c.finish()
 
     def __make_control_table(self, value, length):
@@ -161,9 +161,9 @@ class Mosaic(AudioAnalyzer):
             arr.fill(value)
             return arr
 
-    def __get_control_points(self, param, N):
+    def __param_points(self, param, N):
         if isinstance(param, Envelope):
-            return param.points.resample(N)
+            return param.get_points(N)
         else:
             return Points().fill(N, param)
 
@@ -178,7 +178,7 @@ class Mosaic(AudioAnalyzer):
                  target_mix: float = 0,
                  pan_depth: float = 5,
                  n_chans: int = 2,
-                 envelope: Envelope = Envelope(),
+                 grain_envelope: Envelope = Envelope(),
                  sr: int | None = None,
                  frame_length_res: int = 512) -> AudioBuffer:
         st = time()
@@ -197,7 +197,8 @@ class Mosaic(AudioAnalyzer):
 
         target_mix_table = self.__make_control_table(target_mix, n_segments)
 
-        frame_length_table = self.__make_control_table(grain_dur, n_segments) * sr
+        frame_length_table = self.__make_control_table(
+            grain_dur, n_segments) * sr
 
         frame_length_table = self.__quantize_array(
             frame_length_table, frame_length_res).astype('int64')
@@ -224,19 +225,14 @@ class Mosaic(AudioAnalyzer):
                 onset_var_table.astype('int64')
         samp_onset_table[samp_onset_table < 0] = 0
 
-        windows = [envelope.get_points(wl).replicate(n_chans)
-                   for wl in frame_lengths]
+        # compute amplitude windows
+        windows = [grain_envelope.get_points(wl).wrap().T.replicate(n_chans, axis=1) for wl in frame_lengths]
 
         # compute panning table
-        pan_depth = max(0, pan_depth)
-        pan_type = type(pan_depth)
-        if pan_type in [list, np.ndarray]:
-            pan_depth = np.repeat(
-                np.array([resample_array(np.array(pan_depth), n_segments)]).T, n_chans, axis=1)
-        pan_table = 1 / np.power(2, pan_depth * np.abs(np.repeat(np.array(
-            [np.linspace(0, 1, n_chans)]), n_segments, axis=0) - np.random.rand(n_segments, 1)))
-        row_sums = pan_table.sum(axis=1)
-        pan_table = pan_table / row_sums[:, np.newaxis]
+        pan_depth_table = self.__param_points(pan_depth, n_segments).wrap().T.replicate(n_chans, axis=1)
+        pan_table = Points(np.linspace(0, 1, n_chans)).wrap().replicate(n_segments, axis=0) - np.random.rand(n_segments, 1)
+        pan_table = 1 / (2**(pan_depth_table * pan_table.abs()))
+        pan_table /= pan_table.sum(axis=1)[:, np.newaxis]
 
         # make buffer array
         buffer = np.empty(

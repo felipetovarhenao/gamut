@@ -27,13 +27,22 @@ class Points(np.ndarray):
         amin, amax = np.amin(self), np.amax(self)
         return Points(((self - amin) / (amax - amin)) * (out_max - out_min) + out_min)
 
-    def replicate(self, n):
-        return Points(np.repeat(np.array([self]).T, repeats=n, axis=1))
+    def replicate(self, n, axis: int = 0):
+        return Points(np.repeat(self, repeats=n, axis=axis))
+
+    def wrap(self, n: int = 1):
+        out = self
+        for _ in range(n):
+            out = Points([out])
+        return out
 
     def quantize(self, n):
         return Points(np.round(self / n) * n)
 
-    def perturb(self, jitter):
+    def perturb(self, jitter, uniform: bool = True):
         if jitter == 0:
             return self
-        return Points(self + np.random.randint(low=jitter*-1, high=jitter, size=len(self)))
+        return self + Points(np.random.rand(*((self.shape[0], 1) if uniform else self.shape))).scale(-jitter, jitter)
+
+    def abs(self):
+        return Points(np.abs(self))
