@@ -159,26 +159,29 @@ class Mosaic(AudioAnalyzer):
         c.finish()
 
     def to_audio(self,
-                 accuracy: float = 1.0,
-                 grain_dur: float = 0.1,
-                 stretch_factor: float = 1.0,
-                 onset_var: float = 0,
-                 target_mix: float = 0,
-                 pan_depth: float = 5,
+                 # dynamic control parameters
+                 accuracy: float | int | Envelope | Iterable = 1.0,
+                 grain_dur: float | int | Envelope | Iterable = 0.1,
+                 stretch_factor: float | int | Envelope | Iterable = 1.0,
+                 onset_var: float | int | Envelope | Iterable = 0,
+                 target_mix: float | int | Envelope | Iterable = 0,
+                 pan_depth: float | int | Envelope | Iterable = 5,
+                 grain_envelope: Envelope | str | Iterable = Envelope(),
+                 
+                 # static parameters
                  n_chans: int = 2,
-                 grain_envelope: Envelope = Envelope(),
                  sr: int | None = None,
                  frame_length_res: int = 512) -> AudioBuffer:
 
         n_segments = len(self.frames)
 
-        def as_points(param) -> Points:
+        def as_points(param, N: int = n_segments) -> Points:
             if isinstance(param, Envelope):
-                return param.get_points(n_segments)
-            elif not isinstance(param, Iterable):
-                return Points().fill(n_segments, param)
+                return param.get_points(N)
+            elif isinstance(param, Iterable):
+                return Envelope(shape=param).get_points(N)
             else:
-                TypeError(f'{param} {type*(param)} must be an Envelope instance or a numeric value')
+                return Points().fill(N, param)
 
         st = time()
         LOGGER.process(f'Generating audio from mosaic target: {basename(self.target)}...').print()
@@ -202,13 +205,12 @@ class Mosaic(AudioAnalyzer):
                             * hop_length).quantize().concat([0], prepend=True).astype('int64').cumsum()[:-1]
 
         # apply onset variation to samp_onset_table
-        var_range = sr // 2
-        samp_onset_var_table = np.random.rand(n_segments) * (as_points(onset_var) * var_range - var_range)
+        samp_onset_var_table = (np.random.rand(n_segments) - 0.5) * as_points(onset_var) * (sr // 2)
         samp_onset_table += samp_onset_var_table.astype('int64')
         samp_onset_table[samp_onset_table < 0] = 0
 
         # compute amplitude windows
-        windows = [grain_envelope.get_points(wl).wrap().T.replicate(n_chans, axis=1) for wl in frame_lengths]
+        windows = [as_points(grain_envelope, wl).wrap().T.replicate(n_chans, axis=1) for wl in frame_lengths]
 
         # compute panning table
         pan_depth_table = as_points(pan_depth).wrap().T.replicate(n_chans, axis=1)
