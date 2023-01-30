@@ -17,10 +17,12 @@ from .base import Analyzer
 
 class Corpus(Analyzer):
     """ 
-    Audio corpus class 
+    A ``Corpus`` represents a collection of one or more audio sources, from which a ``Mosaic`` can be built.
+    Internally, the audio sources are analyzed and decomposed into frames (i.e., `grains`), each associated with a feature vector.\n
+    These features vectors can be derived from different kinds of analyses, such as ``mfcc`` (default), ``chroma``, or ``pyin``.
+    Based on these feature vectors, a K-dimensional Tree is built internally, which helps to optimize the process of finding the 
+    best match for a given feature vector.
 
-    Attributes
-    ----------
     source: str | list | None = None
         Source file(s) from which to build the corpus. 
         `source` can be either a `str` or a list of `str`, where `str` is an audio file or a directory of audio files. 
@@ -41,16 +43,7 @@ class Corpus(Analyzer):
         Number of FFT bins
 
     leaf_size: int = 10
-        Maximum number of data items per leaf, in binary search tree.
-
-    Methods
-    ----------
-    write(output, portable=False):
-        Writes a `.gamut` corpus file to disk. If `portable=True`, it includes all audio files.
-        Otherwise, it will reload all audio files when reading file with `read()` method.
-
-    read(source: int)
-        Reads a `.gamut` corpus file from disk.
+        Maximum number of data items per leaf in the binary search tree.
     """
 
     def __init__(self,
@@ -133,7 +126,7 @@ class Corpus(Analyzer):
         for i, sf in enumerate(self.soundfiles):
             self.soundfiles[i]['file'] = relpath(sf['file'], self.source_root)
 
-    def serialize(self, spinner):
+    def _serialize(self, spinner):
         """ called from within write method """
         corpus = deepcopy({**vars(self), 'tree': vars(self.tree)})
 
@@ -144,7 +137,7 @@ class Corpus(Analyzer):
                 del sf['y']
         return corpus
 
-    def preload(self, obj):
+    def _preload(self, obj):
         """ called from within read method """
         gamut_type = obj['type']
         if gamut_type != self.type:

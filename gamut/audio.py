@@ -8,27 +8,31 @@ from librosa import load
 
 class AudioBuffer:
     """
-    Audio Buffer class
+    Audio buffer class to read and write audio files.
     """
 
-    def __init__(self, y: np.ndarray | None = None, sr: int | None = None) -> None:
+    def __init__(self, y: np.ndarray | None = None, sr: int | None = None, bit_depth: int = 24) -> None:
         self.y = y
         self.sr = sr
+        self.bit_depth = bit_depth
 
     def play(self) -> None:
+        """ Plays back inner audio buffer """
         LOGGER.process('Playing audio...').print()
         sd.play(self.y, samplerate=self.sr, blocking=True)
 
     def set_sampling_rate(self, sr: int) -> None:
+        """ Sampling rate setter method """
         self.sr = sr
 
     def read(self, input_dir, sr: int | None = None) -> None:
+        """ Reads a `.wav` or `.aif` audio file from disk """
         self.y, self.sr = load(input_dir, sr=sr)
 
-    def write(self, output_dir: str, bit_depth: int = 24):
-        """Writes an `ndarray` as audio. This function is a simple wrapper of `sf.write()`"""
+    def write(self, output_dir: str) -> None:
+        """Writes audio to disk. This function is a simple wrapper of `sf.write()`"""
         ext = splitext(output_dir)[1]
         if ext not in AUDIO_FORMATS:
             raise ValueError(
                 f'Output file format must be one of the following: {AUDIO_FORMATS}')
-        write(output_dir, self.y, self.sr, 'PCM_{}'.format(bit_depth))
+        write(output_dir, self.y, self.sr, f'PCM_{self.bit_depth}')

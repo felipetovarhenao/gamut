@@ -1,8 +1,6 @@
-import numpy as np
 from scipy.signal import get_window
 from collections.abc import Iterable
 from .config import LOGGER, ENVELOPE_TYPES
-import matplotlib.pyplot as plt
 from .points import Points
 
 
@@ -49,6 +47,7 @@ class Envelope:
         return ENVELOPE_TYPES
 
     def view(self, grid: bool = True) -> None:
+        import matplotlib.pyplot as plt
         y = get_window(self.type, Nx=64) if self.type else self._points
         plt.plot(y)
         plt.title(f"Envelope{f' ({self.type})' if self.type else ''}")

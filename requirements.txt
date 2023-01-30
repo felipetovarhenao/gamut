@@ -1,0 +1,7 @@
+librosa==0.9.2
+matplotlib==3.5.3
+numpy==1.23.3
+progress==1.6
+PySoundFile==0.9.0.post1
+scipy==1.9.1
+SoundFile==0.10.3.post1

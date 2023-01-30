@@ -109,7 +109,7 @@ class Mosaic(Analyzer):
                     matches.append(option)
             self.frames.append([x['value'] for x in sorted(matches, key=lambda x: x['cost'])])
 
-    def serialize(self, spinner):
+    def _serialize(self, spinner):
         mosaic = deepcopy(vars(self))
         spinner.next()
 
@@ -121,7 +121,7 @@ class Mosaic(Analyzer):
                     spinner.next()
         return mosaic
 
-    def preload(self, obj):
+    def _preload(self, obj):
         # reload soundfiles if non-portable
         if not obj['portable']:
             self.__load_soundfiles(obj['soundfiles'])

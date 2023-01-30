@@ -38,7 +38,9 @@ def resample_array(array, N):
 
 
 class Logger:
-    """ utility class for logging colored messages"""
+    """ 
+    Utility class for logging ANSI-colored text in the console.
+    """
 
     class Log(str):
         def print(self):

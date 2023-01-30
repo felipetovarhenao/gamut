@@ -14,7 +14,8 @@ from .config import FILE_EXT, LOGGER
 
 class Analyzer(ABC):
     """ 
-    Analyzer class
+    Abstract base class from which the ``Corpus`` and ``Mosaic`` classes inherit. 
+    It provides the base methods for feature extraction and reading/writing ``.gamut`` files.
     """
 
     def __init__(self,
@@ -31,10 +32,10 @@ class Analyzer(ABC):
         self.features = features
         self.type = self.__get_type()
 
-    def serialize(self, *args, **kwargs):
+    def _serialize(self, *args, **kwargs):
         pass
 
-    def preload(self, *args, **kwargs):
+    def _preload(self, *args, **kwargs):
         pass
 
     def write(self, output: str, portable: bool = False) -> None:
@@ -45,7 +46,7 @@ class Analyzer(ABC):
         spinner = PieSpinner(
             LOGGER.disk(f'{"" if portable else "non-"}portable {self.type}', f'{basename(output_dir)}{FILE_EXT}'))
         spinner.next()
-        serialized_object = self.serialize(spinner=spinner)
+        serialized_object = self._serialize(spinner=spinner)
 
         # write file and set correct file extension
         np.save(output_dir, serialized_object)
@@ -70,7 +71,7 @@ class Analyzer(ABC):
         LOGGER.disk(f'{"" if is_portable else "non-"}portable {self.type}',
                     basename(file), read=True).print()
 
-        serialized_object = self.preload(serialized_object)
+        serialized_object = self._preload(serialized_object)
 
         # assign attributes to self
         for attr in serialized_object:
