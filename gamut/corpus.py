@@ -8,10 +8,11 @@ from progress.counter import Counter
 from time import time
 from copy import deepcopy
 import re
+from collections.abc import Iterable
 
 # gamut
 from .trees import KDTree
-from .config import AUDIO_FORMATS, LOGGER
+from .config import AUDIO_FORMATS, LOGGER, ANALYSIS_TYPES
 from .base import Analyzer
 
 
@@ -36,7 +37,7 @@ class Corpus(Analyzer):
     hop_length: int = 512
         hop size in audio samples.
 
-    frame_length: int = 1024
+    win_length: int = 1024
         window size in audio samples.
 
     n_fft: int = 512
@@ -50,17 +51,27 @@ class Corpus(Analyzer):
                  source: str | list | None = None,
                  max_duration: int | None = None,
                  leaf_size: int = 10,
+                 features: Iterable = ['mfcc'],
                  *args,
                  **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.source = source
         self.max_duration = max_duration
         self.portable = False
-
+        self.features = features
         self.source_root = ""
         self.tree = KDTree(leaf_size=leaf_size)
         self.counter = Counter(
             message=LOGGER.subprocess('Analyzing audio samples: '))
+
+        for f in self.features:
+            if f in ANALYSIS_TYPES:
+                continue
+            raise ValueError(
+                LOGGER.error(
+                    f'"{f}" is not a valid feature option. To see the list of valid features, use the {self.type.capitalize()}.print_feature_choices() class method.'))
+        if len(self.features) == 0:
+            raise ValueError(f'You must specify at least one audio feature to instantiate a {self.type.capitalize()} instance')
 
         self.soundfiles = list()
         if self.source:
@@ -105,7 +116,7 @@ class Corpus(Analyzer):
             'sr': sr,
             'y': y
         })
-        analysis, markers = self._analyze_audio_file(y=y, sr=sr)
+        analysis, markers = self._analyze_audio_file(y=y, features=self.features, sr=sr)
         self.counter.next()
         data.extend([{
             'source': source_id,
@@ -113,6 +124,10 @@ class Corpus(Analyzer):
             'features': features,
         } for features, marker in zip(analysis, markers)])
         return data
+
+    @classmethod
+    def print_feature_choices(cls) -> None:
+        print(f'feature choices: {ANALYSIS_TYPES}')
 
     def __set_source_root(self):
         """ remove commonprefix from file paths to avoid size overhead when writing corpus to disk """

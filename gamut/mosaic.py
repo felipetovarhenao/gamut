@@ -25,22 +25,21 @@ class Mosaic(Analyzer):
 
     def __init__(self,
                  target: str | None = None,
-                 corpus: list | Corpus = None,
+                 corpus: Iterable | Corpus = None,
                  sr: int | None = None,
                  *args,
                  **kwargs) -> None:
-
         self.__validate(target, corpus)
         super().__init__(*args, **kwargs)
 
         self.target = target
         self.sr = None
-        self.frames = list()
+        self.frames = []
         self.portable = None
         self.counter = Counter()
 
         corpora = self.__parse_corpus(corpus)
-        self.soundfiles = {i: dict() for i in range(-1, len(corpora or []))}
+        self.soundfiles = {i: {} for i in range(-1, len(corpora or []))}
 
         if self.target and corpora:
             self.__build(corpora=corpora, sr=sr)
@@ -57,21 +56,32 @@ class Mosaic(Analyzer):
         if splitext(file)[1] not in AUDIO_FORMATS:
             raise ValueError(LOGGER.error(f'{file} is an invalid or unsupported audio file format.'))
 
-    def __parse_corpus(self, corpus: list | Corpus, corpora: list = list()):
+    def __parse_corpus(self, corpus: Iterable | Corpus, corpora: Iterable = []):
         if not corpus:
             return
-        if isinstance(corpus, list):
+
+        if isinstance(corpus, Iterable):
+            # check that corpus features are compatible
+            prev_features = set(corpus[0].features)
+            for i, c in enumerate(corpus[1:], 1):
+                current_features = set(c.features)
+                if prev_features != current_features:
+                    raise ValueError(f'Corpus at index {i} has a different set of features than corpus at index {i-1}')
+                prev_features = current_features
+            # recursively unpack corpora
             for c in corpus:
                 return self.__parse_corpus(c)
+
         elif isinstance(corpus, Corpus):
             corpora.append(corpus)
+
         else:
             raise ValueError(f'{corpus} is not a corpus')
         return corpora
 
-    def __build(self, corpora: list, sr: int | None = None) -> None:
+    def __build(self, corpora: Iterable, sr: int | None = None) -> None:
         y, self.sr = load(self.target, sr=sr)
-        target_analysis = self._analyze_audio_file(y=y, sr=self.sr)[0]
+        target_analysis = self._analyze_audio_file(y=y, features=corpora[0].features, sr=self.sr)[0]
 
         # include separate corpus for target
         self.soundfiles[-1] = {
@@ -90,10 +100,10 @@ class Mosaic(Analyzer):
             self.soundfiles[corpus_id] = {
                 'source_root': corpus.source_root,
                 'max_duration': corpus.max_duration,
-                'samples': dict()
+                'samples': {}
             }
         for x in target_analysis:
-            matches = list()
+            matches = []
             for corpus_id, corpus in enumerate(corpora):
                 nearest_neighbors = corpus.tree.knn(
                     x=x,
@@ -171,7 +181,7 @@ class Mosaic(Analyzer):
                  # static parameters
                  n_chans: int = 2,
                  sr: int | None = None,
-                 frame_length_res: int = 512) -> AudioBuffer:
+                 win_length_res: int = 512) -> AudioBuffer:
 
         n_segments = len(self.frames)
 
@@ -196,10 +206,10 @@ class Mosaic(Analyzer):
         LOGGER.subprocess('Creating parameter envelopes...').print()
         target_mix_table = as_points(target_mix).clip(0.0, 1.0)
 
-        frame_length_table = (as_points(grain_dur) * sr).quantize(frame_length_res).astype('int64')
+        win_length_table = (as_points(grain_dur) * sr).quantize(win_length_res).astype('int64')
 
-        max_frame_length = np.amax(frame_length_table) + frame_length_res
-        frame_lengths = np.arange(frame_length_res, max_frame_length, frame_length_res, dtype='int64')
+        max_win_length = np.amax(win_length_table) + win_length_res
+        win_lengths = np.arange(win_length_res, max_win_length, win_length_res, dtype='int64')
 
         samp_onset_table = (as_points(stretch_factor)
                             * hop_length).quantize().concat([0], prepend=True).astype('int64').cumsum()[:-1]
@@ -210,7 +220,7 @@ class Mosaic(Analyzer):
         samp_onset_table[samp_onset_table < 0] = 0
 
         # compute amplitude windows
-        windows = [as_points(grain_envelope, wl).wrap().T.replicate(n_chans, axis=1) for wl in frame_lengths]
+        windows = [as_points(grain_envelope, wl).wrap().T.replicate(n_chans, axis=1) for wl in win_lengths]
 
         # compute panning table
         pan_depth_table = as_points(pan_depth).wrap().T.replicate(n_chans, axis=1)
@@ -219,7 +229,7 @@ class Mosaic(Analyzer):
         pan_table /= pan_table.sum(axis=1)[:, np.newaxis]
 
         # make buffer array
-        buffer = np.empty(shape=(int(np.amax(samp_onset_table) + np.amax(frame_length_table)), n_chans))
+        buffer = np.empty(shape=(int(np.amax(samp_onset_table) + np.amax(win_length_table)), n_chans))
         buffer.fill(0)
 
         grain_counter = IncrementalBar(
@@ -231,7 +241,7 @@ class Mosaic(Analyzer):
 
         for n, (ds, so, fl, p, tm, ac) in enumerate(zip(self.frames,
                                                         samp_onset_table,
-                                                        frame_length_table,
+                                                        win_length_table,
                                                         pan_table,
                                                         target_mix_table,
                                                         accuracy_table)):
@@ -254,10 +264,10 @@ class Mosaic(Analyzer):
             max_idx = len(source) - 1
             samp_st = int(f['marker'] * source_sr_ratio)
             samp_end = min(max_idx, samp_st+fl)
-            seg_size = round((samp_end-samp_st) / frame_length_res) * frame_length_res
+            seg_size = round((samp_end-samp_st) / win_length_res) * win_length_res
             samp_end = samp_st+seg_size
             if seg_size != 0 and samp_end <= max_idx:
-                idx = int(np.where(frame_lengths == seg_size)[0])
+                idx = int(np.where(win_lengths == seg_size)[0])
                 window = windows[idx]
                 segment = source[samp_st:samp_end] * window * p * amp
                 buffer[so:so+seg_size] = buffer[so:so+seg_size] + segment

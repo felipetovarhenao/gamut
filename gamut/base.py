@@ -1,6 +1,6 @@
 from abc import ABC
 from librosa import magphase, stft
-from librosa.feature import mfcc, chroma_stft, tonnetz
+from librosa.feature import mfcc, chroma_stft, rms
 from librosa import samples_like, pyin, note_to_hz
 import numpy as np
 from os import rename
@@ -21,22 +21,18 @@ class Analyzer(ABC):
     def __init__(self,
                  n_mfcc: int = 13,
                  hop_length: int = 512,
-                 frame_length: int = 1024,
+                 win_length: int = 1024,
                  n_fft: int = 1024,
-                 features: Iterable = ['mfcc'],
                  ) -> None:
         self.n_mfcc = n_mfcc
         self.hop_length = hop_length
         self.n_fft = n_fft
-        self.frame_length = frame_length
-        self.features = features
+        self.win_length = win_length
         self.type = self.__get_type()
 
-    def _serialize(self, *args, **kwargs):
-        pass
+    def _serialize(self): ...
 
-    def _preload(self, *args, **kwargs):
-        pass
+    def _preload(self): ...
 
     def write(self, output: str, portable: bool = False) -> None:
         """ Writes a `.gamut` file to disk """
@@ -84,33 +80,35 @@ class Analyzer(ABC):
     def __get_type(self):
         return self.__class__.__name__.lower()
 
-    def _analyze_audio_file(self, y: np.ndarray, sr: int | None = None) -> tuple:
+    def _analyze_audio_file(self, y: np.ndarray, features: Iterable, sr: int | None = None) -> tuple:
         """ perform mfcc analysis on input `ndarray` """
         S = magphase(stft(y=y,
                           n_fft=self.n_fft,
-                          win_length=self.frame_length,
+                          win_length=self.win_length,
                           hop_length=self.hop_length))[0]
-        analysis = mfcc(S=S,
-                        sr=sr,
-                        n_mfcc=self.n_mfcc,
-                        hop_length=self.hop_length).T[:-2, 0:]
 
-        if 'mfcc_' in self.features:
-            _mfcc = mfcc(S=S,
-                         sr=sr,
-                         n_mfcc=self.n_mfcc,
-                         hop_length=self.hop_length)
-        if 'chroma' in self.features:
-            _chroma = chroma_stft(S=S,
-                                  sr=sr,
-                                  n_mfcc=self.n_mfcc,
-                                  n_fft=self.n_fft,
-                                  win_length=self.frame_length,
-                                  hop_length=self.hop_length)
-        if 'pyin' in self.features:
-            f0, voiced_flag, voiced_probs = pyin(y,
-                                                 fmin=note_to_hz('C2'),
-                                                 fmax=note_to_hz('C7'))
+        analysis = []
+        if 'timbre' in features:
+            mfcc_features = mfcc(S=S,
+                                 sr=sr,
+                                 n_mfcc=self.n_mfcc,
+                                 hop_length=self.hop_length)
+
+            analysis.extend(mfcc_features)
+
+        if 'harmony' in features:
+            chroma_features = chroma_stft(S=S,
+                                          sr=sr,
+                                          n_fft=self.n_fft,
+                                          win_length=self.win_length,
+                                          hop_length=self.hop_length)
+            analysis.extend(chroma_features)
+
+        if 'loudness' in features:
+            rms_features = rms(S=S, frame_length=self.win_length, hop_length=self.hop_length)
+            analysis.extend(rms_features)
+
+        analysis = np.array(analysis).T
 
         markers = samples_like(X=analysis,
                                hop_length=self.hop_length,

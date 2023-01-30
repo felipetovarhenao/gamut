@@ -3,6 +3,7 @@ from .utils import Logger
 FILE_EXT = '.gamut'
 AUDIO_FORMATS = ['.wav', '.aif', '.aiff']
 LOGGER = Logger()
+ANALYSIS_TYPES = ['timbre', 'loudness', 'harmony']
 ENVELOPE_TYPES = [
     'barthann',
     'bartlett',
