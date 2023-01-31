@@ -11,7 +11,7 @@ __pycache__
 /build/
 /gamut.egg-info/
 /audio_examples/
-test.py
+test*.py
 TODO.txt
 **/Icon?
 **/*.gamut

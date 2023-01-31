@@ -5,3 +5,4 @@ progress==1.6
 PySoundFile==0.9.0.post1
 scipy==1.9.1
 SoundFile==0.10.3.post1
+sounddevice==0.4.5

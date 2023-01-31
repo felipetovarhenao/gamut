@@ -21,10 +21,10 @@ class Envelope:
             raise TypeError(LOGGER.error(
                 'Envelope must be initialized with either a window type (e.g. "hann") or an iterable of envelope points'))
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<Envelope: {self.type if self.type else str(self._points)}{LOGGER.normal}>"
 
-    def __validate_points(self, points):
+    def __validate_points(self, points) -> Points:
         if isinstance(points[0], Iterable):
             prev_idx = points[0][0]
             for point in points[1:]:

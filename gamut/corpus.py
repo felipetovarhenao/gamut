@@ -56,12 +56,10 @@ class Corpus(Analyzer):
         super().__init__(*args, **kwargs)
         self.source = source
         self.max_duration = max_duration
-        self.portable = False
         self.features = features
         self.source_root = ""
         self.tree = KDTree(leaf_size=leaf_size)
-        self.counter = Counter(
-            message=LOGGER.subprocess('Analyzing audio samples: '))
+        self.counter = Counter(message=LOGGER.subprocess('Analyzing audio samples: '))
 
         for f in self.features:
             if f in ANALYSIS_TYPES:
@@ -78,7 +76,7 @@ class Corpus(Analyzer):
             self.__build()
             LOGGER.elapsed_time(st)
 
-    def __build(self):
+    def __build(self) -> None:
         """ build corpus from `source` """
         st = time()
         LOGGER.process('Building audio corpus...').print()
@@ -88,7 +86,21 @@ class Corpus(Analyzer):
         self.tree.build(data=data, vector_path='features')
         LOGGER.elapsed_time(st).print()
 
-    def __compile(self, source: list | str | None = None, excuded_files: list = list(), data: list = list()) -> None:
+    def _summarize(self) -> dict:
+        filenames = "\n"
+        for i, sf in enumerate(self.soundfiles):
+            fn = basename(sf['file'])
+            filenames += [f'\t{fn}', f', {fn}', f', {fn}\n'][[0, 1, 1, 2][i % 4]]
+        return {
+            "portable": self.portable,
+            "source root": self.source_root,
+            "max. used source duration": f'{self.max_duration}' + ("s" if self.max_duration else ""),
+            "max. tree leaf size": self.tree.leaf_size,
+            "analysis features": f'[{", ".join(self.features)}, ]',
+            f'sources ({len(self.soundfiles)})': filenames,
+        }
+
+    def __compile(self, source: list | str | None = None, excuded_files: list = [], data: list = []) -> None:
         """ recursively collects and extracts features from all audio files in `source` """
         source = source or self.source
         source_type = type(source or self.source)
@@ -96,15 +108,18 @@ class Corpus(Analyzer):
             for x in source:
                 self.__compile(x, excuded_files)
             return data
+
         source_path = realpath(source)
         if isdir(source_path):
             for root, _, files in walk(source_path):
                 for f in files:
                     self.__compile(join(root, f), excuded_files)
             return data
+
         filename, ext = splitext(basename(source))
         if ext.lower() not in AUDIO_FORMATS or filename in excuded_files:
             return data
+
         excuded_files.append(excuded_files)
         y, sr = load(path=source, sr=None, mono=True,
                      duration=self.max_duration)
@@ -139,7 +154,7 @@ class Corpus(Analyzer):
         for i, sf in enumerate(self.soundfiles):
             self.soundfiles[i]['file'] = relpath(sf['file'], self.source_root)
 
-    def _serialize(self, spinner):
+    def _serialize(self, spinner: object) -> dict:
         """ called from within write method """
         corpus = deepcopy({**vars(self), 'tree': vars(self.tree)})
 
@@ -150,7 +165,7 @@ class Corpus(Analyzer):
                 del sf['y']
         return corpus
 
-    def _preload(self, obj):
+    def _preload(self, obj: object) -> dict:
         """ called from within read method """
         gamut_type = obj['type']
         if gamut_type != self.type:
@@ -159,6 +174,7 @@ class Corpus(Analyzer):
         tree = KDTree()
         tree.read(obj['tree'])
         obj['tree'] = tree
+
         # re-load audio files if corpus file is not portable
         if not obj['portable']:
             self.counter.message = LOGGER.subprocess('Loading audio files: ')

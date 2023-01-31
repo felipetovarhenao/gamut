@@ -12,7 +12,7 @@ class Points(np.ndarray):
     def __new__(cls, array: np.ndarray | list = []):
         return np.asarray(array).view(cls)
 
-    def fill(self, shape, value):
+    def fill(self, shape: tuple, value):
         tmp = np.empty(shape=shape)
         tmp.fill(value)
         return Points(tmp)

@@ -1,16 +1,23 @@
+# typing
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
+
+# numpy
+import numpy as np
+
+# librosa
 from librosa import magphase, stft
 from librosa.feature import mfcc, chroma_stft
 from librosa import samples_like
-import numpy as np
-from os import rename
-from progress.spinner import PieSpinner
-from os.path import basename, splitext
-from time import time
-from collections.abc import Iterable
 
+# utils
+from os import rename
+from os.path import basename, splitext
+from progress.spinner import PieSpinner
+from time import time
+
+# gamut
 from .config import FILE_EXT, LOGGER
-import numpy.typing as npt
 
 
 class Analyzer(ABC):
@@ -41,6 +48,7 @@ class Analyzer(ABC):
         self.n_fft = n_fft
         self.win_length = win_length
         self.type = self.__get_type()
+        self.portable = False
 
     @abstractmethod
     def _serialize(self):
@@ -49,6 +57,19 @@ class Analyzer(ABC):
     @abstractmethod
     def _preload(self):
         raise NotImplementedError
+
+    @abstractmethod
+    def _summarize(self):
+        raise NotImplementedError
+
+    def summarize(self) -> None:
+        summary = self._summarize()
+        line = "".join("-" for _ in range(90))
+        LOGGER.process(f"*** {self.type.upper()} SUMMARY ***\n{LOGGER.c3}{line}").print()
+        for key in summary:
+            val = summary[key]
+            print(f"{LOGGER.c4}{key.upper()}: {LOGGER.normal}{val}")
+        print(f'{LOGGER.c3}{line}{LOGGER.normal}')
 
     def write(self, output: str, portable: bool = False) -> None:
         """ Writes a ``.gamut`` file to disk """
@@ -97,7 +118,7 @@ class Analyzer(ABC):
         """ Helper function to get subclass name """
         return self.__class__.__name__.lower()
 
-    def _analyze_audio_file(self, y: npt.NDArray, features: Iterable, sr: int | None = None) -> tuple:
+    def _analyze_audio_file(self, y: np.ndarray, features: Iterable, sr: int | None = None) -> tuple:
         """ Extracts audio features from an ``ndarray`` of audio samples """
         S = magphase(stft(y=y,
                           n_fft=self.n_fft,

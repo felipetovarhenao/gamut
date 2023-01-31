@@ -28,7 +28,7 @@ class Mosaic(Analyzer):
 
     By "blueprint" it's meant that a ``Mosaic`` instance generates and stores the necessary
     information to synthesize an audio mosaic, but does not automatically generate the audio mosaic.\n
-    
+
     This allows the user to create different versions, based on the audio parameters passed to the 
     ``to_audio()`` method.
 
@@ -57,9 +57,8 @@ class Mosaic(Analyzer):
         super().__init__(*args, **kwargs)
 
         self.target = target
-        self.sr = None
+        self.sr = sr
         self.frames = []
-        self.portable = None
         self.counter = Counter()
         self.beat_unit = beat_unit
 
@@ -91,7 +90,9 @@ class Mosaic(Analyzer):
             for i, c in enumerate(corpus[1:], 1):
                 current_features = set(c.features)
                 if prev_features != current_features:
-                    raise ValueError(f'Corpus at index {i} has a different set of features than corpus at index {i-1}')
+                    raise ValueError(
+                        LOGGER.error(
+                            f'Corpus at index {i} has a different set of features ({c.features}) than corpus at index {i-1} ({corpus[i-1].features}). When using more than one corpus, make sure they are based on the same feature set.'))
                 prev_features = current_features
             # recursively unpack corpora
             for c in corpus:
@@ -114,7 +115,7 @@ class Mosaic(Analyzer):
         self.soundfiles[-1] = {
             'source_root': "",
             'max_duration': None,
-            'samples': {
+            'sources': {
                 0: {
                     'file': self.target,
                     'sr': self.sr,
@@ -127,7 +128,7 @@ class Mosaic(Analyzer):
             self.soundfiles[corpus_id] = {
                 'source_root': corpus.source_root,
                 'max_duration': corpus.max_duration,
-                'samples': {}
+                'sources': {}
             }
         for x in target_analysis:
             matches = []
@@ -139,7 +140,7 @@ class Mosaic(Analyzer):
                 for nn in nearest_neighbors:
                     # get id of source audio file
                     source_id = nn['value']['source']
-                    self.soundfiles[corpus_id]['samples'][source_id] = corpus.soundfiles[source_id]
+                    self.soundfiles[corpus_id]['sources'][source_id] = corpus.soundfiles[source_id]
                     nn['value']['corpus'] = corpus_id
                     option = deepcopy(nn)
                     del option['value']['features']
@@ -153,10 +154,17 @@ class Mosaic(Analyzer):
         # if not portable, delete audio samples from soundfiles on write
         if not self.portable:
             for corpus_id in mosaic['soundfiles']:
-                for source_id in mosaic['soundfiles'][corpus_id]['samples']:
-                    del mosaic['soundfiles'][corpus_id]['samples'][source_id]['y']
+                for source_id in mosaic['soundfiles'][corpus_id]['sources']:
+                    del mosaic['soundfiles'][corpus_id]['sources'][source_id]['y']
                     spinner.next()
         return mosaic
+
+    def _summarize(self) -> dict:
+        return {
+            "portable": self.portable,
+            "target": self.target,
+            "num. of grains": len(self.frames)
+        }
 
     def _preload(self, obj):
         # reload soundfiles if non-portable
@@ -171,27 +179,27 @@ class Mosaic(Analyzer):
         self.counter.message = LOGGER.subprocess('Loading audio files: ')
         for corpus_id in soundfiles:
             corpus = soundfiles[corpus_id]
-            sources = corpus['samples']
+            sources = corpus['sources']
             for source_id in sources:
                 source = sources[source_id]
                 path = join(corpus['source_root'], source['file'])
                 if 'y' in source:
                     continue
-                soundfiles[corpus_id]['samples'][source_id]['y'] = load(path, sr=source['sr'], duration=corpus['max_duration'])[0]
+                soundfiles[corpus_id]['sources'][source_id]['y'] = load(path, sr=source['sr'], duration=corpus['max_duration'])[0]
                 self.counter.next()
         self.counter.finish()
 
     def __preprocess_samples(self, soundfiles: dict, n_chans: int, sr: int) -> None:
         c = Counter(LOGGER.subprocess('Preprocessing audio files: '))
         for corpus_id in soundfiles:
-            sources = soundfiles[corpus_id]['samples']
+            sources = soundfiles[corpus_id]['sources']
             for source_id in sources:
                 source = sources[source_id]
                 y = source['y']
                 sr_ratio = sr/source['sr']
                 if source['sr'] != sr:
                     y = resample_array(y, int(len(y) * sr_ratio))
-                soundfiles[corpus_id]['samples'][source_id]['y'] = np.repeat(np.array([y]).T, n_chans, axis=1)
+                soundfiles[corpus_id]['sources'][source_id]['y'] = np.repeat(np.array([y]).T, n_chans, axis=1)
                 c.next()
         c.finish()
 
@@ -319,8 +327,8 @@ class Mosaic(Analyzer):
                 amp = tm
             source_id = f['source']
             corpus_id = f['corpus']
-            source = soundfiles[corpus_id]['samples'][source_id]['y']
-            source_sr_ratio = sr/soundfiles[corpus_id]['samples'][source_id]['sr']
+            source = soundfiles[corpus_id]['sources'][source_id]['y']
+            source_sr_ratio = sr/soundfiles[corpus_id]['sources'][source_id]['sr']
             max_idx = len(source) - 1
             samp_st = int(f['marker'] * source_sr_ratio)
             samp_end = min(max_idx, samp_st+fl)
