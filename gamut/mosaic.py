@@ -62,7 +62,7 @@ class Mosaic(Analyzer):
         self.counter = Counter()
         self.beat_unit = beat_unit
 
-        corpora = self.__parse_corpus(corpus)
+        corpora = self.__parse_corpus(corpus, [])
         self.soundfiles = {i: {} for i in range(-1, len(corpora or []))}
 
         if self.target and corpora:
@@ -80,7 +80,7 @@ class Mosaic(Analyzer):
         if splitext(file)[1] not in AUDIO_FORMATS:
             raise ValueError(LOGGER.error(f'{file} is an invalid or unsupported audio file format.'))
 
-    def __parse_corpus(self, corpus: Iterable | Corpus, corpora: Iterable = []):
+    def __parse_corpus(self, corpus: Iterable | Corpus, corpora: Iterable):
         if not corpus:
             return
 
@@ -96,11 +96,9 @@ class Mosaic(Analyzer):
                 prev_features = current_features
             # recursively unpack corpora
             for c in corpus:
-                return self.__parse_corpus(c)
-
+                self.__parse_corpus(c, corpora=corpora)
         elif isinstance(corpus, Corpus):
             corpora.append(corpus)
-
         else:
             raise ValueError(f'{corpus} is not a corpus')
         return corpora
@@ -160,9 +158,11 @@ class Mosaic(Analyzer):
         return mosaic
 
     def _summarize(self) -> dict:
+        duration = (len(self.soundfiles[-1]['sources'][0]['y']) / self.soundfiles[-1]['sources'][0]['sr'])
         return {
+            "target": basename(self.target) if self.target else None,
             "portable": self.portable,
-            "target": self.target,
+            "duration": f'{round(duration * 10) / 10}s',
             "num. of grains": len(self.frames)
         }
 
@@ -182,45 +182,31 @@ class Mosaic(Analyzer):
             sources = corpus['sources']
             for source_id in sources:
                 source = sources[source_id]
-                path = join(corpus['source_root'], source['file'])
-                if 'y' in source:
-                    continue
-                soundfiles[corpus_id]['sources'][source_id]['y'] = load(path, sr=source['sr'], duration=corpus['max_duration'])[0]
+                if 'y' not in source:
+                    path = join(corpus['source_root'], source['file'])
+                    soundfiles[corpus_id]['sources'][source_id]['y'] = load(
+                        path, sr=source['sr'], duration=corpus['max_duration'])[0]
                 self.counter.next()
         self.counter.finish()
 
-    def __preprocess_samples(self, soundfiles: dict, n_chans: int, sr: int) -> None:
-        c = Counter(LOGGER.subprocess('Preprocessing audio files: '))
-        for corpus_id in soundfiles:
-            sources = soundfiles[corpus_id]['sources']
-            for source_id in sources:
-                source = sources[source_id]
-                y = source['y']
-                sr_ratio = sr/source['sr']
-                if source['sr'] != sr:
-                    y = resample_array(y, int(len(y) * sr_ratio))
-                soundfiles[corpus_id]['sources'][source_id]['y'] = np.repeat(np.array([y]).T, n_chans, axis=1)
-                c.next()
-        c.finish()
-
     def to_audio(self,
                  # dynamic control parameters
-                 accuracy: float | int | Envelope | Iterable = 1.0,
+                 fidelity: float | int | Envelope | Iterable = 1.0,
                  grain_dur: float | int | Envelope | Iterable = 0.1,
                  stretch_factor: float | int | Envelope | Iterable = 1.0,
                  onset_var: float | int | Envelope | Iterable = 0,
-                 target_mix: float | int | Envelope | Iterable = 0,
                  pan_depth: float | int | Envelope | Iterable = 5,
                  grain_envelope: Envelope | str | Iterable = Envelope(),
+                 corpus_weights: float | int | Envelope | Iterable = 1.0,
 
                  # static parameters
                  n_chans: int = 2,
                  sr: int | None = None,
                  win_length_res: int = 512) -> AudioBuffer:
         """
-        Returns an audio mosaic as an ``AudioBuffer`` instance.
+        Returns an *audio mosaic* as an ``AudioBuffer`` instance, based on several audio control parameters, such as grain duration, onset variation, panning depth, grain envelope, grain duration, wet/dry mix, number of channels, and grain duration resolution.
 
-        accuracy: float | int | Envelope | Iterable = 1.0
+        fidelity: float | int | Envelope | Iterable = 1.0
             Normalized probablity (0.0 - 1.0) of choosing the best possible match from ``Corpus`` for each grain in ``target``.
 
         grain_dur: float | int | Envelope | Iterable = 0.1
@@ -230,10 +216,15 @@ class Mosaic(Analyzer):
             Stretch factor of audio output (e.g., 1: original speed, 0.5: twice as fast, 2: twice as slow, etc.)
 
         onset_var: float | int | Envelope | Iterable = 0
-            Grain onset random variation in seconds.
+            Grain onset variation in seconds.
 
-        target_mix: float | int | Envelope | Iterable = 0
-            Probabily of choosing grain from audio target instead of one from input ``Corpus``. 
+        corpus_weights: float | int | Envelope | Iterable = 1.0,
+            Probability of choosing grain from input ``Corpus`` (or ``list`` thereof) vs. from original audio ``target``.\n 
+            Here are some examples that demonstrate the different ways in which this parameter can be specified:
+
+                * ``int | float``: probability of choosing a grain from ``Corpus``. If more than one ``Corpus`` is given, the probability is equally distributed among them.
+                * ``Envelope | List[float | int | tuple, ...]``: envelope of probabilities of choosing a grain from ``Corpus``. If a ``list`` of ``Corpus`` instances is given, the probability is equally distributed among them.
+                * ``List[List[float | int | tuple, ...] | Envelope | (int | float), ...]``: ``list`` of envelopes of probabilities for chosing a grain from element at index ``i``, where ``i = 0`` is the ``target`` and the rest are all ``Corpus`` instances passed to ``corpus`` argument.
 
         pan_depth: float | int | Envelope | Iterable = 5
             Depth of contrast for channel panning
@@ -254,6 +245,7 @@ class Mosaic(Analyzer):
         n_segments = len(self.frames)
 
         def as_points(param, N: int = n_segments) -> Points:
+            """ resolve parameter into a ``Points`` instance based on type """
             if isinstance(param, Envelope):
                 return param.get_points(N)
             elif isinstance(param, Iterable):
@@ -261,18 +253,54 @@ class Mosaic(Analyzer):
             else:
                 return Points().fill(N, param)
 
+        def parse_corpus_weights_param(param):
+            """ Generates corpus weights table based on param type """
+            even_weights = True
+            num_corpora = len(self.soundfiles.keys()) - 1
+            # when weigths are meant to control target vs all corpora
+            if isinstance(param, Envelope | float | int) or (
+                    isinstance(param, Iterable) and all([isinstance(p, int | float | tuple) for p in param])):
+                wet_mix = as_points(param).clip(min=0.0, max=1.0)
+                mix_table = np.array([1.0-wet_mix] + [wet_mix for _ in range(num_corpora)]).T
+            # when weights are meant to control target and corpora individually
+            else:
+                if len(param) != num_corpora + 1:
+                    raise ValueError(
+                        LOGGER.error(
+                            f'The number of items in corpus_weights argument must be {num_corpora + 1}, where the first element is the target'))
+                mix_table = np.array([as_points(env).clip(min=0.0, max=1.0) for env in param]).T
+                even_weights = False
+            return mix_table / mix_table.sum(axis=1)[:, np.newaxis], even_weights
+
+        def preprocess_samples(n_chans: int, sr: int) -> None:
+            """ resamples files with conflicting sampling rates """
+            soundfiles = deepcopy(self.soundfiles)
+            c = Counter(LOGGER.subprocess('Preprocessing audio files: '))
+            for corpus_id in soundfiles:
+                sources = soundfiles[corpus_id]['sources']
+                for source_id in sources:
+                    source = sources[source_id]
+                    y = source['y']
+                    sr_ratio = sr/source['sr']
+                    if source['sr'] != sr:
+                        y = resample_array(y, int(len(y) * sr_ratio))
+                    soundfiles[corpus_id]['sources'][source_id]['y'] = np.repeat(np.array([y]).T, n_chans, axis=1)
+                    c.next()
+            c.finish()
+            return soundfiles
+
         st = time()
         LOGGER.process(f'Generating audio from mosaic target: {basename(self.target)}...').print()
         # playback ratio
         sr, sr_ratio = (self.sr, 1) if not sr else (sr, sr/self.sr)
         hop_length = int(self.hop_length * sr_ratio)
 
-        soundfiles = deepcopy(self.soundfiles)
-        self.__preprocess_samples(soundfiles, n_chans=n_chans, sr=sr)
+        soundfiles = preprocess_samples(n_chans=n_chans, sr=sr)
 
         # DYNAMIC CONTROL TABLES
         LOGGER.subprocess('Creating parameter envelopes...').print()
-        target_mix_table = as_points(target_mix).clip(0.0, 1.0)
+
+        corpus_weights_table, even_weights = parse_corpus_weights_param(corpus_weights)
 
         win_length_table = (as_points(grain_dur) * sr).quantize(win_length_res).astype('int64')
 
@@ -305,40 +333,43 @@ class Mosaic(Analyzer):
             max=len(self.frames),
             suffix='%(index)d/%(max)d grains')
 
-        accuracy_table = as_points(accuracy).clip(0.0, 1.0)
+        fidelity_table = as_points(fidelity).clip(0.0, 1.0)
 
-        for n, (ds, so, fl, p, tm, ac) in enumerate(zip(self.frames,
-                                                        samp_onset_table,
-                                                        win_length_table,
-                                                        pan_table,
-                                                        target_mix_table,
-                                                        accuracy_table)):
-            if random() > tm:
-                num_frames = max(1, int(len(ds) * (1 - ac)))
-                weights = np.linspace(1.0, 0.0, num_frames)
-                f = choices(ds[:num_frames], weights=weights)[0]
+        for n, (frames, grain_onset, win_length, pan_value, corpora_weights, fidelity_value) in enumerate(
+                zip(self.frames, samp_onset_table, win_length_table, pan_table, corpus_weights_table, fidelity_table)):
+            target_weight = corpora_weights[0]
+            if random() > target_weight:
+                # use choices from a single corpus if corpora_mix was provided
                 amp = 1.0
+                candidates = frames
+                if not even_weights:
+                    corpus_id = choices([x for x in self.soundfiles.keys() if x != -1], weights=corpora_weights[1:])[0]
+                    candidates = [x for x in candidates if x['corpus'] == corpus_id]
+
+                num_candidates = max(1, int(len(candidates) * (1 - fidelity_value)))
+                weights = np.linspace(1.0, 0.0, num_candidates)
+                f = choices(candidates[:num_candidates], weights=weights)[0]
             else:
                 f = {
                     'corpus': -1,
                     'source': 0,
                     'marker': n * self.hop_length,
                 }
-                amp = tm
+                amp = target_weight
             source_id = f['source']
             corpus_id = f['corpus']
             source = soundfiles[corpus_id]['sources'][source_id]['y']
             source_sr_ratio = sr/soundfiles[corpus_id]['sources'][source_id]['sr']
             max_idx = len(source) - 1
-            samp_st = int(f['marker'] * source_sr_ratio)
-            samp_end = min(max_idx, samp_st+fl)
-            seg_size = round((samp_end-samp_st) / win_length_res) * win_length_res
-            samp_end = samp_st+seg_size
-            if seg_size > 0 and samp_end <= max_idx:
-                idx = int(np.where(win_lengths == seg_size)[0])
+            grain_start = int(f['marker'] * source_sr_ratio)
+            grain_end = min(max_idx, grain_start+win_length)
+            grain_size = round((grain_end-grain_start) / win_length_res) * win_length_res
+            grain_end = grain_start+grain_size
+            if grain_size > 0 and grain_end <= max_idx:
+                idx = int(np.where(win_lengths == grain_size)[0])
                 window = windows[idx]
-                segment = source[samp_st:samp_end] * window * p * amp
-                buffer[so:so+seg_size] = buffer[so:so+seg_size] + segment
+                grain = source[grain_start:grain_end] * window * pan_value * amp
+                buffer[grain_onset:grain_onset+grain_size] = buffer[grain_onset:grain_onset+grain_size] + grain
             grain_counter.next()
 
         grain_counter.finish()

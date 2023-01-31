@@ -63,6 +63,7 @@ class Analyzer(ABC):
         raise NotImplementedError
 
     def summarize(self) -> None:
+        """ Prints a summary of the current structure of the object """
         summary = self._summarize()
         line = "".join("-" for _ in range(90))
         LOGGER.process(f"*** {self.type.upper()} SUMMARY ***\n{LOGGER.c3}{line}").print()

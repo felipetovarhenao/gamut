@@ -74,7 +74,6 @@ class Logger:
             print(self)
 
     def __init__(self) -> None:
-        def f(c): return u'\u001b[38;5;' + f'{c}m'
         def rgb(r, g, b): return f'\u001b[38;2;{r};{g};{b}m'
 
         spectrum = np.array([
@@ -93,32 +92,36 @@ class Logger:
 
         self.reset = 'u\u001b[0m'
 
-        self.normal = '\033[0m' + f(153)
+        self.normal = '\033[0m' + rgb(231, 251, 255)
         self.bold = '\033[1m'
         self.italic = '\033[3m'
 
-        self.c1 = f(39)
-        self.c2 = f(75)
-        self.c3 = f(111)
-        self.c4 = f(213)
-        self.c5 = f(196)
+        # assign colors to instance as attributes
+        for i, c in enumerate([
+            (61, 187, 255),  # c1: blue
+            (102, 255, 150),  # c2: green
+            (126, 229, 252),  # c3: light blue
+            (255, 216, 125),  # c4: yellow
+            (255, 107, 66),  # c5: red
+        ], 1):
+            setattr(self, f'c{i}', rgb(*c))
 
-        self.err = f(160)
+        self.err = rgb(255, 71, 77)  # red
         self.header().print()
 
     def elapsed_time(self, st):
         return self.Log(
-            f'\t{self.c3}{self.italic}Elapsed time: {self.bold}{self.c5}{round((time()-st) * 100) / 100}s{self.normal}\n')
+            f'\t{self.c4}{self.italic}Elapsed time: {self.bold}{self.c5}{round((time()-st) * 100) / 100}s{self.normal}\n')
 
     def process(self, text):
-        return self.Log(f'{self.bold}{self.c2}{text}{self.normal}')
+        return self.Log(f'{self.bold}{self.c1}{text}{self.normal}')
 
     def disk(self, object_name, filename, read=False):
         return self.process(
-            f'{"Reading" if read else "Writing"} {self.c4}{object_name.upper()}{self.c2} {"from" if read else "to"} disk: {self.c4}{self.bold}{filename}{self.c2}...{self.normal} ')
+            f'{"Reading" if read else "Writing"} {self.c2}{object_name.upper()}{self.c1} {"from" if read else "to"} disk: {self.c2}{self.bold}{filename}{self.c1}...{self.normal} ')
 
     def subprocess(self, text):
-        return self.Log(f'\t{self.c1}{text}{self.normal}')
+        return self.Log(f'\t{self.c3}{text}{self.normal}')
 
     def error(self, text):
         return self.Log(f'\n\t{self.err}{self.bold}{text}{self.normal}\n')

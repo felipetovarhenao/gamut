@@ -24,8 +24,9 @@ class Corpus(Analyzer):
     which helps to optimize the process of finding the best matches for a given audio target.
 
     source: str | list | None = None
-        Source file(s) from which to build the ``Corpus``.\n 
-        ``source`` can be either a ``str`` or a list of ``str``, where ``str`` is an audio file path or a directory of audio files. 
+        Source file(s) from which to build the ``Corpus``. ``source`` can be either a ``str`` or a list of ``str``, where 
+        ``str`` is an audio file path or a directory of audio files. Note that, for any directory path, ``Corpus`` will recursively look for
+        any ``.wav`` or ``.aif`` audio files in folders and subfolders.
 
     max_duration: str | list | None = None
         Maximum audio file duration to use in ``Corpus``. Applies to all audio files found in ``source``.
@@ -92,9 +93,9 @@ class Corpus(Analyzer):
             fn = basename(sf['file'])
             filenames += [f'\t{fn}', f', {fn}', f', {fn}\n'][[0, 1, 1, 2][i % 4]]
         return {
-            "portable": self.portable,
             "source root": self.source_root,
-            "max. used source duration": f'{self.max_duration}' + ("s" if self.max_duration else ""),
+            "portable": self.portable,
+            "max. duration per source": f'{self.max_duration}' + ("s" if self.max_duration else ""),
             "max. tree leaf size": self.tree.leaf_size,
             "analysis features": f'[{", ".join(self.features)}, ]',
             f'sources ({len(self.soundfiles)})': filenames,
