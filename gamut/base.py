@@ -1,7 +1,7 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from librosa import magphase, stft
-from librosa.feature import mfcc, chroma_stft, rms
-from librosa import samples_like, pyin, note_to_hz
+from librosa.feature import mfcc, chroma_stft
+from librosa import samples_like
 import numpy as np
 from os import rename
 from progress.spinner import PieSpinner
@@ -10,32 +10,48 @@ from time import time
 from collections.abc import Iterable
 
 from .config import FILE_EXT, LOGGER
+import numpy.typing as npt
 
 
 class Analyzer(ABC):
     """ 
     Abstract base class from which the ``Corpus`` and ``Mosaic`` classes inherit. 
     It provides the base methods for feature extraction and reading/writing ``.gamut`` files.
+
+    n_mfcc: int = 13
+        Number of mel frequency cepstral coefficients to use in mfcc analysis.
+
+    hop_length: int = 512
+        Size in audio samples of space between windowing frames.
+
+    win_length: int = 1024
+        Size in audio samples of windowing frames.
+
+    n_fft: int = 1024
+        Number of FFT bins
     """
 
     def __init__(self,
                  n_mfcc: int = 13,
                  hop_length: int = 512,
                  win_length: int = 1024,
-                 n_fft: int = 1024,
-                 ) -> None:
+                 n_fft: int = 1024) -> None:
         self.n_mfcc = n_mfcc
         self.hop_length = hop_length
         self.n_fft = n_fft
         self.win_length = win_length
         self.type = self.__get_type()
 
-    def _serialize(self): ...
+    @abstractmethod
+    def _serialize(self):
+        raise NotImplementedError
 
-    def _preload(self): ...
+    @abstractmethod
+    def _preload(self):
+        raise NotImplementedError
 
     def write(self, output: str, portable: bool = False) -> None:
-        """ Writes a `.gamut` file to disk """
+        """ Writes a ``.gamut`` file to disk """
         st = time()
         self.portable = portable
         output_dir = splitext(output)[0]
@@ -53,7 +69,7 @@ class Analyzer(ABC):
         return self
 
     def read(self, file: str, warn_user=False) -> None:
-        """ Reads a `.gamut` file from disk """
+        """ Reads a ``.gamut`` file from disk """
         if warn_user:
             raise UserWarning(f"This {self.type} already has a source")
 
@@ -78,10 +94,11 @@ class Analyzer(ABC):
         return self
 
     def __get_type(self):
+        """ Helper function to get subclass name """
         return self.__class__.__name__.lower()
 
-    def _analyze_audio_file(self, y: np.ndarray, features: Iterable, sr: int | None = None) -> tuple:
-        """ perform mfcc analysis on input `ndarray` """
+    def _analyze_audio_file(self, y: npt.NDArray, features: Iterable, sr: int | None = None) -> tuple:
+        """ Extracts audio features from an ``ndarray`` of audio samples """
         S = magphase(stft(y=y,
                           n_fft=self.n_fft,
                           win_length=self.win_length,
@@ -96,7 +113,7 @@ class Analyzer(ABC):
 
             analysis.extend(mfcc_features)
 
-        if 'harmony' in features:
+        if 'pitch' in features:
             chroma_features = chroma_stft(S=S,
                                           sr=sr,
                                           n_fft=self.n_fft,
@@ -104,14 +121,11 @@ class Analyzer(ABC):
                                           hop_length=self.hop_length)
             analysis.extend(chroma_features)
 
-        if 'loudness' in features:
-            rms_features = rms(S=S, frame_length=self.win_length, hop_length=self.hop_length)
-            analysis.extend(rms_features)
-
-        analysis = np.array(analysis).T
+        analysis = np.array(analysis).T[:-1]
 
         markers = samples_like(X=analysis,
                                hop_length=self.hop_length,
                                n_fft=self.n_fft,
                                axis=0)
+
         return analysis, markers

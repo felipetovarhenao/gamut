@@ -1,8 +1,21 @@
 import numpy as np
 from time import time
+from typing import Any
 
 
-def inspect_object(obj, path: str | None, separator: str = "."):
+def get_nested_value(obj: object, path: str | None, separator: str = ".") -> Any:
+    """
+    Helper function to get an a nested value from an ``object`` of aribirary depth
+
+    obj: object
+        Object to extract value from.
+
+    path: str | None
+        path to traverse ``obj``, separated by ``separator``.
+
+    separator: str
+        substring by which to parse ``path``
+    """
     output = obj
     for key in path.split(separator):
         t = type(output)
@@ -15,22 +28,36 @@ def inspect_object(obj, path: str | None, separator: str = "."):
     return output
 
 
-def __deep_update(obj, paths, replace):
+def __set_nested_value(obj, paths, replace):
     if not paths:
         obj = replace
         return obj
     k = paths[0]
-    if isinstance(obj, list):
-        obj[int(k)] = __deep_update(obj[int(k)], paths[1:], replace)
+    if isinstance(obj, list) or isinstance(obj, np.ndarray):
+        obj[int(k)] = __set_nested_value(obj[int(k)], paths[1:], replace)
     elif isinstance(obj, dict):
-        obj[k] = __deep_update(obj[k], paths[1:], replace)
+        obj[k] = __set_nested_value(obj[k], paths[1:], replace)
     else:
-        setattr(obj, k, __deep_update(getattr(obj, k), paths[1:], replace))
+        setattr(obj, k, __set_nested_value(getattr(obj, k), paths[1:], replace))
     return obj
 
 
-def deep_update(obj, path, replace, separator: str = '.'):
-    return __deep_update(obj, path.split(separator), replace)
+def set_nested_value(obj, path, replace, separator: str = '.') -> Any:
+    """
+    Helper function to update an a nested value from an ``object`` of aribirary depth
+
+    obj: object
+        Object to extract value from.
+
+    replace:
+
+    path: str | None
+        path to traverse ``obj``, separated by ``separator``.
+
+    separator: str
+        substring by which to parse ``path``
+    """
+    return __set_nested_value(obj, path.split(separator), replace)
 
 
 def resample_array(array, N):

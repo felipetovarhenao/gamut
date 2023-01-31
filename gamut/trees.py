@@ -1,29 +1,18 @@
 import numpy as np
 from progress.bar import IncrementalBar
-from .utils import inspect_object, deep_update
+from .utils import get_nested_value, set_nested_value
 from .config import LOGGER
 from random import randint
 
 
 class KDTree:
     """
-    k-Dimensional Binary Search Tree 
+    k-dimensional binary search tree
 
     Attributes
     ----------
     leaf_size: int = 10
         Maximum number of data items per leaf.
-
-    Methods
-    ----------
-    build(data: list | np.ndarray, vector_path: str) -> None:
-        builds tree from `data`.
-
-    knn(x: np.ndarray, vector_path: str, first_n: int = 1):
-        find `first_n` matches, based on `x`.
-
-    read(tree: dict) -> None:
-        re-initialize class members from `tree`.
     """
 
     def __init__(self, leaf_size: int = 10) -> None:
@@ -44,14 +33,14 @@ class KDTree:
         if (data_size <= self.leaf_size):
             self.bar.next(data_size)
             for d in data:
-                self.__update_minmax(inspect_object(d, vector_path))
+                self.__update_minmax(get_nested_value(d, vector_path))
             return {
                 'leaf': data,
             }
-        data.sort(key=lambda x: inspect_object(x, vector_path)[k])
+        data.sort(key=lambda x: get_nested_value(x, vector_path)[k])
         middle_index = len(data) // 2
         next_k = (k + 1) % self.k
-        vector = inspect_object(data[middle_index], vector_path)
+        vector = get_nested_value(data[middle_index], vector_path)
         return {
             'node': {
                 'k': k,
@@ -63,7 +52,7 @@ class KDTree:
 
     def build(self, data: list | np.ndarray, vector_path: str) -> None:
         # get tree dimensions
-        self.k = len(inspect_object(data[0], vector_path))
+        self.k = len(get_nested_value(data[0], vector_path))
 
         # initialize min, max, and norm arrays
         self.min = np.zeros(self.k)
@@ -97,9 +86,9 @@ class KDTree:
                 fit(tree[1], vector_path)
                 return
             for leaf_item in tree['leaf']:
-                vector = inspect_object(leaf_item, vector_path)
-                deep_update(leaf_item, vector_path,
-                            self.__normalize_input(vector))
+                vector = get_nested_value(leaf_item, vector_path)
+                set_nested_value(leaf_item, vector_path,
+                                 self.__normalize_input(vector))
         fit(self.data, vector_path)
 
     def __euclidean_distance(self, a, b):
@@ -116,7 +105,7 @@ class KDTree:
                 {
                     'cost': self.__euclidean_distance(
                         data_point,
-                        inspect_object(leaf_item, vector_path)),
+                        get_nested_value(leaf_item, vector_path)),
                     'value': leaf_item
                 } for leaf_item in data['leaf']
             ], key=lambda x: x['cost'])[:first_n]

@@ -1,17 +1,26 @@
-import numpy as np
 import sounddevice as sd
 from os.path import splitext
 from .config import AUDIO_FORMATS, LOGGER
 from soundfile import write
 from librosa import load
+import numpy.typing as npt
 
 
 class AudioBuffer:
     """
-    Audio buffer class to read and write audio files.
+    Audio buffer class to read, write, and play back audio files.
+
+    y: np.array
+        numpy array of audio samples.
+
+    sr: int | None
+        audio sampling rate
+
+    bit_depth: int
+        audio bit depth
     """
 
-    def __init__(self, y: np.ndarray | None = None, sr: int | None = None, bit_depth: int = 24) -> None:
+    def __init__(self, y: npt.NDArray | None = None, sr: int | None = None, bit_depth: int = 24) -> None:
         self.y = y
         self.sr = sr
         self.bit_depth = bit_depth

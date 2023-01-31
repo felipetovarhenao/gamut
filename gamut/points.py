@@ -2,7 +2,9 @@ import numpy as np
 
 
 class Points(np.ndarray):
-    """ Points class """
+    """ 
+    Points class
+    """
 
     def __array_finalize__(self, obj):
         return obj

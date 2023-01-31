@@ -17,16 +17,40 @@ from progress.bar import IncrementalBar
 from collections.abc import Iterable
 from random import choices, random
 
+from librosa.beat import tempo
+
 
 class Mosaic(Analyzer):
     """ 
-    Audio Mosaic class
+    A ``Mosaic`` represents the blueprint from which an audio mosaic can be synthesized.
+    Given an input audio target file path and a ``Corpus`` instance, a virtual representation of 
+    an audio mosaic is built, to be later converted to audio with the ``to_audio()`` method.\n
+
+    By "blueprint" it's meant that a ``Mosaic`` instance generates and stores the necessary
+    information to synthesize an audio mosaic, but does not automatically generate the audio mosaic.\n
+    
+    This allows the user to create different versions, based on the audio parameters passed to the 
+    ``to_audio()`` method.
+
+    target: str | None = None
+        File path to target audio file.
+
+    corpus: Iterable | Corpus = None
+        ``Corpus`` instance to reconstruct ``target``
+
+    sr: int | None = None
+        Sampling rate of output audio file
+
+    beat_unit: float | int | None = None
+        Optional argument to set the grain rate to a beat unit relative to detected tempo (e.g., 1/4, 1/8, 1/16, etc.).
+        Works best when ``target`` has a steady and perceptible tempo.
     """
 
     def __init__(self,
                  target: str | None = None,
                  corpus: Iterable | Corpus = None,
                  sr: int | None = None,
+                 beat_unit: float | int | None = None,
                  *args,
                  **kwargs) -> None:
         self.__validate(target, corpus)
@@ -37,6 +61,7 @@ class Mosaic(Analyzer):
         self.frames = []
         self.portable = None
         self.counter = Counter()
+        self.beat_unit = beat_unit
 
         corpora = self.__parse_corpus(corpus)
         self.soundfiles = {i: {} for i in range(-1, len(corpora or []))}
@@ -81,6 +106,8 @@ class Mosaic(Analyzer):
 
     def __build(self, corpora: Iterable, sr: int | None = None) -> None:
         y, self.sr = load(self.target, sr=sr)
+        if self.beat_unit:
+            self.hop_length = int((self.sr * 60) / (tempo(y=y, sr=self.sr)[0] / self.beat_unit))
         target_analysis = self._analyze_audio_file(y=y, features=corpora[0].features, sr=self.sr)[0]
 
         # include separate corpus for target
@@ -182,7 +209,40 @@ class Mosaic(Analyzer):
                  n_chans: int = 2,
                  sr: int | None = None,
                  win_length_res: int = 512) -> AudioBuffer:
+        """
+        Returns an audio mosaic as an ``AudioBuffer`` instance.
 
+        accuracy: float | int | Envelope | Iterable = 1.0
+            Normalized probablity (0.0 - 1.0) of choosing the best possible match from ``Corpus`` for each grain in ``target``.
+
+        grain_dur: float | int | Envelope | Iterable = 0.1
+            Grain duration in seconds.
+
+        stretch_factor: float | int | Envelope | Iterable = 1.0
+            Stretch factor of audio output (e.g., 1: original speed, 0.5: twice as fast, 2: twice as slow, etc.)
+
+        onset_var: float | int | Envelope | Iterable = 0
+            Grain onset random variation in seconds.
+
+        target_mix: float | int | Envelope | Iterable = 0
+            Probabily of choosing grain from audio target instead of one from input ``Corpus``. 
+
+        pan_depth: float | int | Envelope | Iterable = 5
+            Depth of contrast for channel panning
+
+        grain_envelope: Envelope | str | Iterable = Envelope()
+            Amplitude envelope for all audio grains.
+
+        n_chans: int = 2
+            Number of output audio channels.
+
+        sr: int | None = None
+            Sampling rate for audio output.
+
+        win_length_res: int = 512
+            Grain duration resolution in samples.
+
+        """
         n_segments = len(self.frames)
 
         def as_points(param, N: int = n_segments) -> Points:
@@ -266,7 +326,7 @@ class Mosaic(Analyzer):
             samp_end = min(max_idx, samp_st+fl)
             seg_size = round((samp_end-samp_st) / win_length_res) * win_length_res
             samp_end = samp_st+seg_size
-            if seg_size != 0 and samp_end <= max_idx:
+            if seg_size > 0 and samp_end <= max_idx:
                 idx = int(np.where(win_lengths == seg_size)[0])
                 window = windows[idx]
                 segment = source[samp_st:samp_end] * window * p * amp

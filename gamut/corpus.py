@@ -19,20 +19,19 @@ from .base import Analyzer
 class Corpus(Analyzer):
     """ 
     A ``Corpus`` represents a collection of one or more audio sources, from which a ``Mosaic`` can be built.
-    Internally, the audio sources are analyzed and decomposed into frames (i.e., `grains`), each associated with a feature vector.\n
-    These features vectors can be derived from different kinds of analyses, such as ``mfcc`` (default), ``chroma``, or ``pyin``.
-    Based on these feature vectors, a K-dimensional Tree is built internally, which helps to optimize the process of finding the 
-    best match for a given feature vector.
+    Internally, the audio sources are analyzed and decomposed into grains.\n
+    Based on the audio features of these grains (e.g., timbre or pitch content), a k-dimensional search tree is built, 
+    which helps to optimize the process of finding the best matches for a given audio target.
 
     source: str | list | None = None
-        Source file(s) from which to build the corpus. 
-        `source` can be either a `str` or a list of `str`, where `str` is an audio file or a directory of audio files. 
+        Source file(s) from which to build the ``Corpus``.\n 
+        ``source`` can be either a ``str`` or a list of ``str``, where ``str`` is an audio file path or a directory of audio files. 
 
     max_duration: str | list | None = None
-        Maximum audio file duration to use in corpus. Applies to all audio files found in `source`.
+        Maximum audio file duration to use in ``Corpus``. Applies to all audio files found in ``source``.
 
     n_mfcc: int = 13
-        Number of MFCC coefficients to use in audio analysis.
+        Number of mel frequency cepstral coefficients to use in audio analysis.
 
     hop_length: int = 512
         hop size in audio samples.
@@ -44,14 +43,14 @@ class Corpus(Analyzer):
         Number of FFT bins
 
     leaf_size: int = 10
-        Maximum number of data items per leaf in the binary search tree.
+        Maximum number of data items per leaf in the k-dimensional binary search tree.
     """
 
     def __init__(self,
                  source: str | list | None = None,
                  max_duration: int | None = None,
-                 leaf_size: int = 10,
-                 features: Iterable = ['mfcc'],
+                 leaf_size: int | None = 10,
+                 features: Iterable = ['timbre'],
                  *args,
                  **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -73,7 +72,7 @@ class Corpus(Analyzer):
         if len(self.features) == 0:
             raise ValueError(f'You must specify at least one audio feature to instantiate a {self.type.capitalize()} instance')
 
-        self.soundfiles = list()
+        self.soundfiles = []
         if self.source:
             st = time()
             self.__build()
@@ -91,7 +90,6 @@ class Corpus(Analyzer):
 
     def __compile(self, source: list | str | None = None, excuded_files: list = list(), data: list = list()) -> None:
         """ recursively collects and extracts features from all audio files in `source` """
-
         source = source or self.source
         source_type = type(source or self.source)
         if source_type == list:
@@ -133,7 +131,7 @@ class Corpus(Analyzer):
         """ remove commonprefix from file paths to avoid size overhead when writing corpus to disk """
 
         if not self.soundfiles:
-            raise BufferError('Input source does not contain any audio files')
+            raise ValueError(LOGGER.error('Corpus does not contain any source audio files'))
         if len(self.soundfiles) == 1:
             return
         pattern = re.compile(r'(\/.*)*/')

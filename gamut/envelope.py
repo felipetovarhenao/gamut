@@ -6,7 +6,8 @@ from .points import Points
 
 class Envelope:
     """
-    Envelope class 
+    ``Envelope`` instances are meant to be used as dynamic audio control parameters, when calling the ``Mosaic.to_audio()`` method.
+    For instance, to temporally change the grain duration, panning, playback speed, etc.
     """
 
     def __init__(self, shape: Iterable | str = "cosine") -> None:
@@ -43,10 +44,12 @@ class Envelope:
             y = y.concat(segment.resample(size)[:-1])
         self._points = y.concat([pts[-1][1]])
 
-    def list_types(self):
-        return ENVELOPE_TYPES
+    def print_shape_choices(self) -> None:
+        """ Prints all supported envelope shape types """
+        print(f'shape choices: {ENVELOPE_TYPES}')
 
     def view(self, grid: bool = True) -> None:
+        """ Helper method to visualize the shape of the envelope """
         import matplotlib.pyplot as plt
         y = get_window(self.type, Nx=64) if self.type else self._points
         plt.plot(y)
@@ -63,7 +66,7 @@ class Envelope:
     def points(self):
         return self._points
 
-    def get_points(self, N):
+    def get_points(self, N: int) -> Points:
         if self.type:
             return Points(get_window(self.type, N))
         return self._points.resample(N)

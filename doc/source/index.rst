@@ -32,6 +32,12 @@ Corpus
 .. automodule:: gamut.corpus
    :members:
    :inherited-members:
+
+Mosaic
+=============
+.. automodule:: gamut.mosaic
+   :members:
+   :inherited-members:
    
 
 Indices and tables
