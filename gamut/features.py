@@ -21,6 +21,7 @@ from time import time
 import re
 
 # typing
+from typing_extensions import Self
 from collections.abc import Iterable
 from abc import ABC, abstractmethod
 
@@ -94,7 +95,7 @@ class Analyzer(ABC):
         CONSOLE.elapsed_time(st).print()
         return self
 
-    def read(self, file: str, warn_user=False) -> None:
+    def read(self, file: str, warn_user=False) -> Self:
         """ Reads a ``.gamut`` file from disk """
         if warn_user:
             CONSOLE.warn(f"This {self.type} already has a source")
@@ -104,9 +105,11 @@ class Analyzer(ABC):
             CONSOLE.error(ValueError, 'Wrong file extension. Provide a directory for a {} file'.format(FILE_EXT))
         st = time()
         serialized_object = np.load(file, allow_pickle=True).item()
+        if serialized_object['type'] != self.type:
+            CONSOLE.error(TypeError, 'The specified file .gamut file is a {}, not a {}.'.format(
+                serialized_object['type'], self.type))
         is_portable = serialized_object['portable']
-        CONSOLE.log_disk_op(f'{"" if is_portable else "non-"}portable {self.type}',
-                            basename(file), read=True).print()
+        CONSOLE.log_disk_op(f'{"" if is_portable else "non-"}portable {self.type}', basename(file), read=True).print()
 
         serialized_object = self._preload(serialized_object)
 
@@ -488,7 +491,7 @@ class Mosaic(Analyzer):
             self.__load_soundfiles(obj['soundfiles'])
         return obj
 
-    def read(self, file: str) -> None:
+    def read(self, file: str) -> Self:
         return super().read(file, warn_user=self.frames)
 
     def __load_soundfiles(self, soundfiles):
