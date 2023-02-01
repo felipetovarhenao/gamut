@@ -21,7 +21,6 @@ class KDTree:
         self.min = None
         self.norm = None
         self.data = None
-        self.bar = None
 
     def __update_minmax(self, vector: np.ndarray) -> None:
         self.min = np.min(np.array([self.min, vector]), axis=0)

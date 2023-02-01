@@ -34,11 +34,11 @@ class AudioBuffer:
 
     def play(self) -> None:
         """ Plays back inner audio buffer """
-        CONSOLE.log_process('Playing audio...').print()
+        CONSOLE.log_process('\N{speaker}Playing audio...').print()
         try:
             sd.play(self.y, samplerate=self.sr, blocking=True)
         except sd.PortAudioError:
-            raise CONSOLE.error(
+            CONSOLE.error(
                 sd.PortAudioError,
                 f'Unable to play audio stream. It\'s possible the number of output channels in the audio source ({self.chans}) is greater than what your device supports.')
 
@@ -66,8 +66,7 @@ class AudioBuffer:
         """Writes audio to disk. This function is a simple wrapper of `sf.write()`"""
         ext = splitext(output_dimpulse_response)[1]
         if ext not in AUDIO_FORMATS:
-            raise ValueError(
-                f'Output file format must be one of the following: {AUDIO_FORMATS}')
+            CONSOLE.error(ValueError, f'Output file format must be one of the following: {AUDIO_FORMATS}')
         write(output_dimpulse_response, self.y, self.sr, f'PCM_{self.bit_depth}')
 
     def to_mono(self):

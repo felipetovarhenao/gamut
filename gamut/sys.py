@@ -1,7 +1,7 @@
 import numpy as np
 from time import time
 from .utils import resample_array
-from progress import bar, spinner, counter
+from progress import bar, counter
 
 
 class Console:
@@ -27,10 +27,6 @@ class Console:
             self.suffix = '%(index)d/%(max)d ' + item
             return super().reset(message)
 
-    class Spinner(spinner.PieSpinner):
-        def reset(self, message):
-            self.message = message
-
     def __init__(self) -> None:
         def rgb(r, g, b): return f'\u001b[38;2;{r};{g};{b}m'
 
@@ -53,7 +49,6 @@ class Console:
         self.italic = '\033[3m'
 
         self.bar = self.Bar()
-        self.spinner = self.Spinner()
         self.counter = self.Counter()
 
         # assign colors to instance as attributes
@@ -78,24 +73,24 @@ class Console:
     def reset_counter(self, message: str):
         self.counter.reset(self.log_subprocess(message))
 
-    def reset_spinner(self, message: str):
-        self.spinner.reset(self.log_subprocess(message))
-
     def elapsed_time(self, st):
-        return self.log(f'\t{self.c4}{self.italic}Elapsed time: {self.bold}{self.c5}{round((time()-st) * 100) / 100}s\n')
+        return self.log(f'\t\N{stopwatch} {self.c4}{self.italic}Elapsed time: {self.bold}{self.c5}{round((time()-st) * 100) / 100}s\n')
 
     def log_process(self, text):
         return self.log(f'{self.bold}{self.c1}{text}')
 
     def log_disk_op(self, object_name, filename, read=False):
         return self.log_process(
-            f'{"Reading" if read else "Writing"} {self.c2}{object_name.upper()}{self.c1} {"from" if read else "to"} disk: {self.c2}{self.bold}{filename}{self.c1}...')
+            f'\N{floppy disk} {"Reading" if read else "Writing"} {self.c2}{object_name.upper()}{self.c1} {"from" if read else "to"} disk: {self.c2}{self.bold}{filename}{self.c1}...')
 
     def log_subprocess(self, text):
         return self.log(f'\t{self.c3}{text}')
 
     def error(self, error_class, text):
-        raise error_class(self.log(f'\n\t{self.danger}{text}\n'))
+        raise error_class(self.log(f'\n\t\N{skull} {self.danger}{text}\n'))
+
+    def warn(self, text):
+        print(f"\n\N{cross mark} {self.danger}Warning: {text}\n")
 
     def log_header(self):
         header = ""

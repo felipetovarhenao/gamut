@@ -85,33 +85,28 @@ class Analyzer(ABC):
         st = time()
         self.portable = portable
         output_dir = splitext(output)[0]
-        CONSOLE.reset_spinner(CONSOLE.log_disk_op(f'{"" if portable else "non-"}portable {self.type}',
-                             f'{basename(output_dir)}{FILE_EXT}'))
-        CONSOLE.spinner.next()
+        CONSOLE.log_disk_op(f'{"" if portable else "non-"}portable {self.type}', f'{basename(output_dir)}{FILE_EXT}').print()
         serialized_object = self._serialize()
 
         # write file and set correct file extension
         np.save(output_dir, serialized_object)
-        CONSOLE.spinner.next()
         rename(output_dir + '.npy', output_dir+FILE_EXT)
-        CONSOLE.spinner.finish()
         CONSOLE.elapsed_time(st).print()
         return self
 
     def read(self, file: str, warn_user=False) -> None:
         """ Reads a ``.gamut`` file from disk """
         if warn_user:
-            raise UserWarning(f"This {self.type} already has a source")
+            CONSOLE.warn(f"This {self.type} already has a source")
 
         # validate file
         if splitext(file)[1] != FILE_EXT:
-            raise ValueError(
-                'Wrong file extension. Provide a directory for a {} file'.format(FILE_EXT))
+            CONSOLE.error(ValueError, 'Wrong file extension. Provide a directory for a {} file'.format(FILE_EXT))
         st = time()
         serialized_object = np.load(file, allow_pickle=True).item()
         is_portable = serialized_object['portable']
         CONSOLE.log_disk_op(f'{"" if is_portable else "non-"}portable {self.type}',
-                    basename(file), read=True).print()
+                            basename(file), read=True).print()
 
         serialized_object = self._preload(serialized_object)
 
@@ -210,11 +205,12 @@ class Corpus(Analyzer):
         for f in self.features:
             if f in ANALYSIS_TYPES:
                 continue
-            raise ValueError(
-                CONSOLE.error(
-                    f'"{f}" is not a valid feature option. To see the list of valid features, use the {self.type.capitalize()}.print_feature_choices() class method.'))
+            CONSOLE.error(
+                ValueError,
+                f'"{f}" is not a valid feature option. To see the list of valid features, use the {self.type.capitalize()}.print_feature_choices() class method.')
         if len(self.features) == 0:
-            raise ValueError(f'You must specify at least one audio feature to instantiate a {self.type.capitalize()} instance')
+            CONSOLE.error(
+                ValueError, f'You must specify at least one audio feature to instantiate a {self.type.capitalize()} instance')
 
         self.soundfiles = []
         if self.source:
@@ -225,7 +221,7 @@ class Corpus(Analyzer):
     def __build(self) -> None:
         """ build corpus from `source` """
         st = time()
-        CONSOLE.log_process('Building audio corpus...').print()
+        CONSOLE.log_process('\N{brain} Building audio corpus...').print()
         data = self.__compile()
         CONSOLE.counter.finish()
         self.__set_source_root()
@@ -307,7 +303,6 @@ class Corpus(Analyzer):
         # if not portable, delete audio samples from soundfiles on write
         if not self.portable:
             for sf in corpus['soundfiles']:
-                CONSOLE.spinner.next()
                 del sf['y']
         return corpus
 
@@ -315,8 +310,7 @@ class Corpus(Analyzer):
         """ called from within read method """
         gamut_type = obj['type']
         if gamut_type != self.type:
-            raise ValueError(
-                f'source file should be a {self.type}, not a {gamut_type}')
+            CONSOLE.error(ValueError, f'source file should be a {self.type}, not a {gamut_type}')
         tree = KDTree()
         tree.read(obj['tree'])
         obj['tree'] = tree
@@ -384,7 +378,8 @@ class Mosaic(Analyzer):
 
     def __validate(self, target, corpus):
         if any([target, corpus]) and not all([target, corpus]):
-            raise ValueError(
+            CONSOLE.error(
+                ValueError,
                 f'You must either provide both target and corpus attributes, or leave them blank to build Mosaic from {FILE_EXT} file')
         if not target:
             return
@@ -414,10 +409,15 @@ class Mosaic(Analyzer):
         elif isinstance(corpus, Corpus):
             corpora.append(corpus)
         else:
-            raise ValueError(f'{corpus} is not a corpus')
+            CONSOLE.error(ValueError, f'{corpus} is not a corpus')
         return corpora
 
     def __build(self, corpora: Iterable, sr: int | None = None) -> None:
+        num_corpora = len(corpora)
+        CONSOLE.log_process(
+            f'\N{brain} Building target from {"corpus" if num_corpora == 1 else f"{num_corpora} corpora"}...').print()
+        CONSOLE.log_subprocess('Loading target...').print()
+        st = time()
         y, self.sr = load(self.target, sr=sr)
         if self.beat_unit:
             self.hop_length = int((self.sr * 60) / (tempo(y=y, sr=self.sr)[0] / self.beat_unit))
@@ -442,6 +442,7 @@ class Mosaic(Analyzer):
                 'max_duration': corpus.max_duration,
                 'sources': {}
             }
+        CONSOLE.reset_bar('Finding matches for target segments:', max=len(target_analysis), item='segments')
         for x in target_analysis:
             matches = []
             for corpus_id, corpus in enumerate(corpora):
@@ -458,17 +459,18 @@ class Mosaic(Analyzer):
                     del option['value']['features']
                     matches.append(option)
             self.frames.append([x['value'] for x in sorted(matches, key=lambda x: x['cost'])])
+            CONSOLE.bar.next()
+        CONSOLE.bar.finish()
+        CONSOLE.elapsed_time(st).print()
 
     def _serialize(self):
         mosaic = deepcopy(vars(self))
-        CONSOLE.spinner.next()
 
         # if not portable, delete audio samples from soundfiles on write
         if not self.portable:
             for corpus_id in mosaic['soundfiles']:
                 for source_id in mosaic['soundfiles'][corpus_id]['sources']:
                     del mosaic['soundfiles'][corpus_id]['sources'][source_id]['y']
-                    CONSOLE.spinner.next()
         return mosaic
 
     def _summarize(self) -> dict:
@@ -604,7 +606,7 @@ class Mosaic(Analyzer):
             return soundfiles
 
         st = time()
-        CONSOLE.log_process(f'Generating audio from mosaic target: {basename(self.target)}...').print()
+        CONSOLE.log_process(f'\N{brain} Generating audio from mosaic target: {basename(self.target)}...').print()
         # playback ratio
         sr, sr_ratio = (self.sr, 1) if not sr else (sr, sr/self.sr)
         hop_length = int(self.hop_length * sr_ratio)
@@ -681,9 +683,9 @@ class Mosaic(Analyzer):
                 window = windows[idx]
                 grain = source[grain_start:grain_end] * window * pan_value * amp
                 buffer[grain_onset:grain_onset+grain_size] = buffer[grain_onset:grain_onset+grain_size] + grain
-            CONSOLE.counter.next()
+            CONSOLE.bar.next()
 
-        CONSOLE.counter.finish()
+        CONSOLE.bar.finish()
         CONSOLE.elapsed_time(st).print()
 
         # return normalized buffer
