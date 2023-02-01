@@ -29,16 +29,11 @@ To install gamut, simply run ``pip install gamut`` in the terminal.
 Corpus
 =============
 
-.. automodule:: gamut.corpus
+.. automodule:: gamut
    :members:
    :inherited-members:
 
-Mosaic
-=============
-.. automodule:: gamut.mosaic
-   :members:
-   :inherited-members:
-   
+
 
 Indices and tables
 ==================

@@ -1,7 +1,6 @@
 import numpy as np
-from progress.bar import IncrementalBar
 from .utils import get_nested_value, set_nested_value
-from .config import LOGGER
+from .config import CONSOLE
 from random import randint
 
 
@@ -31,7 +30,7 @@ class KDTree:
     def __build(self, data: list, vector_path: str, k: int = 0) -> dict:
         data_size = len(data)
         if (data_size <= self.leaf_size):
-            self.bar.next(data_size)
+            CONSOLE.bar.next(data_size)
             for d in data:
                 self.__update_minmax(get_nested_value(d, vector_path))
             return {
@@ -63,12 +62,10 @@ class KDTree:
 
         self.norm = np.ones(self.k)
 
-        self.bar = IncrementalBar(LOGGER.subprocess(
-            'Classifying audio grains: '), max=len(data), suffix='%(index)d/%(max)d grains')
-
+        CONSOLE.reset_bar('Classifying audio grains:', max=len(data), item='grains')
         # build binary tree and fit data
         self.data = self.__build(data, vector_path, k=randint(0, self.k-1))
-        self.bar.finish()
+        CONSOLE.bar.finish()
         self.norm = self.max - self.min
         self.__fit(vector_path)
 

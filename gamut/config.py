@@ -1,8 +1,8 @@
-from .utils import Logger
+from .sys import Console
 
 FILE_EXT = '.gamut'
 AUDIO_FORMATS = ['.wav', '.aif', '.aiff']
-LOGGER = Logger()
+CONSOLE = Console()
 ANALYSIS_TYPES = ['timbre', 'pitch']
 ENVELOPE_TYPES = [
     'barthann',

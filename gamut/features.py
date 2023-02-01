@@ -1,23 +1,338 @@
-from .corpus import Corpus
-from .config import FILE_EXT, LOGGER, AUDIO_FORMATS
-from .audio import AudioBuffer
-from .utils import resample_array
-from .base import Analyzer
-from .envelope import Envelope
-from .envelope import Points
+# librosa
+from librosa import magphase, stft, samples_like, load
+from librosa.feature import mfcc, chroma_stft
+from librosa.beat import tempo
 
-import numpy as np
-from librosa import load
-from os.path import join, basename, splitext, realpath, isdir
+# gamut
+from .control import Points, Envelope
+from .utils import resample_array
+from .audio import AudioBuffer
+from .config import FILE_EXT, CONSOLE, AUDIO_FORMATS, ANALYSIS_TYPES
+from .data import KDTree
+
+# os
+from os.path import realpath, basename, isdir, splitext, join, commonprefix, relpath
+from os import walk, rename
+
+# misc utils
+from random import choices, random
 from copy import deepcopy
 from time import time
-from progress.counter import Counter
-from progress.bar import IncrementalBar
+import re
 
+# typing
 from collections.abc import Iterable
-from random import choices, random
+from abc import ABC, abstractmethod
 
-from librosa.beat import tempo
+# numpy
+import numpy as np
+
+
+class Analyzer(ABC):
+    """ 
+    Abstract base class from which the ``Corpus`` and ``Mosaic`` classes inherit. 
+    It provides the base methods for feature extraction and reading/writing ``.gamut`` files.
+
+    n_mfcc: int = 13
+        Number of mel frequency cepstral coefficients to use in mfcc analysis.
+
+    hop_length: int = 512
+        Size in audio samples of space between windowing frames.
+
+    win_length: int = 1024
+        Size in audio samples of windowing frames.
+
+    n_fft: int = 1024
+        Number of FFT bins
+    """
+
+    def __init__(self,
+                 n_mfcc: int = 13,
+                 hop_length: int = 512,
+                 win_length: int = 1024,
+                 n_fft: int = 1024) -> None:
+        self.n_mfcc = n_mfcc
+        self.hop_length = hop_length
+        self.n_fft = n_fft
+        self.win_length = win_length
+        self.type = self.__get_type()
+        self.portable = False
+
+    @abstractmethod
+    def _serialize(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def _preload(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def _summarize(self):
+        raise NotImplementedError
+
+    def summarize(self) -> None:
+        """ Prints a summary of the current structure of the object """
+        summary = self._summarize()
+        line = "".join("-" for _ in range(90))
+        CONSOLE.log_process(f"*** {self.type.upper()} SUMMARY ***\n{CONSOLE.c3}{line}").print()
+        for key in summary:
+            val = summary[key]
+            print(f"{CONSOLE.c4}{key.upper()}: {CONSOLE.normal}{val}")
+        print(f'{CONSOLE.c3}{line}{CONSOLE.normal}')
+
+    def write(self, output: str, portable: bool = False) -> None:
+        """ Writes a ``.gamut`` file to disk """
+        st = time()
+        self.portable = portable
+        output_dir = splitext(output)[0]
+        CONSOLE.reset_spinner(CONSOLE.log_disk_op(f'{"" if portable else "non-"}portable {self.type}',
+                             f'{basename(output_dir)}{FILE_EXT}'))
+        CONSOLE.spinner.next()
+        serialized_object = self._serialize()
+
+        # write file and set correct file extension
+        np.save(output_dir, serialized_object)
+        CONSOLE.spinner.next()
+        rename(output_dir + '.npy', output_dir+FILE_EXT)
+        CONSOLE.spinner.finish()
+        CONSOLE.elapsed_time(st).print()
+        return self
+
+    def read(self, file: str, warn_user=False) -> None:
+        """ Reads a ``.gamut`` file from disk """
+        if warn_user:
+            raise UserWarning(f"This {self.type} already has a source")
+
+        # validate file
+        if splitext(file)[1] != FILE_EXT:
+            raise ValueError(
+                'Wrong file extension. Provide a directory for a {} file'.format(FILE_EXT))
+        st = time()
+        serialized_object = np.load(file, allow_pickle=True).item()
+        is_portable = serialized_object['portable']
+        CONSOLE.log_disk_op(f'{"" if is_portable else "non-"}portable {self.type}',
+                    basename(file), read=True).print()
+
+        serialized_object = self._preload(serialized_object)
+
+        # assign attributes to self
+        for attr in serialized_object:
+            if hasattr(self, attr):
+                setattr(self, attr, serialized_object[attr])
+
+        CONSOLE.elapsed_time(st).print()
+        return self
+
+    def __get_type(self):
+        """ Helper function to get subclass name """
+        return self.__class__.__name__.lower()
+
+    def _analyze_audio_file(self, y: np.ndarray, features: Iterable, sr: int | None = None) -> tuple:
+        """ Extracts audio features from an ``ndarray`` of audio samples """
+        S = magphase(stft(y=y,
+                          n_fft=self.n_fft,
+                          win_length=self.win_length,
+                          hop_length=self.hop_length))[0]
+
+        analysis = []
+        if 'timbre' in features:
+            mfcc_features = mfcc(S=S,
+                                 sr=sr,
+                                 n_mfcc=self.n_mfcc,
+                                 hop_length=self.hop_length)
+
+            analysis.extend(mfcc_features)
+
+        if 'pitch' in features:
+            chroma_features = chroma_stft(S=S,
+                                          sr=sr,
+                                          n_fft=self.n_fft,
+                                          win_length=self.win_length,
+                                          hop_length=self.hop_length)
+            analysis.extend(chroma_features)
+
+        analysis = np.array(analysis).T[:-1]
+
+        markers = samples_like(X=analysis,
+                               hop_length=self.hop_length,
+                               n_fft=self.n_fft,
+                               axis=0)
+
+        return analysis, markers
+
+
+class Corpus(Analyzer):
+    """ 
+    A ``Corpus`` represents a collection of one or more audio sources, from which a ``Mosaic`` can be built.
+    Internally, the audio sources are analyzed and decomposed into grains.\n
+    Based on the audio features of these grains (e.g., timbre or pitch content), a k-dimensional search tree is built, 
+    which helps to optimize the process of finding the best matches for a given audio target.
+
+    source: str | list | None = None
+        Source file(s) from which to build the ``Corpus``. ``source`` can be either a ``str`` or a list of ``str``, where 
+        ``str`` is an audio file path or a directory of audio files. Note that, for any directory path, ``Corpus`` will recursively look for
+        any ``.wav`` or ``.aif`` audio files in folders and subfolders.
+
+    max_duration: str | list | None = None
+        Maximum audio file duration to use in ``Corpus``. Applies to all audio files found in ``source``.
+
+    n_mfcc: int = 13
+        Number of mel frequency cepstral coefficients to use in audio analysis.
+
+    hop_length: int = 512
+        hop size in audio samples.
+
+    win_length: int = 1024
+        window size in audio samples.
+
+    n_fft: int = 512
+        Number of FFT bins
+
+    leaf_size: int = 10
+        Maximum number of data items per leaf in the k-dimensional binary search tree.
+    """
+
+    def __init__(self,
+                 source: str | list | None = None,
+                 max_duration: int | None = None,
+                 leaf_size: int | None = 10,
+                 features: Iterable = ['timbre'],
+                 *args,
+                 **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.source = source
+        self.max_duration = max_duration
+        self.features = features
+        self.source_root = ""
+        self.tree = KDTree(leaf_size=leaf_size)
+        CONSOLE.reset_counter('Analyzing audio samples: ')
+
+        for f in self.features:
+            if f in ANALYSIS_TYPES:
+                continue
+            raise ValueError(
+                CONSOLE.error(
+                    f'"{f}" is not a valid feature option. To see the list of valid features, use the {self.type.capitalize()}.print_feature_choices() class method.'))
+        if len(self.features) == 0:
+            raise ValueError(f'You must specify at least one audio feature to instantiate a {self.type.capitalize()} instance')
+
+        self.soundfiles = []
+        if self.source:
+            st = time()
+            self.__build()
+            CONSOLE.elapsed_time(st)
+
+    def __build(self) -> None:
+        """ build corpus from `source` """
+        st = time()
+        CONSOLE.log_process('Building audio corpus...').print()
+        data = self.__compile()
+        CONSOLE.counter.finish()
+        self.__set_source_root()
+        self.tree.build(data=data, vector_path='features')
+        CONSOLE.elapsed_time(st).print()
+
+    def _summarize(self) -> dict:
+        filenames = "\n"
+        for i, sf in enumerate(self.soundfiles):
+            fn = basename(sf['file'])
+            filenames += [f'\t{fn}', f', {fn}', f', {fn}\n'][[0, 1, 1, 2][i % 4]]
+        return {
+            "source root": self.source_root,
+            "portable": self.portable,
+            "max. duration per source": f'{self.max_duration}' + ("s" if self.max_duration else ""),
+            "max. tree leaf size": self.tree.leaf_size,
+            "analysis features": f'[{", ".join(self.features)}, ]',
+            f'sources ({len(self.soundfiles)})': filenames,
+        }
+
+    def __compile(self, source: list | str | None = None, excuded_files: list = [], data: list = []) -> None:
+        """ recursively collects and extracts features from all audio files in `source` """
+        source = source or self.source
+        source_type = type(source or self.source)
+        if source_type == list:
+            for x in source:
+                self.__compile(x, excuded_files)
+            return data
+
+        source_path = realpath(source)
+        if isdir(source_path):
+            for root, _, files in walk(source_path):
+                for f in files:
+                    self.__compile(join(root, f), excuded_files)
+            return data
+
+        filename, ext = splitext(basename(source))
+        if ext.lower() not in AUDIO_FORMATS or filename in excuded_files:
+            return data
+
+        excuded_files.append(excuded_files)
+        y, sr = load(path=source, sr=None, mono=True,
+                     duration=self.max_duration)
+        source_id = len(self.soundfiles)
+        self.soundfiles.append({
+            'file': source,
+            'sr': sr,
+            'y': y
+        })
+        analysis, markers = self._analyze_audio_file(y=y, features=self.features, sr=sr)
+        CONSOLE.counter.next()
+        data.extend([{
+            'source': source_id,
+            'marker': marker,
+            'features': features,
+        } for features, marker in zip(analysis, markers)])
+        return data
+
+    @classmethod
+    def print_feature_choices(cls) -> None:
+        print(f'feature choices: {ANALYSIS_TYPES}')
+
+    def __set_source_root(self):
+        """ remove commonprefix from file paths to avoid size overhead when writing corpus to disk """
+
+        if not self.soundfiles:
+            CONSOLE.error(ValueError, 'Corpus does not contain any source audio files')
+        if len(self.soundfiles) == 1:
+            return
+        pattern = re.compile(r'(\/.*)*/')
+        self.source_root = pattern.search(commonprefix([sf['file'] for sf in self.soundfiles])).group()
+        for i, sf in enumerate(self.soundfiles):
+            self.soundfiles[i]['file'] = relpath(sf['file'], self.source_root)
+
+    def _serialize(self) -> dict:
+        """ called from within write method """
+        corpus = deepcopy({**vars(self), 'tree': vars(self.tree)})
+
+        # if not portable, delete audio samples from soundfiles on write
+        if not self.portable:
+            for sf in corpus['soundfiles']:
+                CONSOLE.spinner.next()
+                del sf['y']
+        return corpus
+
+    def _preload(self, obj: object) -> dict:
+        """ called from within read method """
+        gamut_type = obj['type']
+        if gamut_type != self.type:
+            raise ValueError(
+                f'source file should be a {self.type}, not a {gamut_type}')
+        tree = KDTree()
+        tree.read(obj['tree'])
+        obj['tree'] = tree
+
+        # re-load audio files if corpus file is not portable
+        if not obj['portable']:
+            CONSOLE.counter.message = CONSOLE.log_subprocess('Loading audio files: ')
+            for sf in obj['soundfiles']:
+                path = join(obj['source_root'], sf['file'])
+                sf['y'] = load(path, sr=sf['sr'])[0]
+                CONSOLE.counter.next()
+            CONSOLE.counter.finish()
+        return obj
+
+    def read(self, file: str) -> None:
+        return super().read(file, warn_user=self.source)
 
 
 class Mosaic(Analyzer):
@@ -59,7 +374,6 @@ class Mosaic(Analyzer):
         self.target = target
         self.sr = sr
         self.frames = []
-        self.counter = Counter()
         self.beat_unit = beat_unit
 
         corpora = self.__parse_corpus(corpus, [])
@@ -75,10 +389,10 @@ class Mosaic(Analyzer):
         if not target:
             return
         if isdir(realpath(target)):
-            raise ValueError(LOGGER.error(f'{target} is not a valid audio file path'))
+            CONSOLE.error(ValueError, f'{target} is not a valid audio file path')
         file = basename(target)
         if splitext(file)[1] not in AUDIO_FORMATS:
-            raise ValueError(LOGGER.error(f'{file} is an invalid or unsupported audio file format.'))
+            CONSOLE.error(ValueError, f'{file} is an invalid or unsupported audio file format.')
 
     def __parse_corpus(self, corpus: Iterable | Corpus, corpora: Iterable):
         if not corpus:
@@ -90,9 +404,9 @@ class Mosaic(Analyzer):
             for i, c in enumerate(corpus[1:], 1):
                 current_features = set(c.features)
                 if prev_features != current_features:
-                    raise ValueError(
-                        LOGGER.error(
-                            f'Corpus at index {i} has a different set of features ({c.features}) than corpus at index {i-1} ({corpus[i-1].features}). When using more than one corpus, make sure they are based on the same feature set.'))
+                    CONSOLE.error(
+                        ValueError,
+                        f'Corpus at index {i} has a different set of features ({c.features}) than corpus at index {i-1} ({corpus[i-1].features}). When using more than one corpus, make sure they are based on the same feature set.')
                 prev_features = current_features
             # recursively unpack corpora
             for c in corpus:
@@ -145,16 +459,16 @@ class Mosaic(Analyzer):
                     matches.append(option)
             self.frames.append([x['value'] for x in sorted(matches, key=lambda x: x['cost'])])
 
-    def _serialize(self, spinner):
+    def _serialize(self):
         mosaic = deepcopy(vars(self))
-        spinner.next()
+        CONSOLE.spinner.next()
 
         # if not portable, delete audio samples from soundfiles on write
         if not self.portable:
             for corpus_id in mosaic['soundfiles']:
                 for source_id in mosaic['soundfiles'][corpus_id]['sources']:
                     del mosaic['soundfiles'][corpus_id]['sources'][source_id]['y']
-                    spinner.next()
+                    CONSOLE.spinner.next()
         return mosaic
 
     def _summarize(self) -> dict:
@@ -176,7 +490,7 @@ class Mosaic(Analyzer):
         return super().read(file, warn_user=self.frames)
 
     def __load_soundfiles(self, soundfiles):
-        self.counter.message = LOGGER.subprocess('Loading audio files: ')
+        CONSOLE.counter.message = CONSOLE.log_subprocess('Loading audio files: ')
         for corpus_id in soundfiles:
             corpus = soundfiles[corpus_id]
             sources = corpus['sources']
@@ -186,8 +500,8 @@ class Mosaic(Analyzer):
                     path = join(corpus['source_root'], source['file'])
                     soundfiles[corpus_id]['sources'][source_id]['y'] = load(
                         path, sr=source['sr'], duration=corpus['max_duration'])[0]
-                self.counter.next()
-        self.counter.finish()
+                CONSOLE.counter.next()
+        CONSOLE.counter.finish()
 
     def to_audio(self,
                  # dynamic control parameters
@@ -265,9 +579,9 @@ class Mosaic(Analyzer):
             # when weights are meant to control target and corpora individually
             else:
                 if len(param) != num_corpora + 1:
-                    raise ValueError(
-                        LOGGER.error(
-                            f'The number of items in corpus_weights argument must be {num_corpora + 1}, where the first element is the target'))
+                    CONSOLE.error(
+                        ValueError,
+                        f'The number of items in corpus_weights argument must be {num_corpora + 1}, where the first element is the target')
                 mix_table = np.array([as_points(env).clip(min=0.0, max=1.0) for env in param]).T
                 even_weights = False
             return mix_table / mix_table.sum(axis=1)[:, np.newaxis], even_weights
@@ -275,7 +589,7 @@ class Mosaic(Analyzer):
         def preprocess_samples(n_chans: int, sr: int) -> None:
             """ resamples files with conflicting sampling rates """
             soundfiles = deepcopy(self.soundfiles)
-            c = Counter(LOGGER.subprocess('Preprocessing audio files: '))
+            CONSOLE.reset_counter('Preprocessing audio files: ')
             for corpus_id in soundfiles:
                 sources = soundfiles[corpus_id]['sources']
                 for source_id in sources:
@@ -285,12 +599,12 @@ class Mosaic(Analyzer):
                     if source['sr'] != sr:
                         y = resample_array(y, int(len(y) * sr_ratio))
                     soundfiles[corpus_id]['sources'][source_id]['y'] = np.repeat(np.array([y]).T, n_chans, axis=1)
-                    c.next()
-            c.finish()
+                    CONSOLE.counter.next()
+            CONSOLE.counter.finish()
             return soundfiles
 
         st = time()
-        LOGGER.process(f'Generating audio from mosaic target: {basename(self.target)}...').print()
+        CONSOLE.log_process(f'Generating audio from mosaic target: {basename(self.target)}...').print()
         # playback ratio
         sr, sr_ratio = (self.sr, 1) if not sr else (sr, sr/self.sr)
         hop_length = int(self.hop_length * sr_ratio)
@@ -298,7 +612,7 @@ class Mosaic(Analyzer):
         soundfiles = preprocess_samples(n_chans=n_chans, sr=sr)
 
         # DYNAMIC CONTROL TABLES
-        LOGGER.subprocess('Creating parameter envelopes...').print()
+        CONSOLE.log_subprocess('Creating parameter envelopes...').print()
 
         corpus_weights_table, even_weights = parse_corpus_weights_param(corpus_weights)
 
@@ -328,10 +642,7 @@ class Mosaic(Analyzer):
         buffer = np.empty(shape=(int(np.amax(samp_onset_table) + np.amax(win_length_table)), n_chans))
         buffer.fill(0)
 
-        grain_counter = IncrementalBar(
-            LOGGER.subprocess('Concatenating grains: '),
-            max=len(self.frames),
-            suffix='%(index)d/%(max)d grains')
+        CONSOLE.reset_bar('Concatenating grains:', max=len(self.frames), item='grains')
 
         fidelity_table = as_points(fidelity).clip(0.0, 1.0)
 
@@ -370,10 +681,10 @@ class Mosaic(Analyzer):
                 window = windows[idx]
                 grain = source[grain_start:grain_end] * window * pan_value * amp
                 buffer[grain_onset:grain_onset+grain_size] = buffer[grain_onset:grain_onset+grain_size] + grain
-            grain_counter.next()
+            CONSOLE.counter.next()
 
-        grain_counter.finish()
-        LOGGER.elapsed_time(st).print()
+        CONSOLE.counter.finish()
+        CONSOLE.elapsed_time(st).print()
 
         # return normalized buffer
         return AudioBuffer(y=(buffer / np.amax(np.abs(buffer))) * np.sqrt(0.5), sr=sr)

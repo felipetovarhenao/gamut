@@ -1,7 +1,59 @@
 from scipy.signal import get_window
 from collections.abc import Iterable
-from .config import LOGGER, ENVELOPE_TYPES
-from .points import Points
+import numpy as np
+
+from .config import CONSOLE, ENVELOPE_TYPES
+
+
+class Points(np.ndarray):
+    """ 
+    Points class
+    """
+
+    def __array_finalize__(self, obj):
+        return obj
+
+    def __new__(cls, array: np.ndarray | list = []):
+        return np.asarray(array).view(cls)
+
+    def fill(self, shape: tuple, value):
+        tmp = np.empty(shape=shape)
+        tmp.fill(value)
+        return Points(tmp)
+
+    def concat(self, x, prepend: bool = False):
+        return Points(np.concatenate([x, self] if prepend else [self, x]))
+
+    def resample(self, N):
+        if len(self) == N:
+            return self
+        return Points(np.interp(np.linspace(0, len(self) - 1, N), np.arange(0, len(self)), self))
+
+    def scale(self, out_min: float | int = 0.0, out_max: float | int = 1.0):
+        amin, amax = np.amin(self), np.amax(self)
+        return Points(((self - amin) / (amax - amin)) * (out_max - out_min) + out_min)
+
+    def replicate(self, n, axis: int = 0):
+        return Points(np.repeat(self, repeats=n, axis=axis))
+
+    def wrap(self, n: int = 1):
+        out = self
+        for _ in range(n):
+            out = Points([out])
+        return out
+
+    def quantize(self, n: float | int = 1):
+        return Points(np.round(self / n) * n)
+
+    def abs(self):
+        return Points(np.abs(self))
+
+    def clip(self, min: float | int | None = None, max: float | int | None = None):
+        if min:
+            self[self < min] = min
+        if max:
+            self[self > max] = max
+        return self
 
 
 class Envelope:
@@ -18,19 +70,19 @@ class Envelope:
         elif isinstance(shape, str):
             self.type = shape
         else:
-            raise TypeError(LOGGER.error(
-                'Envelope must be initialized with either a window type (e.g. "hann") or an iterable of envelope points'))
+            CONSOLE.error(
+                TypeError,
+                'Envelope must be initialized with either a window type (e.g. "hann") or an iterable of envelope points')
 
     def __str__(self) -> str:
-        return f"<Envelope: {self.type if self.type else str(self._points)}{LOGGER.normal}>"
+        return f"<Envelope: {self.type if self.type else str(self._points)}{CONSOLE.normal}>"
 
     def __validate_points(self, points) -> Points:
         if isinstance(points[0], Iterable):
             prev_idx = points[0][0]
             for point in points[1:]:
                 if point[0] <= prev_idx:
-                    raise ValueError(LOGGER.error(
-                        f'Point indices must be in ascending order: {points}'))
+                    CONSOLE.error(ValueError, f'Point indices must be in ascending order: {points}')
                 prev_idx = point[0]
             return Points(points)
         return Points(list(enumerate(points)))
