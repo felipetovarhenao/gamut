@@ -9,8 +9,8 @@ from collections.abc import Iterable
 
 from .config import AUDIO_FORMATS, CONSOLE
 from .utils import resample_array
-from .control import Envelope
-from .control import Points
+from .controls import Envelope
+from .controls import Points
 
 
 class AudioBuffer:

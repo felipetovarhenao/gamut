@@ -4,7 +4,7 @@ from librosa.feature import mfcc, chroma_stft
 from librosa.beat import tempo
 
 # gamut
-from .control import Points, Envelope
+from .controls import Points, Envelope
 from .utils import resample_array
 from .audio import AudioBuffer
 from .config import FILE_EXT, CONSOLE, AUDIO_FORMATS, ANALYSIS_TYPES
@@ -185,6 +185,9 @@ class Corpus(Analyzer):
 
     n_fft: int = 512
         Number of FFT bins
+    
+    features: Iterable = ['timbre']
+        List of ``str``, specifying audio feature(s) to use for audio source analysis. The options are ``"timbre"`` and/or ``"pitch"``.
 
     leaf_size: int = 10
         Maximum number of data items per leaf in the k-dimensional binary search tree.
@@ -515,7 +518,7 @@ class Mosaic(Analyzer):
                  stretch_factor: float | int | Envelope | Iterable = 1.0,
                  onset_var: float | int | Envelope | Iterable = 0,
                  pan_depth: float | int | Envelope | Iterable = 5,
-                 grain_envelope: Envelope | str | Iterable = Envelope(),
+                 grain_env: Envelope | str | Iterable = "cosine",
                  corpus_weights: float | int | Envelope | Iterable = 1.0,
 
                  # static parameters
@@ -523,7 +526,7 @@ class Mosaic(Analyzer):
                  sr: int | None = None,
                  win_length_res: int = 512) -> AudioBuffer:
         """
-        Returns an *audio mosaic* as an ``AudioBuffer`` instance, based on several audio control parameters, such as grain duration, onset variation, panning depth, grain envelope, grain duration, wet/dry mix, number of channels, and grain duration resolution.
+        Returns an *audio mosaic* as an ``AudioBuffer`` instance, based on several audio control parameters, such as `grain duration`, `onset variation`, `panning depth`, `grain envelope`, `grain duration`, `number of channels`, and more.
 
         fidelity: float | int | Envelope | Iterable = 1.0
             Normalized probablity (0.0 - 1.0) of choosing the best possible match from ``Corpus`` for each grain in ``target``.
@@ -548,7 +551,7 @@ class Mosaic(Analyzer):
         pan_depth: float | int | Envelope | Iterable = 5
             Depth of contrast for channel panning
 
-        grain_envelope: Envelope | str | Iterable = Envelope()
+        grain_env: Envelope | str | Iterable = Envelope()
             Amplitude envelope for all audio grains.
 
         n_chans: int = 2
@@ -635,7 +638,7 @@ class Mosaic(Analyzer):
         samp_onset_table[samp_onset_table < 0] = 0
 
         # compute amplitude windows
-        windows = [as_points(grain_envelope, wl).wrap().T.replicate(n_chans, axis=1) for wl in win_lengths]
+        windows = [as_points(grain_env, wl).wrap().T.replicate(n_chans, axis=1) for wl in win_lengths]
 
         # compute panning table
         pan_depth_table = as_points(pan_depth).wrap().T.replicate(n_chans, axis=1)

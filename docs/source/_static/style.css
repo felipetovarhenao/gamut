@@ -1,0 +1,53 @@
+.wy-nav-content {
+  max-width: 70vw;
+}
+
+.sig-object {
+  width: 100%;
+}
+
+.sig-object span.pre {
+  font-size: 16px;
+}
+
+.sig-name.descname .pre {
+  color: #2badd1;
+}
+
+.sig-param .n .pre {
+	color: #d28628;
+}
+
+.py.method .sig .sig-name .pre {
+	color: #17b271;
+}
+
+.py.class .sig .property .pre {
+	color: #be6ab0;
+}
+
+.toctree-wrapper.compound {
+  margin-bottom: 23px;
+}
+
+.toctree-wrapper.compound ul {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+}
+
+.docutils.literal.notranslate .pre {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.audio-examples-table {
+  width: 100%;
+}
+
+.audio-examples-table audio {
+  margin-left: auto;
+}
+
+.audio-examples-table td {
+  vertical-align: middle;
+}

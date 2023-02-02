@@ -75,7 +75,7 @@ class Envelope:
                 'Envelope must be initialized with either a window type (e.g. "hann") or an iterable of envelope points')
 
     def __str__(self) -> str:
-        return f"<Envelope: {self.type if self.type else str(self._points)}{CONSOLE.normal}>"
+        return f"<{self.__class__.__name__.capitalize()}: {self.type if self.type else str(self._points)}>"
 
     def __validate_points(self, points) -> Points:
         if isinstance(points[0], Iterable):

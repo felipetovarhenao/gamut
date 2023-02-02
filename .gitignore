@@ -17,6 +17,5 @@ TODO.txt
 **/*.gamut
 **/*.wav
 **/*.html
+!**/_templates/*
 **/build
-**/*.rst
-!**/index.rst
