@@ -57,6 +57,7 @@ class Analyzer(ABC):
         self.n_fft = n_fft
         self.win_length = win_length
         self.type = self.__get_type()
+        self.name = None
         self.portable = False
 
     @abstractmethod
@@ -74,17 +75,20 @@ class Analyzer(ABC):
     def summarize(self) -> None:
         """ Prints a summary of the current structure of the object """
         summary = self._summarize()
+        if self.name:
+            summary = {'name': self.name, **summary}
         line = "".join("-" for _ in range(90))
         CONSOLE.log_process(f"*** {self.type.upper()} SUMMARY ***\n{CONSOLE.c3}{line}").print()
         for key in summary:
             val = summary[key]
-            print(f"{CONSOLE.c4}{key.upper()}: {CONSOLE.normal}{val}")
-        print(f'{CONSOLE.c3}{line}{CONSOLE.normal}')
+            print(f"{CONSOLE.c4}{key.upper()}: {CONSOLE.reset}{val}")
+        print(f'{CONSOLE.c3}{line}{CONSOLE.reset}')
 
     def write(self, output: str, portable: bool = False) -> None:
         """ Writes a ``.gamut`` file to disk """
         st = time()
         self.portable = portable
+        self.name = splitext(basename(output))[0]
         output_dir = splitext(output)[0]
         CONSOLE.log_disk_op(f'{"" if portable else "non-"}portable {self.type}', f'{basename(output_dir)}{FILE_EXT}').print()
         serialized_object = self._serialize()
@@ -196,7 +200,7 @@ class Corpus(Analyzer):
     def __init__(self,
                  source: str | list | None = None,
                  max_duration: int | None = None,
-                 leaf_size: int | None = 10,
+                 leaf_size: int | None = 15,
                  features: Iterable = ['timbre'],
                  *args,
                  **kwargs) -> None:

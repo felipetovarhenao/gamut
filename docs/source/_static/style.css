@@ -1,5 +1,6 @@
 .wy-nav-content {
   max-width: 70vw;
+  min-width: 360px !important;
 }
 
 .sig-object {

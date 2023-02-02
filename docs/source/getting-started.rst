@@ -18,3 +18,4 @@ Here are some user-friendly tutorials to get started with **GAMuT**:
    tutorials/basic-mosaic
    tutorials/basic-audio
    tutorials/audio-params
+   tutorials/corpus-features
