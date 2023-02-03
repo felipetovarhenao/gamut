@@ -1,7 +1,7 @@
 ## **GAMuT: Granular Audio Musaicing Toolkit**
 
 ---
-<img src="docs/source/_static/gamut-logo.png" maxheight="500" width="auto">
+<img src="https://felipetovarhenao.github.io/gamut/_images/gamut-logo.png" maxheight="500" width="auto">
 
 ### **Description**
 
