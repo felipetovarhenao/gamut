@@ -1,13 +1,14 @@
 Getting started
 ===============
 
-Broadly speaking, the audio musaicing pipeline with **GAMuT** is quite simple:
+The following series of tutorials will incrementally show you how to use **GAMuT** and its capabilities.
 
-1. Create a ``Corpus`` from one or more audio sources.
-2. Create an ``Mosaic`` from one or more ``Corpus`` instances, given a `target` audio file.
-3. Convert ``Mosaic`` to an ``AudioBuffer`` instance, and write it into disk as a ``.wav`` or ``.aif`` audio file.
+Although it assumes a basic understanding of Python and computer programming concepts, it hopes to be an
+approachable and user-friendly guide to `audio musaicing`, for musicians, sound designers, programmers, and audio
+enthusiasts with varying degrees of experience.
 
-Here are some user-friendly tutorials to get started with **GAMuT**:
+.. hint::
+   Before starting, make sure you have installed the **GAMuT** package. If not, make sure to read the :doc:`./installation` guide.
 
 .. toctree::
    :maxdepth: 2

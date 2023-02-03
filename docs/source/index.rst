@@ -14,7 +14,7 @@ can be `defined <http://imtr.ircam.fr/imtr/Audio_Mosaicing>`_ as **"the process 
 Audio musaicing: A visual analogy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To better illustrate what `audio mosaicing` is, let's consider the following visual analogy:
+If you're new to `audio musaicing`, let's consider the following visual analogy:
 
    .. raw:: html
       
