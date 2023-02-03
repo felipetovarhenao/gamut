@@ -11,7 +11,7 @@ from .config import FILE_EXT, CONSOLE, AUDIO_FORMATS, ANALYSIS_TYPES
 from .data import KDTree
 
 # os
-from os.path import realpath, basename, isdir, splitext, join, commonprefix, relpath
+from os.path import realpath, basename, isdir, splitext, join, commonprefix, relpath, dirname
 from os import walk, rename
 
 # misc utils
@@ -301,8 +301,7 @@ class Corpus(Analyzer):
             CONSOLE.error(ValueError, 'Corpus does not contain any source audio files')
         if len(self.soundfiles) == 1:
             return
-        pattern = re.compile(r'(\/.*)*/')
-        self.source_root = pattern.search(commonprefix([sf['file'] for sf in self.soundfiles])).group()
+        self.source_root = dirname(commonprefix([sf['file'] for sf in self.soundfiles]))
         for i, sf in enumerate(self.soundfiles):
             self.soundfiles[i]['file'] = relpath(sf['file'], self.source_root)
 
