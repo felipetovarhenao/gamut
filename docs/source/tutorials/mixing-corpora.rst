@@ -58,16 +58,16 @@ This provide much more control over the way the `target` and `corpora` in the fi
 
 .. code:: python
     
-    # likelihood of target gradually changes from 25% down to 0%
+    # likelihood of target gradually changes from 50% down to 0%
     target_weight = [1, 0]
 
-    # likelihood of corpus 1 remains constant at 25% throughout
+    # likelihood of corpus 1 remains evenly present with the other sources
     corpus_1_weight = 1
 
-    # likelihood of corpus 2 gradually changes from 0% to 25%
+    # likelihood of corpus 2 gradually changes from 0% to 50%
     corpus_2_weight = [0, 1]
 
-    # likelihood of corpus 3 gradually changes from 0%, to 25% half way through, back to 0% by the end.
+    # likelihood of corpus 3 gradually changes from 0%, to 50% half way through, back to 0% by the end.
     corpus_3_weight = [0, 1, 0]
 
     # group weights in a list
