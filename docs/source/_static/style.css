@@ -1,0 +1,85 @@
+.wy-nav-content {
+  max-width: 70vw;
+  min-width: 360px !important;
+}
+
+.sig-object {
+  width: 100%;
+}
+
+.sig-object span.pre {
+  font-size: 16px;
+}
+
+.sig-name.descname .pre {
+  color: #2badd1;
+}
+
+.sig-param .n .pre {
+	color: #d28628;
+}
+
+.py.method .sig .sig-name .pre {
+	color: #17b271;
+}
+
+.py.class .sig .property .pre {
+	color: #be6ab0;
+}
+
+.toctree-wrapper.compound {
+  margin-bottom: 23px;
+}
+
+.toctree-wrapper.compound ul {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+}
+
+.docutils.literal.notranslate .pre {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.audio-examples-table {
+  width: 100%;
+}
+
+.audio-examples-table audio {
+  margin-left: auto;
+}
+
+.audio-examples-table td {
+  vertical-align: middle;
+}
+
+tr.corpus-example-header-row td span {
+  display: flex;
+  margin-top: 10px;
+}
+
+img.example-img {
+  display: flex;
+  height: 250px;
+  width: auto;
+  border-radius: 10px;
+  border: solid 2px #468192;
+}
+
+.img-table tr {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.img-table {
+  width: 100%;
+}
+
+.img-table img {
+  margin-left: auto;
+  margin-bottom: 10px;
+}
+
+.poem {
+  margin-left: 20px;
+}

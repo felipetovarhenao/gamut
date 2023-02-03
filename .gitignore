@@ -11,10 +11,11 @@ __pycache__
 /build/
 /gamut.egg-info/
 /audio_examples/
-test.py
-logo.ai
-/images/
+test*.py
 TODO.txt
 **/Icon?
 **/*.gamut
-test.py
+**/*.wav
+**/*.html
+!**/_templates/*
+**/build
