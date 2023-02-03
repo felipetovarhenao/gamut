@@ -7,10 +7,14 @@ jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
-      - uses: actions/checkout@master
-        with:
-          fetch-depth: 0 # otherwise, you will failed to push refs to dest repo
+      - name: Install dependencies
+        run: |
+          pip install sphinx sphinx_rtd_theme sphinx_copybutton
+      - name: Sphinx build
+        run: |
+          sh update_docs.sh
       - name: Build and Commit
         uses: sphinx-notes/pages@v2
       - name: Push changes
