@@ -18,7 +18,6 @@ from os import walk, rename
 from random import choices, random
 from copy import deepcopy
 from time import time
-import re
 
 # typing
 from typing_extensions import Self
