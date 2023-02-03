@@ -4,7 +4,7 @@ from librosa.feature import mfcc, chroma_stft
 from librosa.beat import tempo
 
 # gamut
-from .controls import Points, Envelope
+from .controls import Points, Envelope, object_to_points
 from .utils import resample_array
 from .audio import AudioBuffer
 from .config import FILE_EXT, CONSOLE, AUDIO_FORMATS, ANALYSIS_TYPES
@@ -579,12 +579,7 @@ class Mosaic(Analyzer):
 
         def as_points(param, N: int = n_segments) -> Points:
             """ resolve parameter into a ``Points`` instance based on type """
-            if isinstance(param, Envelope):
-                return param.get_points(N)
-            elif isinstance(param, Iterable):
-                return Envelope(shape=param).get_points(N)
-            else:
-                return Points().fill(N, param)
+            return object_to_points(param, N)
 
         def parse_corpus_weights_param(param):
             """ Generates corpus weights table based on param type """

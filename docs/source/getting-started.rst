@@ -20,3 +20,6 @@ Here are some user-friendly tutorials to get started with **GAMuT**:
    tutorials/audio-params
    tutorials/corpus-features
    tutorials/mixing-corpora
+   tutorials/portability
+   tutorials/audio-effects
+   tutorials/next-steps

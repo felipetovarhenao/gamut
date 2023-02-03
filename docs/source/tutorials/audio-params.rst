@@ -110,7 +110,7 @@ In this case, we'll change:
     audio = mosaic.to_audio(
         grain_env=grain_env,
         corpus_weights=corpus_weights,
-        grain_env=grain_env,
+        stretch_factor=stretch_factor,
     )
 
     # playback audio mosaic

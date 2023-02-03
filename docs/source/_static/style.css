@@ -77,6 +77,9 @@ img.example-img {
 
 .img-table img {
   margin-left: auto;
-  // margin-right: auto;
   margin-bottom: 10px;
+}
+
+.poem {
+  margin-left: 20px;
 }

@@ -3,6 +3,7 @@ from collections.abc import Iterable
 import numpy as np
 
 from .config import CONSOLE, ENVELOPE_TYPES
+from math import ceil
 
 
 class Points(np.ndarray):
@@ -122,3 +123,35 @@ class Envelope:
         if self.type:
             return Points(get_window(self.type, N))
         return self._points.resample(N)
+
+
+def object_to_points(param, N: int) -> Points:
+    """ resolve parameter into a ``Points`` instance based on type """
+    if isinstance(param, Envelope):
+        return param.get_points(N)
+    elif isinstance(param, Iterable):
+        return Envelope(shape=param).get_points(N)
+    else:
+        return Points().fill(N, param)
+
+
+def plot_envelope_list(env_list: Iterable, rows: int = 1):
+    from matplotlib import pyplot as plt
+
+    envs = np.array([object_to_points(x, 100) for x in env_list]).T
+    cumsum = envs.sum(axis=1)[:, np.newaxis]
+    envs = (envs / cumsum).T
+    plt.figure(1)
+
+    for i in range(len(env_list)):
+        plt.subplot(int(f'{rows}{max(1, ceil(len(env_list)/rows))}{i+1}'),
+                    ylim=[0, 1],
+                    xlabel='time',
+                    ylabel='value',
+                    xticks=[],
+                    yticks=np.round(np.linspace(0, 1, 10), 1),
+                    title=f'Envelope {i + 1}'
+                    )
+        plt.plot(envs[i], color=['dodgerblue', 'tomato', 'coral', 'salmon'][i % 4],)
+    plt.tight_layout()
+    plt.show()

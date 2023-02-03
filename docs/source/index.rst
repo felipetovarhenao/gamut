@@ -9,12 +9,12 @@ Description
 ---------------------------------
 
 **GAMuT** is a high-level, user-friendly granular `audio musaicing` toolkit implemented in Python. `Audio musaicing` (also spelled `mosaicing`), 
-can be `defined <http://imtr.ircam.fr/imtr/Audio_Mosaicing>`_ as `the process of recomposing the temporal evolution of a given target audio file from segments cut out of source audio materials.`:
+can be `defined <http://imtr.ircam.fr/imtr/Audio_Mosaicing>`_ as **"the process of recomposing the temporal evolution of a given target audio file from segments cut out of source audio materials"**.
 
 Audio musaicing: A visual analogy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To quickly illustrate what `audio mosaicing` is at its core, consider the following visual analogy:
+To better illustrate what `audio mosaicing` is, let's consider the following visual analogy:
 
    .. raw:: html
       
@@ -34,9 +34,9 @@ To quickly illustrate what `audio mosaicing` is at its core, consider the follow
          </tr>
          <tr>
             <td>
-               • Now, let's imagine we tell the computer that the <b>corpus</b> is be a collection of all avaialable <b>emoji</b>.
-               The computer will then try to find the best emojis, based on shape, color, and other features, 
-               and attempt to reconstruct the portrait of Bob Ross.
+               • Now, let's imagine we tell the computer that the <b>corpus</b> will be all avaialable <b>emojis</b>.
+               The computer will then try to find <i>the best</i> subset of emojis, based on how similar they are in shape, 
+               color, and other features to the <b>target</b>, and attempt to reconstruct the portrait of Bob Ross.
             </td>
             <td>
                <img src="_static/emoji_corpus.png" class="example-img" alt="emoji">
@@ -47,8 +47,11 @@ To quickly illustrate what `audio mosaicing` is at its core, consider the follow
                • Thus, the computer might give us something like this — <b>a portrat of Bob Ross, made with several emoji</b>.
                <br/>
                <br/>
-               Granted, this was actually done manually by LA-based artist <a href="https://en.wikipedia.org/wiki/Yung_Jake" rel="noreferrer" target="_blank">Yung Jake</a> with the <a href="http://android.emoji.ink" rel="noreferrer" target="_blank">emoji.ink</a> tool,
-               and not by a computer. However, the idea still holds — <i>audio mosaicing</i> consists of doing this, but with audio instead of images. 
+               Although this wasn't actually done by a computer, but manually assembled by LA-based artist 
+               <a href="https://en.wikipedia.org/wiki/Yung_Jake" rel="noreferrer" target="_blank">Yung Jake</a> 
+               with the <a href="http://android.emoji.ink" rel="noreferrer" target="_blank">emoji.ink</a> tool, 
+               the idea still holds — <i>audio mosaicing</i> consists of reconstructing a <b>target</b> using a <b>corpus</b>, 
+               but with audio instead of images. 
             </td>
             <td>
                <img src="_static/bob_ross_yungjake.jpeg" class="example-img" alt="jung-jake">
@@ -79,7 +82,23 @@ Here are 5 examples of `audio musaicing` made with **GAMuT**, using different co
          <tbody>
             <tr>
                <td>
-                  An excerpt of Ángel Gonzalez' <i>muerte en el olvido</i>.
+                  An excerpt of Ángel Gonzalez' <i>muerte en el olvido</i>:
+                  <br/>
+                  <br/>
+                  <div class="poem">
+                     <i>Yo sé que existo</i>
+                     <br/>
+                     <i>porque tú me imaginas.</i>
+                     <br/>
+                     <i>Soy alto porque tú me crees</i>
+                     <br/>
+                     <i>alto, y limpio porque tú me miras</i>
+                     <br/>
+                     <i>con buenos ojos,</i>
+                     <br/>
+                     <i>con mirada limpia.</i>
+                     <br/>
+                  </div>
                </td>
                <td>
                </td>

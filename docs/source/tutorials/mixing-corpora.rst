@@ -61,13 +61,13 @@ This provide much more control over the way the `target` and `corpora` in the fi
     # likelihood of target gradually changes from 50% down to 0%
     target_weight = [1, 0]
 
-    # likelihood of corpus 1 remains evenly present with the other sources
+    # likelihood of corpus 1 will fluctuate between 50% and around 33%
     corpus_1_weight = 1
 
     # likelihood of corpus 2 gradually changes from 0% to 50%
     corpus_2_weight = [0, 1]
 
-    # likelihood of corpus 3 gradually changes from 0%, to 50% half way through, back to 0% by the end.
+    # likelihood of corpus 3 gradually changes from 0%, to around 33% half way through, back to 0% by the end.
     corpus_3_weight = [0, 1, 0]
 
     # group weights in a list
@@ -81,8 +81,16 @@ This provide much more control over the way the `target` and `corpora` in the fi
     # convert mosaic to audio and play back blend of corpora with different weight envelopes
     mosaic.to_audio(corpus_weights=corpus_weights).play()
 
+Here's a visual representation of all weights interacting with each other:
+
+.. image:: ../_static/multi-weight.png
+
+.. hint::
+    As the plot shows, the actual weights may change once combined, since they must be normalized to ensure their sum along the `y` axis is always ``1.0``.
+    For instance, this explains why **corpus 1**, despite having a constant value of ``1`` in the code, does fluctuate, due to the other weights affecting the fraction that it represents relative to ``1.0``.
+
 .. note::
-    When taking this approach, the order of items in ``list`` passed to ``corpus_weights`` matters: The first weight is always the target, and the subsequent ones belong to each ``Corpus`` in the input.
+    When taking this approach, the order of items in ``list`` passed to ``corpus_weights`` matters: The first weight is always the target (i.e., weight at index 0), and the subsequent ones belong to each ``Corpus`` in the input.
 
 .. warning::
     Make sure the number of ``Corpus`` matches the number of weights passed to ``corpus_weights``.
