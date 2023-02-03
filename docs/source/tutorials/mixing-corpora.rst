@@ -36,7 +36,7 @@ There are multiple ways in which we could control the mix between each input ``C
 
 .. code:: python
     
-    # corpus grains will be chosen with a likelihood 80%, and target grains with a 20% likelihood.
+    # corpus grains will be chosen with a likelihood of 80%, and target grains with a 20% likelihood.
     mosaic.to_audio(corpus_weights=0.8).play()
 
 * ``list`` **of** ``int`` **and/or** ``float`` **values**: To fine-tune things further, we can dynamically vary the likelihood with a ``list``, as previously shown in :doc:`audio-params`. This would represent the time-varying likelihood for all `corpora`, **evenly distributed among them**, vs. the original audio `target`.

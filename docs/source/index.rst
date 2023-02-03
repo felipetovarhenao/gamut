@@ -1,8 +1,3 @@
-.. GAMuT documentation master file, created by
-   sphinx-quickstart on Sun Jan 29 15:08:32 2023.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 GAMuT documentation
 =================================
 
@@ -13,8 +8,58 @@ GAMuT documentation
 Description
 ---------------------------------
 
-**GAMuT** is a high-level, user-friendly granular audio musaicing toolkit implemented in Python. 
-Here are 5 examples of `audio musaicing` , using different corpora on the same target:
+**GAMuT** is a high-level, user-friendly granular `audio musaicing` toolkit implemented in Python. `Audio musaicing` (also spelled `mosaicing`), 
+can be `defined <http://imtr.ircam.fr/imtr/Audio_Mosaicing>`_ as `the process of recomposing the temporal evolution of a given target audio file from segments cut out of source audio materials.`:
+
+Audio musaicing: A visual analogy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To quickly illustrate what `audio mosaicing` is at its core, consider the following visual analogy:
+
+   .. raw:: html
+      
+      <table class="img-table">
+         <tr>
+            <td>
+               <span>
+                  • Let's imagine we want the computer to reconstruct this <b>portait of Bob Ross</b>, 
+                  but only using bits and pieces of other images. 
+                  We will call this portait the <b>target</b>, and the collection of other 
+                  images the <b>corpus</b>.
+               </span>
+            </td>
+            <td>
+               <img src="_static/bob_ross_target.jpeg" class="example-img" alt="bob-ross">         
+            </td>
+         </tr>
+         <tr>
+            <td>
+               • Now, let's imagine we tell the computer that the <b>corpus</b> is be a collection of all avaialable <b>emoji</b>.
+               The computer will then try to find the best emojis, based on shape, color, and other features, 
+               and attempt to reconstruct the portrait of Bob Ross.
+            </td>
+            <td>
+               <img src="_static/emoji_corpus.png" class="example-img" alt="emoji">
+            </td>
+         </tr>
+         <tr>
+            <td>
+               • Thus, the computer might give us something like this — <b>a portrat of Bob Ross, made with several emoji</b>.
+               <br/>
+               <br/>
+               Granted, this was actually done manually by LA-based artist <a href="https://en.wikipedia.org/wiki/Yung_Jake" rel="noreferrer" target="_blank">Yung Jake</a> with the <a href="http://android.emoji.ink" rel="noreferrer" target="_blank">emoji.ink</a> tool,
+               and not by a computer. However, the idea still holds — <i>audio mosaicing</i> consists of doing this, but with audio instead of images. 
+            </td>
+            <td>
+               <img src="_static/bob_ross_yungjake.jpeg" class="example-img" alt="jung-jake">
+            </td>
+         </tr>
+      </table>
+
+Audio examples
+~~~~~~~~~~~~~~~~
+
+Here are 5 examples of `audio musaicing` made with **GAMuT**, using different corpora on the same target:
 
    .. raw:: html
 
