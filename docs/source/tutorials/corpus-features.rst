@@ -22,23 +22,23 @@ Here's a quick example:
 
 .. code:: python
 
-	from gamut.features import Corpus
+    from gamut.features import Corpus
 
-	# set audio source(s) for corpus
-	source = '/path/to/source/audio/folder-or-file'
+    # set audio source(s) for corpus
+    source = '/path/to/source/audio/folder-or-file'
 
-	# create corpus based on pitch content
-	pitch_based_corpus = Corpus(source=source, features=['pitch'])
+    # create corpus based on pitch content
+    pitch_based_corpus = Corpus(source=source, features=['pitch'])
 
-	# create corpus based on timbral content
-	timbre_based_corpus = Corpus(source=source, features=['timbre'])
+    # create corpus based on timbral content
+    timbre_based_corpus = Corpus(source=source, features=['timbre'])
 
-	# create corpus based on pitch AND timbral content
-	pitch_timbre_based_corpus = Corpus(source=source, features=['pitch', 'timbre'])
+    # create corpus based on pitch AND timbral content
+    pitch_timbre_based_corpus = Corpus(source=source, features=['pitch', 'timbre'])
 
 .. note::
-	Specifying which features to use has important implications, since ``Mosaic`` instances are created
-	based on the same features used by the input ``Corpus`` instance(s).
+    Specifying which features to use has important implications, since ``Mosaic`` instances are created
+    based on the same features used by the input ``Corpus`` instance(s).
 
-	Similarly, when combining ``Corpus`` instances as input for a ``Mosaic``, it will only work if all of them were created 
-	on the same features.
+    Similarly, when combining ``Corpus`` instances as input for a ``Mosaic``, it will only work if all of them were created 
+    on the same features.

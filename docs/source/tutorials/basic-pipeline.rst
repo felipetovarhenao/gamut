@@ -1,7 +1,7 @@
 Tutorial 1: Basic audio musaicing with GAMuT
 =================================================
 
-Here's a basic script that demonstrates a basic pipeline for creating an audio mosaic with **GAMuT**:
+Here's a simple script that demonstrates the basic pipeline for creating an audio mosaic with **GAMuT**:
 
 .. code:: python
 
@@ -18,7 +18,7 @@ Here's a basic script that demonstrates a basic pipeline for creating an audio m
    audio.play()
 
 
-.. warning::
+.. hint::
    Doing all these steps in a single script can be computationally inefficient, as it results in 
    creating the ``Corpus`` and ``Mosaic`` from scratch, everytime the script runs.
 

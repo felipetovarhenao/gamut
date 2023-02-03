@@ -19,3 +19,4 @@ Here are some user-friendly tutorials to get started with **GAMuT**:
    tutorials/basic-audio
    tutorials/audio-params
    tutorials/corpus-features
+   tutorials/mixing-corpora

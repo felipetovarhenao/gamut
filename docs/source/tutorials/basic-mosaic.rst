@@ -15,15 +15,22 @@ Here's a simple script showing how to write a `mosaic` as a ``.gamut`` file:
 
 .. code:: python
 
-	from gamut.features import Corpus, Mosaic
+    from gamut.features import Corpus, Mosaic
 
-	# 1) read corpus from a previously created .gamut file
-	corpus = Corpus()
-	corpus.read('path/to/my_corpus.gamut')
+    # 1) read corpus from a previously created .gamut file
+    corpus = Corpus()
+    corpus.read('path/to/my_corpus.gamut')
 
-	# 2) create a mosaic for a given an audio target and a corpus
-	mosaic = Mosaic(target=target, corpus='/path/to/target/audio/file.wav')
+    # 2) create a mosaic for a given an audio target and a corpus
+    mosaic = Mosaic(target='/path/to/target/audio/file.wav', corpus=corpus)
 
-	# 3) write mosaic to disk as a .gamut file
-	output_path = 'path/to/my_mosaic.gamut'
-	mosaic.write(output_path)
+    # 3) write mosaic to disk as a .gamut file
+    mosaic.write('path/to/my_mosaic.gamut')
+
+Next time we want to use this mosaic, we simply read it from disk:
+
+.. code:: python
+
+    from gamut.features import Mosaic
+
+    mosaic = Mosaic().read('path/to/my_corpus.gamut')

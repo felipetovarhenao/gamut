@@ -189,7 +189,7 @@ class Corpus(Analyzer):
 
     n_fft: int = 512
         Number of FFT bins
-    
+
     features: Iterable = ['timbre']
         List of ``str``, specifying audio feature(s) to use for audio source analysis. The options are ``"timbre"`` and/or ``"pitch"``.
 
@@ -379,11 +379,14 @@ class Mosaic(Analyzer):
         self.sr = sr
         self.frames = []
         self.beat_unit = beat_unit
+        self.features = []
+        self.duration = None
 
         corpora = self.__parse_corpus(corpus, [])
         self.soundfiles = {i: {} for i in range(-1, len(corpora or []))}
 
         if self.target and corpora:
+            self.features = corpora[0].features
             self.__build(corpora=corpora, sr=sr)
 
     def __validate(self, target, corpus):
@@ -429,6 +432,9 @@ class Mosaic(Analyzer):
         CONSOLE.log_subprocess('Loading target...').print()
         st = time()
         y, self.sr = load(self.target, sr=sr)
+
+        self.duration = len(y) / self.sr
+
         if self.beat_unit:
             self.hop_length = int((self.sr * 60) / (tempo(y=y, sr=self.sr)[0] / self.beat_unit))
         target_analysis = self._analyze_audio_file(y=y, features=corpora[0].features, sr=self.sr)[0]
@@ -484,11 +490,12 @@ class Mosaic(Analyzer):
         return mosaic
 
     def _summarize(self) -> dict:
-        duration = (len(self.soundfiles[-1]['sources'][0]['y']) / self.soundfiles[-1]['sources'][0]['sr'])
         return {
             "target": basename(self.target) if self.target else None,
+            "num. of corpora": len([x for x in self.soundfiles]),
+            "analysis features": self.features,
             "portable": self.portable,
-            "duration": f'{round(duration * 10) / 10}s',
+            "duration": f'{round(self.duration * 10) / 10}s' if self.duration else None,
             "num. of grains": len(self.frames)
         }
 

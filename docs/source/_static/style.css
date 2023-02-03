@@ -52,3 +52,8 @@
 .audio-examples-table td {
   vertical-align: middle;
 }
+
+tr.corpus-example-header-row td span {
+  display: flex;
+  margin-top: 10px;
+}
