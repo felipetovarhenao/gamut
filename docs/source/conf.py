@@ -25,7 +25,6 @@ exclude_patterns = []
 extensions = [
     'sphinx_copybutton',
     'sphinx.ext.autodoc',
-    
 ]
 
 
