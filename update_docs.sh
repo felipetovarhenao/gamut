@@ -1,4 +1,3 @@
 cd docs
-rm -r -f build
-sphinx-apidoc --ext-autodoc -o . .. 
+sphinx-apidoc -o . .. 
 make html

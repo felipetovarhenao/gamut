@@ -19,3 +19,5 @@ TODO.txt
 **/*.html
 !**/_templates/*
 **/build
+**/_build
+!.github
