@@ -1,11 +1,11 @@
 Tutorial 9: Audio effects
 ============================
 
-Although the focus of **GAMuT** as a package is purely `audio mosaicing`, it will hopefully support in the future a few simple, but useful ways to
-apply audio effects to resulting audio files.
+Although the main focus of **GAMuT** is `audio mosaicing`, it might increasingly include a few simple, but useful ways to
+apply audio effects to the resulting audio files.
 
-Currently, **GAMuT** only supports `audio convolution <https://www.izotope.com/en/learn/the-basics-of-convolution-in-audio-production.html>`_,
-which we can use to do, among other things, `convolution reverb <https://ask.audio/articles/what-is-convolution-reverb>`_ with any 
+Currently, **GAMuT** supports `audio convolution <https://www.izotope.com/en/learn/the-basics-of-convolution-in-audio-production.html>`_,
+which we can use, among other things, to do `convolution reverb <https://ask.audio/articles/what-is-convolution-reverb>`_ with any 
 `impulse response <https://en.wikipedia.org/wiki/Impulse_response>`_ we get our hands on.
 
 Here's a brief example on how this can be done:
@@ -28,5 +28,5 @@ Here's a brief example on how this can be done:
 	audio.play()
 
 .. hint::
-	There many freely available impulse response packs and libraries online that you can use.
-	Here's one such `website <https://impulses.prasadt.com/>`_ where you can download different IRs and experiment with **GAMuT**.
+	There are many freely available impulse response packs and libraries online that you can use.
+	Here's one such `website <https://impulses.prasadt.com/>`_, where you can download different IRs and experiment with **GAMuT**.

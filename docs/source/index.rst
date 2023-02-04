@@ -34,7 +34,7 @@ If you're new to `audio musaicing`, let's consider the following visual analogy:
          </tr>
          <tr>
             <td>
-               • Now, let's imagine we tell the computer that the <b>corpus</b> will be all avaialable <b>emojis</b>.
+               • Now, let's imagine we tell the computer that the <b>corpus</b> will be all available <b>emojis</b>.
                The computer will then try to find <i>the best</i> subset of emojis, based on how similar they are in shape, 
                color, and other features to the <b>target</b>, and attempt to reconstruct the portrait of Bob Ross.
             </td>
@@ -62,7 +62,7 @@ If you're new to `audio musaicing`, let's consider the following visual analogy:
 Audio examples
 ~~~~~~~~~~~~~~~~
 
-Here are 5 examples of `audio musaicing` made with **GAMuT**, using different corpora on the same target:
+Here are 5 examples of `audio musaicing` made with **GAMuT**, using different **corpora** on the same audio **target**.
 
    .. raw:: html
 
