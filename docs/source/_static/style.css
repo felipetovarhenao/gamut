@@ -1,3 +1,8 @@
+
+.wy-breadcrumbs a, .toctree-wrapper a.reference.internal:visited {
+  color: #2980b9;
+}
+
 .wy-nav-content {
   max-width: 70vw;
   min-width: 360px !important;
@@ -16,15 +21,15 @@
 }
 
 .sig-param .n .pre {
-	color: #d28628;
+  color: #d28628;
 }
 
 .py.method .sig .sig-name .pre {
-	color: #17b271;
+  color: #17b271;
 }
 
 .py.class .sig .property .pre {
-	color: #be6ab0;
+  color: #be6ab0;
 }
 
 .toctree-wrapper.compound {
@@ -60,7 +65,7 @@ tr.corpus-example-header-row td span {
 
 img.example-img {
   display: flex;
-  height: 250px;
+  height: 280px;
   width: auto;
   border-radius: 10px;
   border: solid 2px #468192;

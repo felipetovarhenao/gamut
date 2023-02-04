@@ -1,7 +1,7 @@
 Getting started
 ===============
 
-The following series of tutorials will incrementally show you how to use **GAMuT** and its capabilities.
+The following tutorial series will incrementally show you how to use **GAMuT** and what you can do with it.
 
 Although it assumes a basic understanding of Python and computer programming concepts, it hopes to be an
 approachable and user-friendly guide to `audio musaicing`, for musicians, sound designers, programmers, and audio

@@ -52,6 +52,10 @@ If you're new to `audio musaicing`, let's consider the following visual analogy:
                with the <a href="http://android.emoji.ink" rel="noreferrer" target="_blank">emoji.ink</a> tool, 
                the idea still holds — <i>audio mosaicing</i> consists of reconstructing a <b>target</b> using a <b>corpus</b>, 
                but with audio instead of images. 
+               <br/>
+               <br/>
+               The computer would then go through a collection of audio files, analyze every sound, and try to pick the bits and pieces (i.e., <i>audio grains</i>)
+               that are most similar to the target, and assembled them into an <b>audio mosaic</b>.
             </td>
             <td>
                <img src="_static/bob_ross_yungjake.jpeg" class="example-img" alt="jung-jake">

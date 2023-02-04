@@ -1,7 +1,7 @@
 Tutorial 5: Audio musaicing parameters
 =================================================
 
-One of the main advantages of the ``Mosaic`` class, is that is allows to generate different audio mosaic versions
+One of the main advantages of the ``Mosaic`` class, is that it allows to generate different audio mosaic versions
 from the same instance, or `corpus-target` pairing. In other words, a ``Mosaic`` instance works as a virtual representation, 
 or **blueprint** of an `audio mosaic`, rather than the `audio mosaic` itself. 
 
@@ -9,7 +9,7 @@ This allows to play and experiment with different settings, hear the results, al
 ``Corpus`` and/or the ``Mosaic`` from scratch everytime. Thus, the resulting audio will depend on the many 
 audio parameters one can pass to the ``to_audio()`` method.
 
-To demonstrate this, let's consider different cases with the same ``Mosaic`` instance.
+To demonstrate this, let's consider different cases with the same ``Mosaic`` instance. 
 
 .. code:: python
 
@@ -75,7 +75,7 @@ This results is the following grain envelope:
     :height: 250px
 
 .. warning::
-    When specifying a control parameter as a ``list`` of ``tuples``, make sure the `x` values appear in incremental order. For instance, these `lists` would all throw an error: 
+    When specifying a control parameter as a ``list`` of ``tuples``, make sure the `x` values appear in incremental order. For instance, these ``lists`` would all throw an error: 
 
     * ``[(0, 0), (0, 1)]```
     * ``[(0, 0), (1, 1), (0, 1)]```
