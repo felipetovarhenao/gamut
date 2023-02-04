@@ -1,21 +1,31 @@
 from argparse import ArgumentParser
-from os.path import realpath, join, exists, dirname, splitext
+from os.path import realpath, join, exists, dirname, splitext, basename
 from os import chdir, makedirs
 import json
 import importlib.util
 
 
 def msg(text):
-    print(f"\033[32;1m{text}\033[0m")
+    print(f"\N{check mark} \033[32;1m{text}\033[0m")
 
 
 def throw(error):
-    print(f"\033[31;1m{error}\033[0m")
+    print(f"\N{skull} \033[31;1m{error}\033[0m")
     exit()
 
 
 def new_template(template):
-    with open(join(SCRIPTS_DIR, f'{template}.json'), 'w') as f:
+    dirs = {m: d for (m, d) in zip(TEMPLATE_OPTIONS, [SCRIPTS_CORPUS_DIR,
+                                                      SCRIPTS_MOSAIC_DIR, SCRIPTS_AUDIO_DIR, SCRIPTS_DIR])}
+    try:
+        out_dir = dirs[template]
+    except:
+        throw(f"Invalid template. Options are: {TEMPLATE_OPTIONS}")
+
+    if not exists(out_dir):
+        makedirs(out_dir)
+
+    with open(join(out_dir, f'{template}.json'), 'w') as f:
         json.dump(TEMPLATES[template], f, indent=4)
 
 
@@ -29,6 +39,8 @@ if importlib.util.find_spec('gamut') == None:
 
 
 SCRIPT_MODES = ['corpus', 'mosaic', 'audio']
+TEST_NAME = 'test'
+TEMPLATE_OPTIONS = SCRIPT_MODES + [TEST_NAME]
 
 parser = ArgumentParser(
     prog='GAMuT parser', description="Project utility for creating GAMuT audio musaicings with JSON scripts",
@@ -36,9 +48,10 @@ parser = ArgumentParser(
 parser.add_argument('-i', '--init', action='store_true', help='Initializes a project folder structure')
 parser.add_argument('-s', '--script', help="JSON file to use as input settings for GAMuT", type=str)
 parser.add_argument('-p', '--play', action='store_true', help="Enable audio playback after script runs")
+parser.add_argument('--skip', nargs='+', help="Skip one or more modes in the script", choices=SCRIPT_MODES)
 parser.add_argument(
-    '-t', '--template', help=f"Generates a new script template, based on the following options: {SCRIPT_MODES}", type=str,
-    choices=SCRIPT_MODES)
+    '-t', '--template', help=f"Generates a new script template, based on the following options: {TEMPLATE_OPTIONS}",
+    type=str, choices=TEMPLATE_OPTIONS)
 args = parser.parse_args()
 
 # ------------------------------------- #
@@ -55,59 +68,57 @@ AUDIO_DIR = join(ROOT_DIR, 'audio')
 AUDIO_IN_DIR = join(AUDIO_DIR, 'input')
 AUDIO_OUT_DIR = join(AUDIO_DIR, 'output')
 SCRIPTS_DIR = join(ROOT_DIR, 'scripts')
+SCRIPTS_CORPUS_DIR = join(SCRIPTS_DIR, 'corpora')
+SCRIPTS_MOSAIC_DIR = join(SCRIPTS_DIR, 'mosaics')
+SCRIPTS_AUDIO_DIR = join(SCRIPTS_DIR, 'audio')
 
 TEMPLATES = {
     "corpus": {
         "corpus": {
-            "name": "corpus-example",
-            "params": {
-                "source": [
-                    join(AUDIO_IN_DIR, "source.wav")
-                ],
-                "features": [
-                    "timbre",
-                    "pitch"
-                ]
-            }
+            "name": f"{TEST_NAME}-corpus",
+            "source": [
+                join(AUDIO_IN_DIR, "source.wav")
+            ],
+            "features": [
+                "timbre",
+                "pitch"
+            ]
+
         }
     },
     "mosaic": {
         "mosaic": {
-            "name": "mosaic-example",
-            "params": {
-                "target": join(AUDIO_IN_DIR, "target.wav"),
-                "corpus": [
-                    join(CORPUS_DIR, "corpus-example.gamut")
-                ]
-            }
+            "name": f"{TEST_NAME}-mosaic",
+            "target": join(AUDIO_IN_DIR, "target.wav"),
+            "corpus": [
+                join(CORPUS_DIR, f"{TEST_NAME}-corpus.gamut")
+            ]
         }
     },
     "audio": {
         "audio": {
-            "name": "mosaic.wav",
-            "params": {
-                "mosaic": join(MOSAIC_DIR, "mosaic-example.gamut"),
-                "fidelity": 1.0,
-                "grain_dur": 0.1,
-                "grain_env": "cosine",
-                "corpus_weights": 1.0,
-                "stretch_factor": 1.0,
-                "pan_depth": 2,
-                "n_chans": 2,
-                "onset_var": 0,
-            }
+            "mosaic": join(MOSAIC_DIR, f"{TEST_NAME}-mosaic.gamut"),
+            "fidelity": 1.0,
+            "grain_dur": 0.1,
+            "grain_env": "cosine",
+            "corpus_weights": 1.0,
+            "stretch_factor": 1.0,
+            "pan_depth": 3,
+            "n_chans": 2,
+            "onset_var": 0,
+            "play": True,
         }
     }
 }
+
+TEMPLATES[TEST_NAME] = {k: TEMPLATES[k][k] for k in TEMPLATES}
 
 if args.init:
 
     for x in [GAMUT_DIR, MOSAIC_DIR, CORPUS_DIR, AUDIO_DIR, AUDIO_OUT_DIR, AUDIO_IN_DIR, SCRIPTS_DIR]:
         if not exists(x):
             makedirs(x)
-
-    TEMPLATES['test'] = {k: TEMPLATES[k][k] for k in TEMPLATES}
-    new_template('test')
+    new_template(TEST_NAME)
 
     import requests
     import shutil
@@ -135,38 +146,31 @@ if args.script:
     with open(file=script_path, mode='r',) as f:
         script = json.loads(f.read())
 
-    # ------------------------------------- #
-    # INITIAL SCRIPT VALIDATION
-    # ------------------------------------- #
-
     for mode in script:
         if mode not in SCRIPT_MODES:
-            throw(f'{mode} is not a valid GAMuT script key')
+            throw(f'"{mode}" is not a valid GAMuT script key')
 
     from gamut.features import Corpus, Mosaic
 
-    sorted_modes = [m for m in SCRIPT_MODES if m in script]
+    skip = args.skip if args.skip else []
+    sorted_modes = [m for m in SCRIPT_MODES if m in script and m not in skip]
     for mode in sorted_modes:
-        obj = script[mode]
-        try:
-            output_name = obj['name']
-        except:
-            throw(f'You forgot to specify a name for the {mode} output file')
-
-        if 'params' not in obj:
-            throw(f'You forgot to specify the {mode} "params" field in your script')
+        params = script[mode]
+        name = params.pop('name', None)
+        output_name = name if name else splitext(basename(script_path))[0] + f'-{mode}'
 
         # ------------------------------------- #
         # PROCESS GAMUT SCRIPT
         # ------------------------------------- #
-        params = obj['params']
+
         if mode == 'corpus':
             chdir(AUDIO_DIR)
             for source in params['source']:
                 params['source'] = realpath(source)
             chdir(ROOT_DIR)
             c = Corpus(**params)
-            c.write(join(CORPUS_DIR, output_name))
+            chdir(CORPUS_DIR)
+            c.write(output_name)
 
         elif mode == 'mosaic':
             for x in ['corpus', 'target']:
@@ -179,14 +183,22 @@ if args.script:
             params['target'] = realpath(params['target'])
             chdir(ROOT_DIR)
             m = Mosaic(target=params['target'], corpus=corpora)
-            m.write(join(MOSAIC_DIR, output_name))
+            chdir(MOSAIC_DIR)
+            m.write(splitext(output_name)[0] + '.gamut')
 
         elif mode == 'audio':
             mosaic_file = params.pop('mosaic')
+            convolve = params.pop('convolve', None)
+            play = params.pop('play', None)
             chdir(MOSAIC_DIR)
             m = Mosaic().read(splitext(mosaic_file)[0] + ".gamut")
             chdir(ROOT_DIR)
             audio = m.to_audio(**params)
-            audio.write(join(AUDIO_OUT_DIR, output_name))
-            if args.play:
+            chdir(AUDIO_OUT_DIR)
+
+            if convolve:
+                pass
+
+            audio.write(splitext(output_name)[0] + '.wav')
+            if args.play or play:
                 audio.play()
