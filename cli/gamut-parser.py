@@ -18,6 +18,7 @@ def new_template(template):
     with open(join(SCRIPTS_DIR, f'{template}.json'), 'w') as f:
         json.dump(TEMPLATES[template], f, indent=4)
 
+
 # check package installation
 if importlib.util.find_spec('gamut') == None:
     throw("You haven't installed the GAMuT package. You can find the installation guide here: https://felipe-tovar-henao.com/gamut/installation")
@@ -34,6 +35,7 @@ parser = ArgumentParser(
     epilog='felipe-tovar-henao.com')
 parser.add_argument('-i', '--init', action='store_true', help='Initializes a project folder structure')
 parser.add_argument('-s', '--script', help="JSON file to use as input settings for GAMuT", type=str)
+parser.add_argument('-p', '--play', action='store_true', help="Enable audio playback after script runs", type=str)
 parser.add_argument(
     '-t', '--template', help=f"Generates a new script template, based on the following options: {SCRIPT_MODES}", type=str,
     choices=SCRIPT_MODES)
@@ -186,3 +188,5 @@ if args.script:
             chdir(ROOT_DIR)
             audio = m.to_audio(**params)
             audio.write(join(AUDIO_OUT_DIR, output_name))
+            if args.play:
+                audio.play()
