@@ -35,7 +35,7 @@ parser = ArgumentParser(
     epilog='felipe-tovar-henao.com')
 parser.add_argument('-i', '--init', action='store_true', help='Initializes a project folder structure')
 parser.add_argument('-s', '--script', help="JSON file to use as input settings for GAMuT", type=str)
-parser.add_argument('-p', '--play', action='store_true', help="Enable audio playback after script runs", type=str)
+parser.add_argument('-p', '--play', action='store_true', help="Enable audio playback after script runs")
 parser.add_argument(
     '-t', '--template', help=f"Generates a new script template, based on the following options: {SCRIPT_MODES}", type=str,
     choices=SCRIPT_MODES)
