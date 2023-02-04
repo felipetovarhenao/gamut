@@ -18,8 +18,9 @@ def new_template(template):
     with open(join(SCRIPTS_DIR, f'{template}.json'), 'w') as f:
         json.dump(TEMPLATES[template], f, indent=4)
 
+# check package installation
 if importlib.util.find_spec('gamut') == None:
-    throw("You haven't installed the GAMuT package. You can find the installation guide here: https://felipe-tovar-henao.com/gamut/installation")        
+    throw("You haven't installed the GAMuT package. You can find the installation guide here: https://felipe-tovar-henao.com/gamut/installation")
 
 # ------------------------------------- #
 # PARSE SCRIPT
