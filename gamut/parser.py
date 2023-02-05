@@ -3,7 +3,7 @@ if __name__ != '__main__':
 
 from argparse import ArgumentParser
 from os.path import realpath, join, exists, dirname, splitext, basename
-from os import chdir, makedirs
+from os import chdir, makedirs, remove
 import json
 import importlib.util
 
@@ -19,6 +19,13 @@ def msg(text):
 def throw(error):
     print(f"\N{skull} \033[31;1m{error}\033[0m")
     exit()
+
+
+def write_file(path, obj, ext):
+    out = splitext(path)[0] + ext
+    if exists(out):
+        remove(out)
+    obj.write(out)
 
 
 def new_template(template):
@@ -193,7 +200,7 @@ elif args.script:
                 chdir(ROOT_DIR)
                 c = Corpus(**params)
                 chdir(CORPUS_DIR)
-                c.write(output_name)
+                write_file(output_name, c, '.gamut')
 
             case 'mosaic':
                 for x in ['corpus', 'target']:
@@ -207,7 +214,7 @@ elif args.script:
                 chdir(ROOT_DIR)
                 m = Mosaic(target=params['target'], corpus=corpora)
                 chdir(MOSAIC_DIR)
-                m.write(splitext(output_name)[0] + '.gamut')
+                write_file(output_name, m, '.gamut')
 
             case 'audio':
                 mosaic_file = params.pop('mosaic')
@@ -225,7 +232,7 @@ elif args.script:
                 chdir(AUDIO_OUT_DIR)
                 if convolve:
                     audio.convolve(**convolve)
-                audio.write(splitext(output_name)[0] + '.wav')
+                write_file(output_name, audio, '.wav')
                 if args.play or play:
                     audio.play()
     exit()
