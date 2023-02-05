@@ -24,7 +24,7 @@ def new_template(template):
     try:
         out_dir = dirs[template]
     except:
-        throw(f"Invalid template. Options are: {TEMPLATE_OPTIONS}")
+        throw(f"Invalid template type. Options are: {TEMPLATE_OPTIONS}")
 
     if not exists(out_dir):
         makedirs(out_dir)
@@ -51,11 +51,11 @@ TEMPLATE_OPTIONS = SCRIPT_MODES + [TEST_NAME]
 
 parser = ArgumentParser(
     prog='GAMuT parser', description="Project utility for creating GAMuT audio musaicings with JSON scripts",
-    epilog='felipe-tovar-henao.com')
-parser.add_argument('-i', '--init', action='store_true', help='Initializes a project folder structure')
+    epilog='To learn more, visit https://felipe-tovar-henao.com/gamut')
+parser.add_argument('-i', '--init', action='store_true', help='initializes a project folder structure')
 parser.add_argument('-s', '--script', help="JSON file to use as input settings for GAMuT", type=str)
 parser.add_argument('-p', '--play', action='store_true', help="Enable audio playback after script runs")
-parser.add_argument('--skip', nargs='+', help="Skip one or more modes in the script", choices=SCRIPT_MODES)
+parser.add_argument('--skip', nargs='+', help="Skip one or more parts of the script", choices=SCRIPT_MODES)
 parser.add_argument(
     '-t', '--template', help=f"Generates a new script template, based on the following options: {TEMPLATE_OPTIONS}",
     type=str, choices=TEMPLATE_OPTIONS)
@@ -91,8 +91,7 @@ TEMPLATES = {
                 join(AUDIO_IN_DIR, "source.wav")
             ],
             "features": [
-                "timbre",
-                "pitch"
+                "timbre"
             ]
 
         }
@@ -108,6 +107,7 @@ TEMPLATES = {
     },
     "audio": {
         "audio": {
+            "name": f"{TEST_NAME}-audio",
             "mosaic": join(MOSAIC_DIR, f"{TEST_NAME}-mosaic.gamut"),
             "fidelity": 1.0,
             "grain_dur": 0.1,
@@ -148,7 +148,7 @@ if args.init:
     except:
         print('\tWarning: Unable to download audio examples')
 
-    msg('Your GAMuT project folder is ready!')
+    msg('Your GAMuT project folder is ready!\nRun the test.json script to check everything is working')
     exit()
 
 
