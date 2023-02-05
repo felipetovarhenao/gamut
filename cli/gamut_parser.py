@@ -158,7 +158,7 @@ if args.init:
 
 elif args.template:
     new_template(args.template)
-
+    exit()
 
 # ------------------------------------- #
 # PROCESS SCRIPT
@@ -212,9 +212,9 @@ elif args.script:
                 play = params.pop('play', None)
                 convolve = params.pop('convolve', None)
                 if convolve:
-                    if 'ir' not in convolve:
+                    if 'impulse_response' not in convolve:
                         throw('To apply audio convolution, you must provide an inpulse response')
-                    elif not exists(convolve['ir']):
+                    elif not exists(convolve['impulse_response']):
                         throw('Invalid impulse response path in convolve parameter')
                 chdir(MOSAIC_DIR)
                 m = Mosaic().read(splitext(mosaic_file)[0] + ".gamut")
@@ -226,3 +226,6 @@ elif args.script:
                 audio.write(splitext(output_name)[0] + '.wav')
                 if args.play or play:
                     audio.play()
+    exit()
+else:
+    throw("You didn't provide any arguments. Use -h or --help to learn more.")
