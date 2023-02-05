@@ -7,15 +7,23 @@ Here's a step-by-step guide on how to install the **GAMuT** package, assumming, 
 	As of February of 2023, **GAMuT** is not guaranteed to work with Python 3.11.
 	Make sure your Python version is `v3.10.9 <https://www.python.org/downloads/release/python-3109/>`_ or older.
 
-Before installing **GAMuT**, you'll need a few audio and media libraries.
+Dependencies
+--------------
 
-on **MacOS**, run:
+Before installing **GAMuT**, you'll need a few system-wide audio and media libraries:
+
+* `portaudio <http://www.portaudio.com/>`_
+* `libsoundio <http://libsound.io/>`_
+* `libsndfile <https://libsndfile.github.io/libsndfile/>`_
+* `ffmpeg <https://ffmpeg.org/>`_
+
+To install on **MacOS**, run:
 
 	.. code:: shell
 
 		brew install portaudio libsoundio libsndfile ffmpeg
 
-on **Linux Ubuntu**:
+To install on **Linux Ubuntu**:
 	.. code:: shell
 
 		apt-get update -y
@@ -24,6 +32,9 @@ on **Linux Ubuntu**:
 .. note::
 	If you're a Windows user, please Google how to install these libraries in your machine.
 
+
+Python package
+---------------
 
 Once these libraries are installed, simply run:
 
@@ -35,3 +46,16 @@ Once these libraries are installed, simply run:
 	This package was developed, and has only been tested on **MacOS**. If you're able to use it in another
 	operating system and would like to share the installation process, please submit a ``pull request``
 	to the `GAMuT github repo <https://github.com/felipetovarhenao/gamut>`_.
+
+
+Test
+-----------
+
+Once **GAMuT** is installed, you can test that everything works, by running:
+
+	.. code:: shell
+
+		gamut --version
+		gamut --test
+
+If you see a success message afterwards, it means **GAMuT** can run in your machine.

@@ -210,6 +210,7 @@ Here are 5 examples of `audio musaicing` made with **GAMuT**, using different **
 
    installation
    getting-started
+   command-line-interface
    modules
    
 To visualize contents in alphabetical order, see :ref:`genindex`.

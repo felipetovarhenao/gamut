@@ -33,7 +33,7 @@ def cli():
 
     def check_parser():
         if not exists(PARSER_FILENAME):
-            throw(f"You seem to be trying to the GAMuT parser, but this directory does not contain a parser.py file.\nNavigate to a pre-existent project folder, or run 'gamut --start' to initialize a new one in this directory.")
+            throw(f"You seem to be trying to use the GAMuT parser, but this directory does not contain a parser.py file.\nNavigate to a pre-existent project folder, or run 'gamut --start' to initialize a new one in this directory.")
 
     if args.version:
         msg(f'GAMuT v{pkg_resources.get_distribution("gamut").version}')
