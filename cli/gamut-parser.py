@@ -5,6 +5,10 @@ import json
 import importlib.util
 
 
+# ------------------------------------- #
+# HELPER FUNCTIONS
+# ------------------------------------- #
+
 def msg(text):
     print(f"\N{check mark} \033[32;1m{text}\033[0m")
 
@@ -29,12 +33,15 @@ def new_template(template):
         json.dump(TEMPLATES[template], f, indent=4)
 
 
-# check package installation
+# ------------------------------------- #
+# CHECK PACKAGE INSTALLATION
+# ------------------------------------- #
+
 if importlib.util.find_spec('gamut') == None:
     throw("You haven't installed the GAMuT package. You can find the installation guide here: https://felipe-tovar-henao.com/gamut/installation")
 
 # ------------------------------------- #
-# PARSE SCRIPT
+# PARSE CLI ARGUMENTS
 # ------------------------------------- #
 
 
@@ -55,7 +62,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 # ------------------------------------- #
-# FOLDER STRUCTURE
+# DEFINE FOLDER STRUCTURE
 # ------------------------------------- #
 
 ROOT_DIR = dirname(realpath(__file__))
@@ -71,6 +78,10 @@ SCRIPTS_DIR = join(ROOT_DIR, 'scripts')
 SCRIPTS_CORPUS_DIR = join(SCRIPTS_DIR, 'corpora')
 SCRIPTS_MOSAIC_DIR = join(SCRIPTS_DIR, 'mosaics')
 SCRIPTS_AUDIO_DIR = join(SCRIPTS_DIR, 'audio')
+
+# ------------------------------------- #
+# DEFINE TEMPLATE SCRIPTS
+# ------------------------------------- #
 
 TEMPLATES = {
     "corpus": {
@@ -113,8 +124,11 @@ TEMPLATES = {
 
 TEMPLATES[TEST_NAME] = {k: TEMPLATES[k][k] for k in TEMPLATES}
 
-if args.init:
+# ------------------------------------- #
+# INIT FLAG
+# ------------------------------------- #
 
+if args.init:
     for x in [GAMUT_DIR, MOSAIC_DIR, CORPUS_DIR, AUDIO_DIR, AUDIO_OUT_DIR, AUDIO_IN_DIR, SCRIPTS_DIR]:
         if not exists(x):
             makedirs(x)
@@ -137,10 +151,20 @@ if args.init:
     msg('Your GAMuT project folder is ready!')
     exit()
 
-if args.template:
+
+# ------------------------------------- #
+# CREATE TEMPLATE
+# ------------------------------------- #
+
+elif args.template:
     new_template(args.template)
 
-if args.script:
+
+# ------------------------------------- #
+# PROCESS SCRIPT
+# ------------------------------------- #
+
+elif args.script:
     script_path = realpath(args.script)
 
     with open(file=script_path, mode='r',) as f:
@@ -159,46 +183,46 @@ if args.script:
         name = params.pop('name', None)
         output_name = name if name else splitext(basename(script_path))[0] + f'-{mode}'
 
-        # ------------------------------------- #
-        # PROCESS GAMUT SCRIPT
-        # ------------------------------------- #
+        match mode:
+            case 'corpus':
+                chdir(AUDIO_DIR)
+                for source in params['source']:
+                    params['source'] = realpath(source)
+                chdir(ROOT_DIR)
+                c = Corpus(**params)
+                chdir(CORPUS_DIR)
+                c.write(output_name)
 
-        if mode == 'corpus':
-            chdir(AUDIO_DIR)
-            for source in params['source']:
-                params['source'] = realpath(source)
-            chdir(ROOT_DIR)
-            c = Corpus(**params)
-            chdir(CORPUS_DIR)
-            c.write(output_name)
+            case 'mosaic':
+                for x in ['corpus', 'target']:
+                    if x not in params:
+                        throw(f'You forgot to specify a {x} in your {mode} script.')
 
-        elif mode == 'mosaic':
-            for x in ['corpus', 'target']:
-                if x not in params:
-                    throw(f'You forgot to specify a {x} in your {mode} script.')
+                chdir(CORPUS_DIR)
+                corpora = [Corpus().read(splitext(c)[0] + ".gamut") for c in params['corpus']]
+                chdir(AUDIO_DIR)
+                params['target'] = realpath(params['target'])
+                chdir(ROOT_DIR)
+                m = Mosaic(target=params['target'], corpus=corpora)
+                chdir(MOSAIC_DIR)
+                m.write(splitext(output_name)[0] + '.gamut')
 
-            chdir(CORPUS_DIR)
-            corpora = [Corpus().read(splitext(c)[0] + ".gamut") for c in params['corpus']]
-            chdir(AUDIO_DIR)
-            params['target'] = realpath(params['target'])
-            chdir(ROOT_DIR)
-            m = Mosaic(target=params['target'], corpus=corpora)
-            chdir(MOSAIC_DIR)
-            m.write(splitext(output_name)[0] + '.gamut')
-
-        elif mode == 'audio':
-            mosaic_file = params.pop('mosaic')
-            convolve = params.pop('convolve', None)
-            play = params.pop('play', None)
-            chdir(MOSAIC_DIR)
-            m = Mosaic().read(splitext(mosaic_file)[0] + ".gamut")
-            chdir(ROOT_DIR)
-            audio = m.to_audio(**params)
-            chdir(AUDIO_OUT_DIR)
-
-            if convolve:
-                pass
-
-            audio.write(splitext(output_name)[0] + '.wav')
-            if args.play or play:
-                audio.play()
+            case 'audio':
+                mosaic_file = params.pop('mosaic')
+                play = params.pop('play', None)
+                convolve = params.pop('convolve', None)
+                if convolve:
+                    if 'ir' not in convolve:
+                        throw('To apply audio convolution, you must provide an inpulse response')
+                    elif not exists(convolve['ir']):
+                        throw('Invalid impulse response path in convolve parameter')
+                chdir(MOSAIC_DIR)
+                m = Mosaic().read(splitext(mosaic_file)[0] + ".gamut")
+                chdir(ROOT_DIR)
+                audio = m.to_audio(**params)
+                chdir(AUDIO_OUT_DIR)
+                if convolve:
+                    audio.convolve(**convolve)
+                audio.write(splitext(output_name)[0] + '.wav')
+                if args.play or play:
+                    audio.play()
