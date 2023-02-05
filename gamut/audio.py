@@ -21,10 +21,10 @@ class AudioBuffer:
         numpy array of audio samples.
 
     sr: int | None
-        audio sampling rate
+        audio sampling rate.
 
     bit_depth: int
-        audio bit depth
+        audio bit depth.
     """
 
     def __init__(self, y: np.ndarray | None = None, sr: int | None = None, bit_depth: int = 24) -> None:
@@ -49,7 +49,7 @@ class AudioBuffer:
         self.sr = sr
 
     def read(self, input_dimpulse_response, sr: int | None = None, mono: bool = False) -> None:
-        """ Reads a `.wav` or `.aif` audio file from disk """
+        """ Reads a ``.wav`` or ``.aif`` audio file from disk """
         self.y, self.sr = load(input_dimpulse_response, sr=sr, mono=mono)
         self.y = self.y.T if len(self.y.shape) > 1 else self.y[:, np.newaxis]
         return self
@@ -70,11 +70,13 @@ class AudioBuffer:
         write(output_dimpulse_response, self.y, self.sr, f'PCM_{self.bit_depth}')
 
     def to_mono(self):
+        """ Converts audio channels to mono """
         if self.chans == 1:
             return
         self.y = (self.y.sum(axis=1)[: np.newaxis] / self.chans).reshape((self.samps, 1))
 
     def convolve(self, impulse_response: Self | str, mix: int | float | Iterable | Envelope = 0.125, normalize: bool = True):
+        """ Applies impulse response convolution to audio """
         def parse_mix_param(mix, N):
             if isinstance(mix, Envelope):
                 mix_param = mix.get_points(N)

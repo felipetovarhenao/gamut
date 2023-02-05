@@ -1,3 +1,6 @@
+if __name__ != '__main__':
+    exit()
+
 from argparse import ArgumentParser
 from os.path import realpath, join, exists, dirname, splitext, basename
 from os import chdir, makedirs
@@ -93,7 +96,6 @@ TEMPLATES = {
             "features": [
                 "timbre"
             ]
-
         }
     },
     "mosaic": {
@@ -117,7 +119,7 @@ TEMPLATES = {
             "pan_depth": 3,
             "n_chans": 2,
             "onset_var": 0,
-            "play": True,
+            "play": False,
         }
     }
 }
@@ -148,7 +150,7 @@ if args.init:
     except:
         print('\tWarning: Unable to download audio examples')
 
-    msg('Your GAMuT project folder is ready!\nRun the test.json script to check everything is working')
+    msg('Your GAMuT project folder is ready!')
     exit()
 
 
