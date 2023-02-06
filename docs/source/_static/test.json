@@ -2,7 +2,7 @@
     "corpus": {
         "name": "test-corpus",
         "source": [
-            "/Users/felipe-tovar-henao/Documents/gamut-workspace/audio/input/source.wav"
+            "/Users/felipe-tovar-henao/Documents/gamut/audio/source.wav"
         ],
         "features": [
             "timbre"
@@ -10,22 +10,22 @@
     },
     "mosaic": {
         "name": "test-mosaic",
-        "target": "/Users/felipe-tovar-henao/Documents/gamut-workspace/audio/input/target.wav",
+        "target": "/Users/felipe-tovar-henao/Documents/gamut/audio/target.wav",
         "corpus": [
-            "/Users/felipe-tovar-henao/Documents/gamut-workspace/gamut/corpora/test-corpus.gamut"
+            "test-corpus"
         ]
     },
     "audio": {
         "name": "test-audio",
-        "mosaic": "/Users/felipe-tovar-henao/Documents/gamut-workspace/gamut/mosaics/test-mosaic.gamut",
+        "mosaic": "test-mosaic",
         "fidelity": 1.0,
         "grain_dur": 0.1,
         "grain_env": "cosine",
         "corpus_weights": 1.0,
         "stretch_factor": 1.0,
         "pan_depth": 3,
-        "n_chans": 2,
         "onset_var": 0,
-        "play": false
+        "n_chans": 2,
+        "sr": 44100
     }
 }

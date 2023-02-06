@@ -12,10 +12,10 @@ Dependencies
 
 Before installing **GAMuT**, you'll need a few system-wide audio and media libraries:
 
-* `portaudio <http://www.portaudio.com/>`_
-* `libsoundio <http://libsound.io/>`_
-* `libsndfile <https://libsndfile.github.io/libsndfile/>`_
-* `ffmpeg <https://ffmpeg.org/>`_
+	* `portaudio <http://www.portaudio.com/>`_
+	* `libsoundio <http://libsound.io/>`_
+	* `libsndfile <https://libsndfile.github.io/libsndfile/>`_
+	* `ffmpeg <https://ffmpeg.org/>`_
 
 To install on **MacOS**, run:
 

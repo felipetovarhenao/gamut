@@ -1,6 +1,6 @@
 # librosa
 from librosa import magphase, stft, samples_like, load
-from librosa.feature import mfcc, chroma_stft
+from librosa.feature import mfcc, chroma_stft, rms
 from librosa.beat import tempo
 
 # gamut
@@ -15,10 +15,10 @@ from os.path import realpath, basename, isdir, splitext, join, commonprefix, rel
 from os import walk, rename
 
 # misc utils
+import filetype
 from random import choices, random
 from copy import deepcopy
 from time import time
-import filetype
 
 # typing
 from typing_extensions import Self
@@ -146,12 +146,15 @@ class Analyzer(ABC):
             analysis.extend(mfcc_features)
 
         if 'pitch' in features:
+            loudness = rms(S=S,
+                           frame_length=self.win_length,
+                           hop_length=self.hop_length)
             chroma_features = chroma_stft(S=S,
                                           sr=sr,
                                           n_fft=self.n_fft,
                                           win_length=self.win_length,
                                           hop_length=self.hop_length)
-            analysis.extend(chroma_features)
+            analysis.extend(np.concatenate([chroma_features, loudness]))
 
         analysis = np.array(analysis).T[:-1]
 
