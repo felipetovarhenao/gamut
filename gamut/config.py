@@ -2,6 +2,7 @@ from .sys import Console
 
 FILE_EXT = '.gamut'
 AUDIO_FORMATS = ['.wav', '.aif', '.aiff']
+MIME_TYPES = ['audio/x-wav', 'audio/x-aiff']
 CONSOLE = Console()
 ANALYSIS_TYPES = ['timbre', 'pitch']
 ENVELOPE_TYPES = [

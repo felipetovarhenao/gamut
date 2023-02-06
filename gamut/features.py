@@ -7,7 +7,7 @@ from librosa.beat import tempo
 from .controls import Points, Envelope, object_to_points
 from .utils import resample_array
 from .audio import AudioBuffer
-from .config import FILE_EXT, CONSOLE, AUDIO_FORMATS, ANALYSIS_TYPES
+from .config import FILE_EXT, CONSOLE, ANALYSIS_TYPES, MIME_TYPES
 from .data import KDTree
 
 # os
@@ -18,6 +18,7 @@ from os import walk, rename
 from random import choices, random
 from copy import deepcopy
 from time import time
+import filetype
 
 # typing
 from typing_extensions import Self
@@ -267,11 +268,13 @@ class Corpus(Analyzer):
                     self.__compile(join(root, f), excuded_files)
             return data
 
-        filename, ext = splitext(basename(source))
-        if ext.lower() not in AUDIO_FORMATS or filename in excuded_files:
+        filename = splitext(basename(source))[0]
+        kind = filetype.guess(source_path)
+        if kind is None or kind.mime not in MIME_TYPES or filename in excuded_files:
             return data
 
-        excuded_files.append(excuded_files)
+        excuded_files.append(filename)
+
         y, sr = load(path=source, sr=None, mono=True,
                      duration=self.max_duration)
         source_id = len(self.soundfiles)
@@ -287,6 +290,7 @@ class Corpus(Analyzer):
             'marker': marker,
             'features': features,
         } for features, marker in zip(analysis, markers)])
+
         return data
 
     @classmethod
@@ -394,11 +398,12 @@ class Mosaic(Analyzer):
                 f'You must either provide both target and corpus attributes, or leave them blank to build Mosaic from {FILE_EXT} file')
         if not target:
             return
-        if isdir(realpath(target)):
+        target_path = realpath(target)
+        if isdir(target_path):
             CONSOLE.error(ValueError, f'{target} is not a valid audio file path')
-        file = basename(target)
-        if splitext(file)[1] not in AUDIO_FORMATS:
-            CONSOLE.error(ValueError, f'{file} is an invalid or unsupported audio file format.')
+        kind = filetype.guess(target_path)
+        if kind is None or kind.mime not in MIME_TYPES:
+            CONSOLE.error(ValueError, f'{basename(target)} seems to be an invalid or unsupported audio file format.')
 
     def __parse_corpus(self, corpus: Iterable | Corpus, corpora: Iterable):
         if not corpus:

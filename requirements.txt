@@ -7,3 +7,4 @@ scipy==1.9.1
 SoundFile==0.10.3.post1
 sounddevice==0.4.5
 typing_extensions==4.4.0
+filetype==1.2.0
