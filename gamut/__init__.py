@@ -22,10 +22,11 @@ def cli():
     parser = ArgumentParser(prog='GAMuT: Granular Audio Musiacing Toolkit',
                             description='Command-line utility for the GAMuT package',
                             epilog='To learn more, visit https://felipe-tovar-henao.com/gamut')
-    parser.add_argument('--start', nargs='?', const=CWD, help='initializes a project folder at the specified directory', type=str)
-    parser.add_argument('--phelp', action='store_true', help='read parser.py help reference.')
-    parser.add_argument('--test', action='store_true', help='run package test.')
-    parser.add_argument('-v', '--version', action='store_true', help='get current version')
+    parser.add_argument('-i', '--init', nargs='?', const=CWD,
+                        help='initializes a project folder at the specified directory', type=str)
+    parser.add_argument('--phelp', action='store_true', help='shows parser.py help reference.')
+    parser.add_argument('--test', action='store_true', help='runs GAMuT package test.')
+    parser.add_argument('-v', '--version', action='store_true', help='get current version of GAMuT')
     args, rest = parser.parse_known_args()
 
     def copy_parser(dir):
@@ -33,13 +34,20 @@ def cli():
 
     def check_parser():
         if not exists(PARSER_FILENAME):
-            throw(f"You seem to be trying to use the GAMuT parser, but this directory does not contain a parser.py file.\nNavigate to a pre-existent project folder, or run 'gamut --start' to initialize a new one in this directory.")
+            throw(f"You seem to be trying to use the GAMuT script parser, but this directory does not contain a parser.py file.\nNavigate to a pre-existent project folder, or run 'gamut --start' to initialize a new one in this directory.")
 
+    # ------------------------------------- #
+    # PRINT GAMUT PACKAGE VERSION
+    # ------------------------------------- #
     if args.version:
         msg(f'GAMuT v{pkg_resources.get_distribution("gamut").version}')
         exit()
-    elif args.start:
-        workspace = (args.start)
+
+    # ------------------------------------- #
+    # INITIALIZE FOLDER
+    # ------------------------------------- #
+    elif args.init:
+        workspace = (args.init)
         if not exists(workspace):
             mkdir(workspace)
         workspace = realpath(workspace)
@@ -47,6 +55,10 @@ def cli():
         chdir(workspace)
         run([executable, PARSER_FILENAME, '--init'])
         exit()
+
+    # ------------------------------------- #
+    # RUN TEST
+    # ------------------------------------- #
     elif args.test:
         TEST_DIR = '.gamut-test'
         mkdir(TEST_DIR)
@@ -61,12 +73,21 @@ def cli():
             print(e)
         rmtree(TEST_DIR)
         exit()
+
+    # ------------------------------------- #
+    # PRINT PARSER HELP
+    # ------------------------------------- #
     elif args.phelp:
         check_parser()
         run([executable, PARSER_FILENAME, '--help'])
         exit()
+
+    # ------------------------------------- #
+    # PASS ARGUMENTS TO PARSER
+    # ------------------------------------- #
     elif rest:
         check_parser()
         run([executable, PARSER_FILENAME, *rest])
         exit()
+
     throw(f"You must provide at least one argument. Run 'gamut --help' to learn more.")

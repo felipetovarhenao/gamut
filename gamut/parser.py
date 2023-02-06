@@ -29,18 +29,41 @@ def write_file(path, obj, ext):
 
 
 def new_template(template):
-    dirs = {m: d for (m, d) in zip(TEMPLATE_OPTIONS, [SCRIPTS_CORPUS_DIR,
-                                                      SCRIPTS_MOSAIC_DIR, SCRIPTS_AUDIO_DIR, SCRIPTS_DIR])}
-    try:
-        out_dir = dirs[template]
-    except:
-        throw(f"Invalid template type. Options are: {TEMPLATE_OPTIONS}")
-
-    if not exists(out_dir):
-        makedirs(out_dir)
-
-    with open(join(out_dir, f'{template}.json'), 'w') as f:
-        json.dump(TEMPLATES[template], f, indent=4)
+    out_path = splitext(template)[0]
+    name = basename(out_path)
+    script = {
+        "corpus": {
+            "name": f"{name}-corpus",
+            "source": [
+                join(AUDIO_DIR, "source.wav")
+            ],
+            "features": [
+                "timbre"
+            ]
+        },
+        "mosaic": {
+            "name": f"{name}-mosaic",
+            "target": join(AUDIO_DIR, "target.wav"),
+            "corpus": [
+                f"{name}-corpus"
+            ]
+        },
+        "audio": {
+            "name": f"{name}-audio",
+            "mosaic": f"{name}-mosaic",
+            "fidelity": 1.0,
+            "grain_dur": 0.1,
+            "grain_env": "cosine",
+            "corpus_weights": 1.0,
+            "stretch_factor": 1.0,
+            "pan_depth": 3,
+            "onset_var": 0,
+            "n_chans": 2,
+            "sr": 44100,
+        }
+    }
+    with open(out_path + '.json', 'w') as f:
+        json.dump(script, f, indent=4)
 
 
 # ------------------------------------- #
@@ -51,97 +74,50 @@ if importlib.util.find_spec('gamut') == None:
     throw("You haven't installed the GAMuT package. You can find the installation guide here: https://felipe-tovar-henao.com/gamut/installation")
 
 # ------------------------------------- #
-# PARSE CLI ARGUMENTS
-# ------------------------------------- #
-
-
-SCRIPT_MODES = ['corpus', 'mosaic', 'audio']
-TEST_NAME = 'test'
-TEMPLATE_OPTIONS = SCRIPT_MODES + [TEST_NAME]
-
-parser = ArgumentParser(
-    prog='GAMuT parser', description="Project utility for creating GAMuT audio musaicings with JSON scripts",
-    epilog='To learn more, visit https://felipe-tovar-henao.com/gamut')
-parser.add_argument('-i', '--init', action='store_true', help='initializes a project folder structure')
-parser.add_argument('-s', '--script', help="JSON file to use as input settings for GAMuT", type=str)
-parser.add_argument('-p', '--play', action='store_true', help="Enable audio playback after script runs")
-parser.add_argument('--skip', nargs='+', help="Skip one or more parts of the script", choices=SCRIPT_MODES)
-parser.add_argument(
-    '-t', '--template', help=f"Generates a new script template, based on the following options: {TEMPLATE_OPTIONS}",
-    type=str, choices=TEMPLATE_OPTIONS)
-args = parser.parse_args()
-
-# ------------------------------------- #
 # DEFINE FOLDER STRUCTURE
 # ------------------------------------- #
 
 ROOT_DIR = dirname(realpath(__file__))
 chdir(ROOT_DIR)
 
-GAMUT_DIR = join(ROOT_DIR, 'gamut')
-MOSAIC_DIR = join(GAMUT_DIR, 'mosaics')
-CORPUS_DIR = join(GAMUT_DIR, 'corpora')
+MOSAIC_DIR = join(ROOT_DIR, 'mosaics')
+CORPUS_DIR = join(ROOT_DIR, 'corpora')
 AUDIO_DIR = join(ROOT_DIR, 'audio')
-AUDIO_IN_DIR = join(AUDIO_DIR, 'input')
-AUDIO_OUT_DIR = join(AUDIO_DIR, 'output')
 SCRIPTS_DIR = join(ROOT_DIR, 'scripts')
 SCRIPTS_CORPUS_DIR = join(SCRIPTS_DIR, 'corpora')
 SCRIPTS_MOSAIC_DIR = join(SCRIPTS_DIR, 'mosaics')
 SCRIPTS_AUDIO_DIR = join(SCRIPTS_DIR, 'audio')
 
 # ------------------------------------- #
-# DEFINE TEMPLATE SCRIPTS
+# PARSE CLI ARGUMENTS
 # ------------------------------------- #
 
-TEMPLATES = {
-    "corpus": {
-        "corpus": {
-            "name": f"{TEST_NAME}-corpus",
-            "source": [
-                join(AUDIO_IN_DIR, "source.wav")
-            ],
-            "features": [
-                "timbre"
-            ]
-        }
-    },
-    "mosaic": {
-        "mosaic": {
-            "name": f"{TEST_NAME}-mosaic",
-            "target": join(AUDIO_IN_DIR, "target.wav"),
-            "corpus": [
-                join(CORPUS_DIR, f"{TEST_NAME}-corpus.gamut")
-            ]
-        }
-    },
-    "audio": {
-        "audio": {
-            "name": f"{TEST_NAME}-audio",
-            "mosaic": join(MOSAIC_DIR, f"{TEST_NAME}-mosaic.gamut"),
-            "fidelity": 1.0,
-            "grain_dur": 0.1,
-            "grain_env": "cosine",
-            "corpus_weights": 1.0,
-            "stretch_factor": 1.0,
-            "pan_depth": 3,
-            "n_chans": 2,
-            "onset_var": 0,
-            "play": False,
-        }
-    }
-}
+SCRIPT_MODES = ['corpus', 'mosaic', 'audio']
+TEST_NAME = 'test'
+TEST_SCRIPT_DIR = join(SCRIPTS_DIR, f'{TEST_NAME}.json')
+TEMPLATE_OPTIONS = SCRIPT_MODES + [TEST_NAME]
 
-TEMPLATES[TEST_NAME] = {k: TEMPLATES[k][k] for k in TEMPLATES}
+parser = ArgumentParser(
+    prog='GAMuT parser', description="Command-line utility for creating GAMuT audio musaicings with JSON files",
+    epilog='To learn more, visit https://felipe-tovar-henao.com/gamut')
+parser.add_argument('-i', '--init', action='store_true', help='initialize a workspace folder')
+parser.add_argument('-s', '--script', help="set JSON file to use as input settings for GAMuT", type=str)
+parser.add_argument('--summarize', help="show summary of a .gamut file", type=str)
+parser.add_argument('-p', '--play', action='store_true', help="enable audio playback after script runs")
+parser.add_argument('--skip', nargs='+', help="skip one or more parts of the script", choices=SCRIPT_MODES)
+parser.add_argument('-t', '--template', nargs='?', const=TEST_SCRIPT_DIR, help="generate a JSON script template", type=str)
+args = parser.parse_args()
 
 # ------------------------------------- #
 # INIT FLAG
 # ------------------------------------- #
 
+
 if args.init:
-    for x in [GAMUT_DIR, MOSAIC_DIR, CORPUS_DIR, AUDIO_DIR, AUDIO_OUT_DIR, AUDIO_IN_DIR, SCRIPTS_DIR]:
+    for x in [MOSAIC_DIR, CORPUS_DIR, AUDIO_DIR, SCRIPTS_DIR]:
         if not exists(x):
             makedirs(x)
-    new_template(TEST_NAME)
+    new_template(TEST_SCRIPT_DIR)
 
     import requests
     import shutil
@@ -152,7 +128,7 @@ if args.init:
     try:
         for f in filenames:
             with requests.get(base_url + f, stream=True) as r:
-                with open(join(AUDIO_IN_DIR, f), 'wb') as f:
+                with open(join(AUDIO_DIR, f), 'wb') as f:
                     shutil.copyfileobj(r.raw, f)
     except:
         print('\tWarning: Unable to download audio examples')
@@ -166,8 +142,29 @@ if args.init:
 # ------------------------------------- #
 
 elif args.template:
+    chdir(SCRIPTS_DIR)
     new_template(args.template)
     exit()
+
+# ------------------------------------- #
+# SUMMARIZE GAMUT FILE
+# ------------------------------------- #
+
+elif args.summarize:
+    gamut_file = args.summarize
+    if not exists(gamut_file):
+        throw(f'{gamut_file} does not exist.')
+
+    if splitext(gamut_file)[1] != '.gamut':
+        throw(f'{gamut_file} is not a .gamut file')
+
+    from gamut.features import Corpus, Mosaic
+    for obj in [Corpus(), Mosaic()]:
+        try:
+            obj.read(gamut_file).summarize()
+        except:
+            continue
+        exit()
 
 # ------------------------------------- #
 # PROCESS SCRIPT
@@ -229,7 +226,7 @@ elif args.script:
                 m = Mosaic().read(splitext(mosaic_file)[0] + ".gamut")
                 chdir(ROOT_DIR)
                 audio = m.to_audio(**params)
-                chdir(AUDIO_OUT_DIR)
+                chdir(AUDIO_DIR)
                 if convolve:
                     audio.convolve(**convolve)
                 write_file(output_name, audio, '.wav')

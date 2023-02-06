@@ -22,7 +22,7 @@ The quickest way to start with **GAMuT** is by creating a workspace folder. Navi
 
 .. code:: shell
 
-   gamut --start "my-gamut-workspace"
+   gamut --init "my-gamut-workspace"
 
 You may choose to name your workspace folder as you wish. In this case, folder named `my-gamut-workspace` will automatically be created for you, and will contain some boilerplate files to help you get started.
 We can go into the directory and the current folder structure:
@@ -38,13 +38,10 @@ The workspace should look something like this:
 
    my-gamut-workspace
       ├── audio
-      │   ├── input
-      │   │   ├── source.wav
-      │   │   └── target.wav
-      │   └── output
-      ├── gamut
-      │   ├── corpora
-      │   └── mosaics
+      │   ├── source.wav
+      │   └── target.wav
+      ├── corpora
+      ├── mosaics
       ├── scripts          
       │   └── test.json
       └── parser.py
@@ -52,8 +49,8 @@ The workspace should look something like this:
 As you can see, it includes 4 different files:
 
 * ``parser.py``: a Python script that does most of the heavy-lifting. You do **not** need to ever open it or modify its contents. As long as it's there, everything should run smoothly.
-* ``audio/input/source.wav`` and ``audio/input/target.wav``: Two default audio samples that we can use to test **GAMuT**.
-* ``scripts/test.json``: A JSON file containing boiler-plate information we can use to generate an audio mosaic. This is what we'll be feeding **GAMuT** to create new sounds.
+* ``source.wav`` and ``target.wav``: Two default audio samples that we can use to test **GAMuT**.
+* ``test.json``: A JSON file containing boiler-plate information we can use to generate an audio mosaic. This is what we'll be feeding **GAMuT** to create new sounds.
 
 We can now create our first audio mosaic. Let's run the ``test.json`` script:
 
@@ -69,9 +66,9 @@ Let's understand what this does:
 
 After running this, we should find a newly created files:
 
-* ``./gamut/corpora/test-corpus.gamut``: A binary file that represents a **corpus** built from ``source.wav``,
-* ``./gamut/mosaics/test-mosaic.gamut``: A binary file that represents a **mosaic** built from the audio target ``target.wav``, and the corpus ``test-corpus.gamut``.
-* ``./audio/output/test-audio.wav``: The resulting **audio mosaic** in ``.wav`` format.
+* ``./corpora/test-corpus.gamut``: A binary file that represents a **corpus** built from ``source.wav``,
+* ``./mosaics/test-mosaic.gamut``: A binary file that represents a **mosaic** built from the audio target ``target.wav``, and the corpus ``test-corpus.gamut``.
+* ``./audio/test-audio.wav``: The resulting **audio mosaic** in ``.wav`` format.
 
 
 Now let's open ``scripts/test.json`` and look what's inside:
