@@ -99,7 +99,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
          <div>
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/media/audio/00+target_AG-muerte_en_el_olvido.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -126,7 +126,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             1221 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/media/audio/01+Female_corpus+-+1221+files.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -138,7 +138,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             340 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/media/audio/02+CMaj_corpus+-+340+files.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -150,7 +150,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             1234 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/media/audio/03+String_corpus+-+1234+files.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -162,7 +162,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             2878 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/media/audio/04+Tamtam_corpus+-+2878+files.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -174,7 +174,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             412 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/media/audio/05+Wind_corpus+-+412+files.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -199,7 +199,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
          <div>
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/drums.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -226,7 +226,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             28 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/electric-guitar-drums.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -238,7 +238,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             51 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/animal-drums.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -250,7 +250,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             768 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/vocal-drums.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -275,7 +275,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
          <div>
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/badinerie.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -302,7 +302,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             64 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/orchestral-badinerie.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -314,7 +314,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             282 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/percussion-badinerie.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -326,7 +326,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             658 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/violin-badinerie.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -351,7 +351,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
          <div>
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/singer.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -378,7 +378,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             177 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/piano-singer.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -390,7 +390,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             658 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/violin-singer.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
@@ -402,7 +402,7 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             140 audio files
          </div>
          <div>
-            <audio controls="controls">
+            <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/pop-singer.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
