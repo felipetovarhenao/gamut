@@ -48,13 +48,17 @@ def cli():
             return
         chdir(dest)
 
-    def write_file(path, obj, ext):
-        out = realpath(splitext(path)[0] + ext)
-        if exists(out):
-            remove(out)
+    def abs_path(path, ext):
+        return realpath(splitext(path)[0] + ext)
+
+    def write_file(path, obj, ext, script_block):
+        out = abs_path(path, ext)
         if not NO_CACHE:
             CACHED_OBJECTS[out] = obj
-        obj.write(out)
+        if script_block not in SKIP_WRITE:
+            if exists(out):
+                remove(out)
+            obj.write(out)
 
     def clean_path(file):
         path = realpath(file)
@@ -176,6 +180,8 @@ def cli():
     parser.add_argument('--summarize', help="show summary of a .gamut file", type=str)
     parser.add_argument('-p', '--play', action='store_true', help="enable audio playback after script runs")
     parser.add_argument('--skip', nargs='+', help="skip one or more parts of the script", choices=SCRIPT_MODES)
+    parser.add_argument('--skip-write', nargs='+',
+                        help="skip writing to disk one or more parts of the script", choices=SCRIPT_MODES)
     parser.add_argument('-t', '--template', nargs='?', const=TEST_SCRIPT_DIR, help="generate a JSON script template", type=str)
 
     parser.add_argument('--source', nargs='+', help="path to corpus source(s)")
@@ -186,6 +192,10 @@ def cli():
     args = parser.parse_args()
 
     NO_CACHE = args.no_cache
+    SKIP_WRITE = args.skip_write or []
+
+    if len(SKIP_WRITE) > 0 and NO_CACHE:
+        print_error("You can't use --skip-write and --no-cache at the same time.")
 
     # ------------------------------------- #
     # PRINT GAMUT PACKAGE VERSION
@@ -304,21 +314,21 @@ def cli():
         with open(file=script_path, mode='r',) as f:
             script = json.loads(f.read())
 
-        for mode in script:
-            if mode not in SCRIPT_MODES:
-                print_error(f'"{mode}" is not a valid GAMuT script key')
+        for script_block in script:
+            if script_block not in SCRIPT_MODES:
+                print_error(f'"{script_block}" is not a valid GAMuT script key')
 
         from gamut.features import Corpus, Mosaic
 
         skip = args.skip if args.skip else []
         sorted_modes = [m for m in SCRIPT_MODES if m in script and m not in skip]
 
-        for mode in sorted_modes:
-            params = script[mode]
+        for script_block in sorted_modes:
+            params = script[script_block]
             name = params.pop('name', None)
-            output_name = name if name else splitext(basename(script_path))[0] + f'-{mode}'
+            output_name = name if name else splitext(basename(script_path))[0] + f'-{script_block}'
 
-            match mode:
+            match script_block:
                 case 'corpus':
                     safe_chdir(AUDIO_DIR)
 
@@ -327,12 +337,12 @@ def cli():
                     safe_chdir(ROOT_DIR)
                     c = Corpus(**params)
                     safe_chdir(CORPUS_DIR)
-                    write_file(output_name, c, '.gamut')
+                    write_file(output_name, c, '.gamut', script_block)
 
                 case 'mosaic':
                     for x in ['corpus', 'target']:
                         if x not in params:
-                            print_error(f'You forgot to specify a {x} in your {mode} script.')
+                            print_error(f'You forgot to specify a {x} in your {script_block} script.')
 
                     # clean target path
                     safe_chdir(AUDIO_DIR)
@@ -354,11 +364,12 @@ def cli():
                     corpus_paths = params.pop('corpus')
                     corpora = []
                     for c in corpus_paths:
-                        cpath = clean_path(splitext(c)[0] + ".gamut")
+                        cpath = abs_path(c, '.gamut')
                         if cpath in CACHED_OBJECTS:
                             corpora.append(CACHED_OBJECTS[cpath])
-                        else:
-                            corpora.append(Corpus().read(cpath))
+                            continue
+                        cpath = clean_path(cpath)
+                        corpora.append(Corpus().read(cpath))
 
                     # build mosaic
                     safe_chdir(ROOT_DIR)
@@ -366,15 +377,16 @@ def cli():
 
                     # write to disk
                     safe_chdir(MOSAIC_DIR)
-                    write_file(output_name, m, '.gamut')
+                    write_file(output_name, m, '.gamut', script_block)
 
                 case 'audio':
                     mosaic_file = params.pop('mosaic')
 
                     # clean mosaic path
                     safe_chdir(MOSAIC_DIR)
-                    mosaic_path = clean_path(splitext(mosaic_file)[0] + ".gamut")
-                    m = Mosaic().read(mosaic_path) if mosaic_path not in CACHED_OBJECTS else CACHED_OBJECTS[mosaic_path]
+                    mosaic_path = abs_path(mosaic_file, '.gamut')
+                    m = Mosaic().read(clean_path(mosaic_path)
+                                      ) if mosaic_path not in CACHED_OBJECTS else CACHED_OBJECTS[mosaic_path]
 
                     # create audio mosaic
                     safe_chdir(ROOT_DIR)
@@ -388,7 +400,7 @@ def cli():
                             print_error('To apply audio convolution, you must provide an inpulse response')
                         convolve['impulse_response'] = clean_path(convolve['impulse_response'])
                         audio.convolve(**convolve)
-                    write_file(output_name, audio, '.wav')
+                    write_file(output_name, audio, '.wav', script_block)
                     if args.play:
                         audio.play()
         exit()

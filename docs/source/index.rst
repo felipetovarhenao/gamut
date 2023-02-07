@@ -332,6 +332,82 @@ Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using dif
             </audio>
          </div>
       </div>
+   
+**Example 4**
+
+   .. raw:: html
+
+      <div class='audio-examples-grid'>
+         <div>
+            <i><b>Target name</b></i>
+         </div>
+         <div></div>
+         <div>
+            <i><b>Audio input</b></i>
+         </div>
+         <div>
+            Female pop singer
+         </div>
+         <div>
+         </div>
+         <div>
+            <audio controls="controls">
+               <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/singer.mp3" type="audio/mpeg">
+               Your browser does not support the <code>audio</code> element. 
+            </audio>
+         </div>
+         <div>
+            <span>
+               <i><b>Corpus name</b></i>
+            </span>
+         </div>
+         <div>
+            <span>
+               <i><b>Corpus size</b></i>
+            </span>
+         </div>
+         <div>
+            <span>
+               <i><b>Audio output</b></i>
+            </span>
+         </div>
+         <div>
+            <b>Piano corpus</b>
+         </div>
+         <div>
+            177 audio files
+         </div>
+         <div>
+            <audio controls="controls">
+               <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/piano-singer.mp3" type="audio/mpeg">
+               Your browser does not support the <code>audio</code> element. 
+            </audio>
+         </div>
+         <div>
+            <b>Violin corpus</b>
+         </div>
+         <div>
+            658 audio files
+         </div>
+         <div>
+            <audio controls="controls">
+               <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/violin-singer.mp3" type="audio/mpeg">
+               Your browser does not support the <code>audio</code> element. 
+            </audio>
+         </div>
+         <div>
+            <b>Commercial music corpus</b>
+         </div>
+         <div>
+            140 audio files
+         </div>
+         <div>
+            <audio controls="controls">
+               <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/pop-singer.mp3" type="audio/mpeg">
+               Your browser does not support the <code>audio</code> element. 
+            </audio>
+         </div>
+      </div>
 
 .. toctree::
    :maxdepth: 3
