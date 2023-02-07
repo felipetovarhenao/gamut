@@ -186,6 +186,7 @@ def cli():
 
     parser.add_argument('--source', nargs='+', help="path to corpus source(s)")
     parser.add_argument('--params', nargs='+', help="audio control parameters")
+    parser.add_argument('--features', nargs='+', help="audio features to base audio musaicing on")
     parser.add_argument('--target', help="path to audio target", type=str)
     parser.add_argument('--audio', default="gamut-output.wav", help='path to audio output', type=str)
 
@@ -193,6 +194,7 @@ def cli():
 
     NO_CACHE = args.no_cache
     SKIP_WRITE = args.skip_write or []
+    raw_musaicing_args = [args.source, args.target]
 
     if len(SKIP_WRITE) > 0 and NO_CACHE:
         print_error("You can't use --skip-write and --no-cache at the same time.")
@@ -202,12 +204,11 @@ def cli():
     # ------------------------------------- #
     if args.version:
         print_success(f'GAMuT v{pkg_resources.get_distribution("gamut").version}')
-        exit()
 
     # ------------------------------------- #
     # RUN PACKAGE TEST
     # ------------------------------------- #
-    if args.test:
+    elif args.test:
         TEST_DIR = '.gamut-test'
         mkdir(TEST_DIR)
         TEST_DIR = realpath(TEST_DIR)
@@ -219,34 +220,36 @@ def cli():
         except Exception as e:
             print(e)
         rmtree(TEST_DIR)
-        exit()
 
     # ------------------------------------- #
     # PROCESS RAW INPUT
     # ------------------------------------- #
-    raw_musaicing_args = [args.source, args.target]
-    if any(raw_musaicing_args):
-        params = parse_params(args.params)
+    elif any(raw_musaicing_args):
         if not all(raw_musaicing_args):
             print_error("You must provide both source and target")
+        params = parse_params(args.params)
         source, target = raw_musaicing_args
-        sources = [clean_path(s) for s in source]
         target = clean_path(target)
+        corpus_params = {
+            'source': [clean_path(s) for s in source]
+        }
+        if args.features:
+            corpus_params['features'] = args.features
 
-        from gamut.features import Corpus, Mosaic
+        from .features import Corpus, Mosaic
 
-        corpus = Corpus(source=sources)
+        corpus = Corpus(**corpus_params)
         mosaic = Mosaic(target=target, corpus=corpus)
         audio = mosaic.to_audio(**params)
-        write_file(args.audio, audio, ".wav")
+        if 'audio' not in SKIP_WRITE:
+            write_file(args.audio, audio, ".wav", 'audio')
         if args.play:
             audio.play()
-        exit()
 
     # ------------------------------------- #
     # INITIALIZE WORKSPACE
     # ------------------------------------- #
-    if args.init:
+    elif args.init:
         if realpath(args.init) != ROOT_DIR:
             define_directories(args.init)
         for x in [MOSAIC_DIR, CORPUS_DIR, AUDIO_DIR, SCRIPTS_DIR]:
@@ -270,7 +273,6 @@ def cli():
 
         print_success(
             f"Your GAMuT project folder is ready!\nTry running:\n\tgamut --script scripts/{TEST_NAME}.json --play")
-        exit()
 
     # ------------------------------------- #
     # CREATE TEMPLATE
@@ -279,7 +281,6 @@ def cli():
     elif args.template:
         safe_chdir(SCRIPTS_DIR)
         create_new_template(args.template)
-        exit()
 
     # ------------------------------------- #
     # SUMMARIZE GAMUT FILE
@@ -293,13 +294,14 @@ def cli():
         if splitext(gamut_file)[1] != '.gamut':
             print_error(f'{gamut_file} is not a .gamut file')
 
-        from gamut.features import Corpus, Mosaic
+        from .features import Corpus, Mosaic
+
         for obj in [Corpus(), Mosaic()]:
             try:
                 obj.read(gamut_file).summarize()
             except:
                 continue
-            exit()
+            break
 
     # ------------------------------------- #
     # PROCESS SCRIPT
@@ -318,7 +320,7 @@ def cli():
             if script_block not in SCRIPT_MODES:
                 print_error(f'"{script_block}" is not a valid GAMuT script key')
 
-        from gamut.features import Corpus, Mosaic
+        from .features import Corpus, Mosaic
 
         skip = args.skip if args.skip else []
         sorted_modes = [m for m in SCRIPT_MODES if m in script and m not in skip]
@@ -403,6 +405,5 @@ def cli():
                     write_file(output_name, audio, '.wav', script_block)
                     if args.play:
                         audio.play()
-        exit()
     else:
         print_error("You didn't provide any arguments. Use -h or --help to learn more.")
