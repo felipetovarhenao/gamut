@@ -46,16 +46,21 @@
   font-weight: bold;
 }
 
-.audio-examples-table {
+.audio-examples-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   width: 100%;
 }
 
-.audio-examples-table audio {
-  margin-left: auto;
+.audio-examples-grid audio {
+  margin-right: auto;
 }
 
-.audio-examples-table td {
-  vertical-align: middle;
+.audio-examples-grid > div {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 tr.corpus-example-header-row td span {
@@ -65,26 +70,56 @@ tr.corpus-example-header-row td span {
 
 img.example-img {
   display: flex;
-  height: 280px;
+  height: auto;
   width: auto;
+  max-height: 360px;
   border-radius: 10px;
   border: solid 2px #468192;
 }
 
-.img-table tr {
+.img-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-}
-
-.img-table {
+  grid-template-columns: auto auto;
   width: 100%;
 }
 
-.img-table img {
+span.caption {
+  font-style: italic;
+}
+
+.img-grid img {
   margin-left: auto;
   margin-bottom: 10px;
 }
 
+img + span.caption {
+  display: flex;
+  width: 100%;
+  justify-content: right;
+}
+
+.img-grid > div, .audio-examples-grid > div {
+  padding: 5px;
+}
+
 .poem {
   margin-left: 20px;
+}
+
+@media (max-width: 1023px) {
+  .img-grid {
+    grid-template-columns: 1fr;
+  }
+  .img-grid img {
+    margin-top: 10px;
+    margin-right: auto;
+    margin-left: none;
+    margin-bottom: 10px;
+  }
+  .audio-examples-grid {
+    grid-template-columns: auto auto auto;
+  }
+  img + span.caption {
+    justify-content: center;
+  }
 }
