@@ -63,7 +63,7 @@ If you're new to `audio musaicing`, let's consider the following visual analogy:
 Audio examples
 ~~~~~~~~~~~~~~~~
 
-Here are **3 examples** of `audio musaicing` made with **GAMuT**, each using different **corpora** on the same audio **target**.
+Here are **4 examples** of `audio musaicing` made with **GAMuT**, each using different **corpora** on the same audio **target**.
 
 **Example 1**
 
