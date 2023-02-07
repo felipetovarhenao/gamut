@@ -2,7 +2,7 @@ import sounddevice as sd
 import numpy as np
 from librosa import load
 from soundfile import write
-from os.path import splitext
+from os.path import splitext, basename
 from scipy import signal
 from typing_extensions import Self
 from collections.abc import Iterable
@@ -48,9 +48,9 @@ class AudioBuffer:
             self.y = resample_array(self.y, int(round(len(self.y) * sr/self.sr)))
         self.sr = sr
 
-    def read(self, input_dimpulse_response, sr: int | None = None, mono: bool = False) -> None:
+    def read(self, input_dir, sr: int | None = None, mono: bool = False) -> None:
         """ Reads a ``.wav`` or ``.aif`` audio file from disk """
-        self.y, self.sr = load(input_dimpulse_response, sr=sr, mono=mono)
+        self.y, self.sr = load(input_dir, sr=sr, mono=mono)
         self.y = self.y.T if len(self.y.shape) > 1 else self.y[:, np.newaxis]
         return self
 
@@ -62,12 +62,13 @@ class AudioBuffer:
     def samps(self):
         return self.y.shape[0]
 
-    def write(self, output_dimpulse_response: str) -> None:
+    def write(self, output_dir: str) -> None:
         """Writes audio to disk. This function is a simple wrapper of `sf.write()`"""
-        ext = splitext(output_dimpulse_response)[1]
+        ext = splitext(output_dir)[1]
         if ext not in AUDIO_FORMATS:
             CONSOLE.error(ValueError, f'Output file format must be one of the following: {AUDIO_FORMATS}')
-        write(output_dimpulse_response, self.y, self.sr, f'PCM_{self.bit_depth}')
+        CONSOLE.log_disk_op('audio file', basename(output_dir)).print()
+        write(output_dir, self.y, self.sr, f'PCM_{self.bit_depth}')
 
     def to_mono(self):
         """ Converts audio channels to mono """

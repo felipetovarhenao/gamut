@@ -74,7 +74,8 @@ class Console:
         self.counter.reset(self.log_subprocess(message))
 
     def elapsed_time(self, st):
-        return self.log(f'\t\N{stopwatch} {self.c4}{self.italic}Elapsed time: {self.bold}{self.c5}{round((time()-st) * 100) / 100}s\n')
+        return self.log(
+            f'\t\N{stopwatch} {self.c4}{self.italic}Elapsed time: {self.bold}{self.c5}{round((time()-st) * 100) / 100}s\n')
 
     def log_process(self, text):
         return self.log(f'{self.bold}{self.c1}{text}')

@@ -17,13 +17,14 @@ Before installing **GAMuT**, you'll need a few system-wide audio and media libra
 	* `libsndfile <https://libsndfile.github.io/libsndfile/>`_
 	* `ffmpeg <https://ffmpeg.org/>`_
 
-To install on **MacOS**, run:
+To install on **MacOS**, run (assuming you already have `Homebrew <https://brew.sh/>`_ installed):
 
 	.. code:: shell
 
 		brew install portaudio libsoundio libsndfile ffmpeg
 
-To install on **Linux Ubuntu**:
+To install on **Debian-based Linux**:
+
 	.. code:: shell
 
 		apt-get update -y
