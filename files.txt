@@ -1,0 +1,10 @@
+/Library/Frameworks/Python.framework/Versions/3.10/lib/python3.10/site-packages/gamut-1.0.7-py3.10.egg
+/Library/Frameworks/Python.framework/Versions/3.10/bin/gamut
+/Library/Frameworks/Python.framework/Versions/3.10/bin/f2py
+/Library/Frameworks/Python.framework/Versions/3.10/bin/f2py3
+/Library/Frameworks/Python.framework/Versions/3.10/bin/f2py3.10
+/Library/Frameworks/Python.framework/Versions/3.10/bin/fonttools
+/Library/Frameworks/Python.framework/Versions/3.10/bin/pyftmerge
+/Library/Frameworks/Python.framework/Versions/3.10/bin/pyftsubset
+/Library/Frameworks/Python.framework/Versions/3.10/bin/ttx
+/Library/Frameworks/Python.framework/Versions/3.10/bin/normalizer

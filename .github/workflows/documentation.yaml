@@ -1,8 +1,8 @@
-name: Docs
+name: Build and test
 on:
   push:
     branches:
-    - main
+      - main
 jobs:
   docs:
     runs-on: ubuntu-latest
@@ -25,3 +25,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/build/html
           force_orphan: true
+      - name: Test package
+        run: |
+          sh test_package.sh
