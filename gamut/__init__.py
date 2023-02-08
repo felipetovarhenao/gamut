@@ -324,80 +324,79 @@ def cli():
             name = params.pop('name', None)
             output_name = name if name else splitext(basename(script_path))[0] + f'-{script_block}'
 
-            match script_block:
-                case 'corpus':
-                    safe_chdir(AUDIO_DIR)
+            if script_block == 'corpus':
+                safe_chdir(AUDIO_DIR)
 
-                    for i, source in enumerate(params['source']):
-                        params['source'][i] = clean_path(source)
-                    safe_chdir(ROOT_DIR)
-                    c = Corpus(**params)
-                    safe_chdir(CORPUS_DIR)
-                    write_file(output_name, c, '.gamut', script_block)
+                for i, source in enumerate(params['source']):
+                    params['source'][i] = clean_path(source)
+                safe_chdir(ROOT_DIR)
+                c = Corpus(**params)
+                safe_chdir(CORPUS_DIR)
+                write_file(output_name, c, '.gamut', script_block)
 
-                case 'mosaic':
-                    for x in ['corpus', 'target']:
-                        if x not in params:
-                            print_error(f'You forgot to specify a {x} in your {script_block} script.')
+            elif script_block == 'mosaic':
+                for x in ['corpus', 'target']:
+                    if x not in params:
+                        print_error(f'You forgot to specify a {x} in your {script_block} script.')
 
-                    # clean target path
-                    safe_chdir(AUDIO_DIR)
-                    params['target'] = clean_path(params['target'])
+                # clean target path
+                safe_chdir(AUDIO_DIR)
+                params['target'] = clean_path(params['target'])
 
-                    # clean beat unit
-                    if 'beat_unit' in params:
-                        try:
-                            if "/" in params['beat_unit']:
-                                a, b = params['beat_unit'].split('/')
-                                params['beat_unit'] = int(a) / int(b)
-                            else:
-                                params['beat_unit'] = int(params['beat_unit'])
-                        except:
-                            print_error('Invalid "beat_unit" value')
+                # clean beat unit
+                if 'beat_unit' in params:
+                    try:
+                        if "/" in params['beat_unit']:
+                            a, b = params['beat_unit'].split('/')
+                            params['beat_unit'] = int(a) / int(b)
+                        else:
+                            params['beat_unit'] = int(params['beat_unit'])
+                    except:
+                        print_error('Invalid "beat_unit" value')
 
-                    # clean corpus paths
-                    safe_chdir(CORPUS_DIR)
-                    corpus_paths = params.pop('corpus')
-                    corpora = []
-                    for c in corpus_paths:
-                        cpath = abs_path(c, '.gamut')
-                        if cpath in CACHED_OBJECTS:
-                            corpora.append(CACHED_OBJECTS[cpath])
-                            continue
-                        cpath = clean_path(cpath)
-                        corpora.append(Corpus().read(cpath))
+                # clean corpus paths
+                safe_chdir(CORPUS_DIR)
+                corpus_paths = params.pop('corpus')
+                corpora = []
+                for c in corpus_paths:
+                    cpath = abs_path(c, '.gamut')
+                    if cpath in CACHED_OBJECTS:
+                        corpora.append(CACHED_OBJECTS[cpath])
+                        continue
+                    cpath = clean_path(cpath)
+                    corpora.append(Corpus().read(cpath))
 
-                    # build mosaic
-                    safe_chdir(ROOT_DIR)
-                    m = Mosaic(corpus=corpora, **params)
+                # build mosaic
+                safe_chdir(ROOT_DIR)
+                m = Mosaic(corpus=corpora, **params)
 
-                    # write to disk
-                    safe_chdir(MOSAIC_DIR)
-                    write_file(output_name, m, '.gamut', script_block)
+                # write to disk
+                safe_chdir(MOSAIC_DIR)
+                write_file(output_name, m, '.gamut', script_block)
 
-                case 'audio':
-                    mosaic_file = params.pop('mosaic')
+            elif script_block == 'audio':
+                mosaic_file = params.pop('mosaic')
 
-                    # clean mosaic path
-                    safe_chdir(MOSAIC_DIR)
-                    mosaic_path = abs_path(mosaic_file, '.gamut')
-                    m = Mosaic().read(clean_path(mosaic_path)
-                                      ) if mosaic_path not in CACHED_OBJECTS else CACHED_OBJECTS[mosaic_path]
+                # clean mosaic path
+                safe_chdir(MOSAIC_DIR)
+                mosaic_path = abs_path(mosaic_file, '.gamut')
+                m = Mosaic().read(clean_path(mosaic_path)
+                                  ) if mosaic_path not in CACHED_OBJECTS else CACHED_OBJECTS[mosaic_path]
 
-                    # create audio mosaic
-                    safe_chdir(ROOT_DIR)
-                    audio = m.to_audio(**params)
-                    safe_chdir(AUDIO_DIR)
+                # create audio mosaic
+                safe_chdir(ROOT_DIR)
+                audio = m.to_audio(**params)
+                safe_chdir(AUDIO_DIR)
 
-                    # clean convolution
-                    convolve = params.pop('convolve', None)
-                    if convolve:
-                        if 'impulse_response' not in convolve:
-                            print_error('To apply audio convolution, you must provide an inpulse response')
-                        convolve['impulse_response'] = clean_path(convolve['impulse_response'])
-                        audio.convolve(**convolve)
-                    write_file(output_name, audio, '.wav', script_block)
-                    if args.play:
-                        audio.play()
+                # clean convolution
+                convolve = params.pop('convolve', None)
+                if convolve:
+                    if 'impulse_response' not in convolve:
+                        print_error('To apply audio convolution, you must provide an inpulse response')
+                    convolve['impulse_response'] = clean_path(convolve['impulse_response'])
+                    audio.convolve(**convolve)
+                write_file(output_name, audio, '.wav', script_block)
+                if args.play:
+                    audio.play()
     else:
         print_error("You didn't provide any required arguments. Use -h or --help to learn more.")
