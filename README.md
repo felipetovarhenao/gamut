@@ -1,6 +1,8 @@
 ![version](https://img.shields.io/pypi/v/gamut)
 ![downloads](https://img.shields.io/pypi/dm/gamut)
 ![build](https://img.shields.io/github/actions/workflow/status/felipetovarhenao/gamut/test.yaml?label=test)
+![last_commit](https://img.shields.io/github/last-commit/felipetovarhenao/gamut)
+![license](https://img.shields.io/pypi/l/gamut)
 
 ## **GAMuT: Granular Audio Musaicing Toolkit**
 
