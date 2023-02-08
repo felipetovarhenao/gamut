@@ -1,13 +1,15 @@
+from .utils import catch_keyboard_interrupt
+
+
+@catch_keyboard_interrupt()
 def cli():
     from argparse import ArgumentParser
     from os import chdir, makedirs, remove, mkdir, getcwd
     from os.path import realpath, join, exists, splitext, basename
-    from sys import executable
     from shutil import rmtree, copyfileobj
     import pkg_resources
     from subprocess import run
     from pathlib import Path
-    import importlib.util
     import json
     import requests
 
@@ -149,14 +151,6 @@ def cli():
             json.dump(script, f, indent=4)
 
     # ------------------------------------- #
-    # CHECK PACKAGE INSTALLATION
-    # ------------------------------------- #
-
-    if importlib.util.find_spec('gamut') == None:
-        print_error(
-            "You haven't installed the GAMuT package. You can find the installation guide here: https://felipe-tovar-henao.com/gamut/installation")
-
-    # ------------------------------------- #
     # DEFINE FOLDER STRUCTURE
     # ------------------------------------- #
     define_directories(getcwd())
@@ -186,7 +180,7 @@ def cli():
 
     parser.add_argument('--source', nargs='+', help="path to corpus source(s)")
     parser.add_argument('--params', nargs='+', help="audio control parameters")
-    parser.add_argument('--features', nargs='+', help="audio features to base audio musaicing on")
+    parser.add_argument('--features', nargs='+', help="audio features to base audio musaicing on", choices=['pitch', 'analysis'])
     parser.add_argument('--target', help="path to audio target", type=str)
     parser.add_argument('--audio', default="gamut-output.wav", help='path to audio output', type=str)
 
@@ -406,4 +400,4 @@ def cli():
                     if args.play:
                         audio.play()
     else:
-        print_error("You didn't provide any arguments. Use -h or --help to learn more.")
+        print_error("You didn't provide any required arguments. Use -h or --help to learn more.")

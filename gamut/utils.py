@@ -61,3 +61,16 @@ def set_nested_value(obj, path, replace, separator: str = '.') -> Any:
 
 def resample_array(array, N):
     return np.interp(np.linspace(0, len(array) - 1, N), np.arange(0, len(array)), array)
+
+
+def catch_keyboard_interrupt(interrupt_func=None):
+    def decorator(function):
+        def wrapper(*args, **kwargs):
+            try:
+                function(*args, **kwargs)
+            except KeyboardInterrupt:
+                print()
+                if interrupt_func:
+                    return interrupt_func()
+        return wrapper
+    return decorator

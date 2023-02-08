@@ -11,6 +11,7 @@ from .config import AUDIO_FORMATS, CONSOLE
 from .utils import resample_array
 from .controls import Envelope
 from .controls import Points
+from . import catch_keyboard_interrupt
 
 
 class AudioBuffer:
@@ -32,6 +33,7 @@ class AudioBuffer:
         self.sr = sr
         self.bit_depth = bit_depth
 
+    @catch_keyboard_interrupt(lambda: CONSOLE.log_process("\N{speaker with cancellation stroke} Audio stopped").print())
     def play(self) -> None:
         """ Plays back inner audio buffer """
         CONSOLE.log_process('\N{speaker}Playing audio...').print()
