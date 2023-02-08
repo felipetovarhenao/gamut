@@ -1,5 +1,5 @@
-
-.wy-breadcrumbs a, .toctree-wrapper a.reference.internal:visited {
+.wy-breadcrumbs a,
+.toctree-wrapper a.reference.internal:visited {
   color: #2980b9;
 }
 
@@ -98,7 +98,8 @@ img + span.caption {
   justify-content: right;
 }
 
-.img-grid > div, .audio-examples-grid > div {
+.img-grid > div,
+.audio-examples-grid > div {
   padding: 5px;
 }
 
@@ -122,4 +123,8 @@ img + span.caption {
   img + span.caption {
     justify-content: center;
   }
+}
+
+.marked {
+  background-color: #ff8c0044;
 }
