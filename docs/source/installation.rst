@@ -4,8 +4,8 @@ Installation
 Here's a step-by-step guide on how to install the **GAMuT** package, assumming, of course, that you already have `Python <https://www.python.org/downloads/release/python-3109/>`_ installed.
 
 .. warning::
-	As of February of 2023, **GAMuT** is only guaranteed to work on `Python 3.10 <https://www.python.org/downloads/release/python-3109/>`_. 
-	In the near future, it should be compatible with the Python 3.11 release.
+	**GAMuT** is currently guaranteed to work on `Python 3.7.0 <https://www.python.org/downloads/release/python-370>`_ through `Python 3.10.9 <https://www.python.org/downloads/release/python-3109/>`_ (`recommended`). 
+	In the near future, it should be compatible with `Python 3.11 <https://www.python.org/downloads/release/python-3112>`_ releases.
 
 Dependencies
 --------------
