@@ -161,28 +161,65 @@ def cli():
     CACHED_OBJECTS = {}
     SCRIPT_MODES = ['corpus', 'mosaic', 'audio']
 
-    parser = ArgumentParser(
-        prog='GAMuT parser', description="Command-line utility for creating GAMuT audio musaicings with JSON files",
-        epilog='To learn more, visit https://felipe-tovar-henao.com/gamut')
-    parser.add_argument('-v', '--version', action='store_true', help='get current version of GAMuT')
-    parser.add_argument('--test', action='store_true', help='runs GAMuT package test.')
-    parser.add_argument('--no-check', action='store_true', help='Disable directory checking when reading a script')
-    parser.add_argument('--no-cache', action='store_true', help='Disable pipeline caching')
-    parser.add_argument('-i', '--init', nargs='?', const=ROOT_DIR,
-                        help='initializes a project folder at the specified directory', type=str)
-    parser.add_argument('-s', '--script', help="set JSON file to use as input settings for GAMuT", type=str)
-    parser.add_argument('--summarize', help="show summary of a .gamut file", type=str)
-    parser.add_argument('-p', '--play', action='store_true', help="enable audio playback after script runs")
-    parser.add_argument('--skip', nargs='+', help="skip one or more parts of the script", choices=SCRIPT_MODES)
-    parser.add_argument('--skip-write', nargs='+',
-                        help="skip writing to disk one or more parts of the script", choices=SCRIPT_MODES)
-    parser.add_argument('-t', '--template', nargs='?', const=TEST_SCRIPT_DIR, help="generate a JSON script template", type=str)
-
-    parser.add_argument('--source', nargs='+', help="path to corpus source(s)")
-    parser.add_argument('--params', nargs='+', help="audio control parameters")
-    parser.add_argument('--features', nargs='+', help="audio features to base audio musaicing on", choices=['pitch', 'analysis'])
-    parser.add_argument('--target', help="path to audio target", type=str)
-    parser.add_argument('--audio', default="gamut-output.wav", help='path to audio output', type=str)
+    parser = ArgumentParser(prog='GAMuT parser',
+                            description="Command-line utility for creating GAMuT audio musaicings with JSON files",
+                            epilog='To learn more, visit https://felipe-tovar-henao.com/gamut')
+    parser.add_argument('-v', '--version',
+                        action='store_true',
+                        help='get current version of GAMuT')
+    parser.add_argument('--test',
+                        action='store_true',
+                        help='runs GAMuT package test.')
+    parser.add_argument('--no-check',
+                        action='store_true',
+                        help='Disable directory checking when reading a script')
+    parser.add_argument('--no-cache',
+                        action='store_true',
+                        help='Disable pipeline caching')
+    parser.add_argument('-i', '--init',
+                        nargs='?',
+                        const=ROOT_DIR,
+                        help='initializes a project folder at the specified directory',
+                        type=str)
+    parser.add_argument('-s', '--script',
+                        help="set JSON file to use as input settings for GAMuT",
+                        type=str)
+    parser.add_argument('--summarize',
+                        help="show summary of a .gamut file",
+                        type=str)
+    parser.add_argument('-p', '--play',
+                        action='store_true',
+                        help="enable audio playback after script runs")
+    parser.add_argument('--skip',
+                        nargs='+',
+                        help="skip one or more parts of the script",
+                        choices=SCRIPT_MODES)
+    parser.add_argument('--skip-write',
+                        nargs='+',
+                        help="skip writing to disk one or more parts of the script",
+                        choices=SCRIPT_MODES)
+    parser.add_argument('-t', '--template',
+                        nargs='?',
+                        const=TEST_SCRIPT_DIR,
+                        help="generate a JSON script template",
+                        type=str)
+    parser.add_argument('--source',
+                        nargs='+',
+                        help="path to corpus source(s)")
+    parser.add_argument('--params',
+                        nargs='+',
+                        help="audio control parameters")
+    parser.add_argument('--features',
+                        nargs='+',
+                        help="audio features to base audio musaicing on",
+                        choices=['pitch', 'analysis'])
+    parser.add_argument('--target',
+                        help="path to audio target",
+                        type=str)
+    parser.add_argument('--audio',
+                        default="gamut-output.wav",
+                        help='path to audio output',
+                        type=str)
 
     args = parser.parse_args()
 
