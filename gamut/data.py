@@ -1,3 +1,4 @@
+from __future__ import annotations
 import numpy as np
 from .utils import get_nested_value, set_nested_value
 from .config import CONSOLE

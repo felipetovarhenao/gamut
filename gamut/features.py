@@ -1,3 +1,4 @@
+from __future__ import annotations
 # librosa
 from librosa import magphase, stft, samples_like, load
 from librosa.feature import mfcc, chroma_stft, rms
@@ -27,6 +28,9 @@ from abc import ABC, abstractmethod
 
 # numpy
 import numpy as np
+from typing import NewType
+
+EnvelopeType = NewType("EnvelopeType", Envelope)
 
 
 class Analyzer(ABC):
@@ -592,7 +596,8 @@ class Mosaic(Analyzer):
             even_weights = True
             num_corpora = len(self.soundfiles.keys()) - 1
             # when weigths are meant to control target vs all corpora
-            if isinstance(param, Envelope | float | int) or (
+            # NOTE: tuple instance used here for backwards typing compatibility, needed for non-native classes
+            if isinstance(param, (Envelope, float, int)) or (
                     isinstance(param, Iterable) and all([isinstance(p, int | float | tuple) for p in param])):
                 wet_mix = as_points(param).clip(min=0.0, max=1.0)
                 mix_table = np.array([1.0-wet_mix] + [wet_mix for _ in range(num_corpora)]).T

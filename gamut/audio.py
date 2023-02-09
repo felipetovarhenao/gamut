@@ -1,3 +1,4 @@
+from __future__ import annotations
 import sounddevice as sd
 import numpy as np
 from librosa import load

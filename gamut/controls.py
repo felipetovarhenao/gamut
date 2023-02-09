@@ -1,3 +1,4 @@
+from __future__ import annotations
 from scipy.signal import get_window
 from collections.abc import Iterable
 import numpy as np
