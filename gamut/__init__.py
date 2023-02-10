@@ -176,6 +176,9 @@ def cli():
     parser.add_argument('--no-cache',
                         action='store_true',
                         help='Disable pipeline caching')
+    parser.add_argument('--no-download',
+                        action='store_true',
+                        help='Disable audio when using --init')
     parser.add_argument('-i', '--init',
                         nargs='?',
                         const=ROOT_DIR,
@@ -192,12 +195,10 @@ def cli():
                         help="enable audio playback after script runs")
     parser.add_argument('--skip',
                         nargs='+',
-                        help="skip one or more parts of the script",
-                        choices=SCRIPT_MODES)
+                        help="skip one or more blocks from the script")
     parser.add_argument('--skip-write',
                         nargs='+',
-                        help="skip writing to disk one or more parts of the script",
-                        choices=SCRIPT_MODES)
+                        help="skip writing to disk one or more blocks from the script")
     parser.add_argument('-t', '--template',
                         nargs='?',
                         const=TEST_SCRIPT_DIR,
@@ -267,6 +268,15 @@ def cli():
         if args.features:
             corpus_params['features'] = args.features
 
+        impulse_response = params.pop('impulse_response', None)
+        if impulse_response:
+            convolve_params = {
+                'impulse_response': clean_path(impulse_response)
+            }
+            convolve_mix = params.pop('convolve_mix', None)
+            if convolve_mix:
+                convolve_params['mix'] = convolve_mix
+
         from .features import Corpus, Mosaic
 
         corpus = Corpus(**corpus_params)
@@ -274,6 +284,8 @@ def cli():
         audio = mosaic.to_audio(**params)
         if 'audio' not in SKIP_WRITE:
             write_file(args.audio, audio, ".wav", 'audio')
+        if impulse_response:
+            audio.convolve(**convolve_params)
         if args.play:
             audio.play()
 
@@ -291,16 +303,17 @@ def cli():
         base_url = 'https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/'
         filenames = ['source.wav', 'target.wav']
 
-        try:
-            for f in filenames:
-                file_path = join(AUDIO_DIR, f)
-                if exists(file_path):
-                    continue
-                with requests.get(base_url + f, stream=True) as r:
-                    with open(file_path, 'wb') as f:
-                        copyfileobj(r.raw, f)
-        except:
-            print('\tWarning: Unable to download audio examples')
+        if not args.no_download:
+            try:
+                for f in filenames:
+                    file_path = join(AUDIO_DIR, f)
+                    if exists(file_path):
+                        continue
+                    with requests.get(base_url + f, stream=True) as r:
+                        with open(file_path, 'wb') as f:
+                            copyfileobj(r.raw, f)
+            except:
+                print('\tWarning: Unable to download audio examples')
 
         print_success(
             f"Your GAMuT project folder is ready!\nTry running:\n\tgamut --script scripts/{TEST_NAME}.json --play")
@@ -347,23 +360,39 @@ def cli():
         with open(file=script_path, mode='r',) as f:
             script = json.loads(f.read())
 
+        # validate skipped blocks and warn if they don't exist
+        skipped_blocks = args.skip if args.skip else []
+        for skip_list in [skipped_blocks, SKIP_WRITE]:
+            for skipped in skip_list:
+                if skipped not in script:
+                    print_warning(f"trying to skip a block that isn't included in the script: \"{skipped}\". ignoring...")
+
+        # create mapping of script blocks to their types
+        block_type_map = {}
         for script_block in script:
-            if script_block not in SCRIPT_MODES:
-                print_error(f'"{script_block}" is not a valid GAMuT script key')
+            fail = True
+            for sm in SCRIPT_MODES:
+                if script_block.startswith(sm):
+                    fail = False
+                    if script_block not in skipped_blocks:
+                        block_type_map[script_block] = sm
+                    break
+            if fail:
+                print_error(
+                    f'"{script_block}" is not a valid GAMuT script block. It should start with one of the following: {SCRIPT_MODES}')
 
         from .features import Corpus, Mosaic
 
-        skip = args.skip if args.skip else []
-        sorted_modes = [m for m in SCRIPT_MODES if m in script and m not in skip]
-
-        for script_block in sorted_modes:
+        # process each block
+        for script_block in block_type_map:
             params = script[script_block]
+            block_type = block_type_map[script_block]
+
             name = params.pop('name', None)
             output_name = name if name else splitext(basename(script_path))[0] + f'-{script_block}'
 
-            if script_block == 'corpus':
+            if block_type == 'corpus':
                 safe_chdir(AUDIO_DIR)
-
                 for i, source in enumerate(params['source']):
                     params['source'][i] = clean_path(source)
                 safe_chdir(ROOT_DIR)
@@ -371,10 +400,10 @@ def cli():
                 safe_chdir(CORPUS_DIR)
                 write_file(output_name, c, '.gamut', script_block)
 
-            elif script_block == 'mosaic':
+            elif block_type == 'mosaic':
                 for x in ['corpus', 'target']:
                     if x not in params:
-                        print_error(f'You forgot to specify a {x} in your {script_block} script.')
+                        print_error(f'You forgot to specify a {x} in your {block_type} script.')
 
                 # clean target path
                 safe_chdir(AUDIO_DIR)
@@ -411,7 +440,7 @@ def cli():
                 safe_chdir(MOSAIC_DIR)
                 write_file(output_name, m, '.gamut', script_block)
 
-            elif script_block == 'audio':
+            elif block_type == 'audio':
                 mosaic_file = params.pop('mosaic')
 
                 # clean mosaic path

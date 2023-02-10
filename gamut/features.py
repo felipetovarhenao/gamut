@@ -239,7 +239,7 @@ class Corpus(Analyzer):
         """ build corpus from `source` """
         st = time()
         CONSOLE.log_process('\N{brain} Building audio corpus...').print()
-        data = self.__compile()
+        data = self.__compile(source=None, data=[], excluded_files=[])
         CONSOLE.counter.finish()
         self.__set_source_root()
         self.tree.build(data=data, vector_path='features')
@@ -259,28 +259,28 @@ class Corpus(Analyzer):
             f'sources ({len(self.soundfiles)})': filenames,
         }
 
-    def __compile(self, source: list | str | None = None, excuded_files: list = [], data: list = []) -> None:
+    def __compile(self, source: list | str | None = None, excluded_files: list = [], data: list = []) -> None:
         """ recursively collects and extracts features from all audio files in `source` """
         source = source or self.source
         source_type = type(source or self.source)
         if source_type == list:
             for x in source:
-                self.__compile(x, excuded_files)
+                self.__compile(x, excluded_files=excluded_files, data=data)
             return data
 
         source_path = realpath(source)
         if isdir(source_path):
             for root, _, files in walk(source_path):
                 for f in files:
-                    self.__compile(join(root, f), excuded_files)
+                    self.__compile(join(root, f), excluded_files=excluded_files, data=data)
             return data
 
         filename = splitext(basename(source))[0]
         kind = filetype.guess(source_path)
-        if kind is None or kind.mime not in MIME_TYPES or filename in excuded_files:
+        if kind is None or kind.mime not in MIME_TYPES or filename in excluded_files:
             return data
 
-        excuded_files.append(filename)
+        excluded_files.append(filename)
 
         y, sr = load(path=source, sr=None, mono=True,
                      duration=self.max_duration)
@@ -424,7 +424,7 @@ class Mosaic(Analyzer):
                 if prev_features != current_features:
                     CONSOLE.error(
                         ValueError,
-                        f'Corpus at index {i} has a different set of features ({c.features}) than corpus at index {i-1} ({corpus[i-1].features}). When using more than one corpus, make sure they are based on the same feature set.')
+                        f'Corpus at index {i} has a different set of features ({", ".join(c.features)}) than corpus at index {i-1} ({", ".join(corpus[i-1].features)}). When using more than one corpus, make sure they are based on the same feature set.')
                 prev_features = current_features
             # recursively unpack corpora
             for c in corpus:
