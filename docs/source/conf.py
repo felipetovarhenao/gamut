@@ -26,6 +26,7 @@ extensions = [
     'sphinx_copybutton',
     'sphinx.ext.autodoc',
 ]
+html_favicon = '_static/favicon.ico'
 
 
 # -- Options for HTML output -------------------------------------------------
