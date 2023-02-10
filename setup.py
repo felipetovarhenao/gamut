@@ -29,6 +29,7 @@ setup(
         'SoundFile',
         'sounddevice',
         'typing_extensions',
+        'filetype'
     ],
     keywords=['DSP', 'audio musaicing', 'granulation', 'machine learning',
               'ML', "MIR", 'music', 'sound design', 'concatenative synthesis'],

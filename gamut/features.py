@@ -28,9 +28,6 @@ from abc import ABC, abstractmethod
 
 # numpy
 import numpy as np
-from typing import NewType
-
-EnvelopeType = NewType("EnvelopeType", Envelope)
 
 
 class Analyzer(ABC):

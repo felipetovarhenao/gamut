@@ -282,8 +282,7 @@ def cli():
         corpus = Corpus(**corpus_params)
         mosaic = Mosaic(target=target, corpus=corpus)
         audio = mosaic.to_audio(**params)
-        if 'audio' not in SKIP_WRITE:
-            write_file(args.audio, audio, ".wav", 'audio')
+        write_file(args.audio, audio, '.wav', 'audio')
         if impulse_response:
             audio.convolve(**convolve_params)
         if args.play:

@@ -415,7 +415,7 @@ Here are **4 examples** of `audio musaicing` made with **GAMuT**, each using dif
 
    installation
    getting-started
-   command-line-interface
+   cli
    modules
    
 To visualize contents in alphabetical order, see :ref:`genindex`.

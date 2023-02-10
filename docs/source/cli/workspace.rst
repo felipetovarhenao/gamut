@@ -1,64 +1,5 @@
-.. role:: marked
-    :class: marked
-
-Command-line interface
-======================
-
-**GAMuT** (`v1.0.6` or older) comes with a simple but convenient command-line interface (CLI) utility, which can be especially helpful if you're brand new to Python, or even programming.
-
-Quickstart
---------------
-
-Once :doc:`installed <./installation>`, we can check the **GAMuT** package version and test it, by running:
-
-.. code:: shell
-
-   gamut --version
-   gamut --test
-
-If you see a success message afterwards, it means we're all set.
-
-Option 1: Direct input arguments
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The quickest, but perhaps **least efficient** way of doing audio musaicing with **GAMuT**'s command-line interface is by using `direct input arguments`. For instance:
-
-.. code:: shell
-
-   gamut --target /path/to/audio/target.wav --source /path/to/audio/source.wav
-
-This will generate an audio mosaic for the given ``--target``, based on the given ``--source``. The final audio output will be written to disk as ``gamut-audio.wav`` in the current directory.
-To play back the audio at the end of the process, we can use the ``--play`` argument, and also specify the audio output filename path, with the ``--audio`` argument.
-
-.. code:: shell
-
-   gamut \
-   --target /path/to/audio/target.wav \
-   --source /path/to/audio/source.wav \
-   --audio  /path/to/audio/output.wav \
-   --play
-
-.. hint:: 
-   The ``\`` above is simply to break the command into multiple lines, and make the code snippet more readable.
-
-We can additionally specify different audio parameters, such as grain duration (``grain_dur``), grain envelope (``grain_env``), or the mix between the corpus sources and the original target (``corpus_weights``), like so:
-
-.. code:: shell
-
-   gamut \
-   --target /path/to/audio/target.wav \
-   --source /path/to/audio/source.wav \
-   --audio  /path/to/audio/output.wav \
-   --params grain_dur=0.3 grain_env={0,1,0.2,0.1,0} corpus_weights=0.75 \
-   --play
-
-.. note:: 
-   Although all possible parameters for the ``--params`` argument are explained in more detail throughout the Python :doc:`tutorials </getting-started>`, you can read more about them :class:`here<gamut.features.Audio>`.
-
-:marked:`As you can see, however, this workflow can quickly become cumbersome and messy, which is why GAMuT allows to do audio musaicing through JSON scripts.` This is explained next.
-
 Option 2: GAMuT workspace (recommended)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+=========================================
 
 A more convenient way to start working with **GAMuT** is by creating a workspace folder. Navigate to where you would want your workplace folder to be, and run:
 
@@ -113,7 +54,7 @@ After running this, we should find a newly created files:
 
 Now let's open ``scripts/test.json`` and look what's inside:
 
-.. literalinclude:: ./_static/test.json
+.. literalinclude:: ../_static/test.json
    :language: json
    :linenos:
    :emphasize-lines: 5, 13
@@ -134,6 +75,20 @@ Highlighted, are the **two lines** that you should start to experiment with:
 
       gamut -s ./scripts/test.json --skip corpus mosaic
 
+.. note::
+   Script block names **must start** with either ``corpus``, ``audio``, or ``mosaic``. This makes it possible to include, for instance, more than one corpus in the same script:
+
+   .. code:: javascript
+
+      {
+         "corpus_1": {
+            ...
+         },
+         "corpus_2": {
+            ...
+         }
+      }
+
 Inside each block, you have other parameter fields that you can change. Aside from ``name``, which specifies the name of the output file for each block, you can learn about what each of these parameters controls through these links:
 
    * :class:`corpus<gamut.features.Corpus>`
@@ -141,4 +96,4 @@ Inside each block, you have other parameter fields that you can change. Aside fr
    * :class:`audio<gamut.features.Audio>`
 
 .. note::
-   Once you feel more comfortable working with the **GAMuT** `command-line interface`, you may want to go through the :doc:`Python tutorials <getting-started>` to have more control over your workflow.
+   Once you feel more comfortable working with the **GAMuT** `command-line interface`, you may want to go through the :doc:`Python tutorials <../getting-started>` to have more control over your workflow.
