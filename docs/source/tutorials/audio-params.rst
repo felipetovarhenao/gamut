@@ -1,4 +1,4 @@
-Tutorial 5: Audio musaicing parameters
+Tutorial 5: Audio musaicking parameters
 =================================================
 
 One of the main advantages of the ``Mosaic`` class, is that it allows to generate different audio mosaic versions

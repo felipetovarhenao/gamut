@@ -11,7 +11,7 @@ There are different ways in which we can specify the audio source(s):
 .. note::
     When specifying a folder, **GAMuT** will recursively look for any ``.wav`` or ``.aif`` audio files in the directory, ignoring any other files.
 
-Note that creating a ``Corpus`` can easily be the most computationally expensive part when doing `audio musaicing`, especially when 
+Note that creating a ``Corpus`` can easily be the most computationally expensive part when doing `audio musaicking`, especially when 
 we're dealing with large amounts of audio files. To make sure we can reuse every `corpus` we build, 
 it's best to write it to disk as a ``.gamut`` file.
 

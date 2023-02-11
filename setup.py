@@ -31,7 +31,7 @@ setup(
         'typing_extensions',
         'filetype'
     ],
-    keywords=['DSP', 'audio musaicing', 'granulation', 'machine learning',
+    keywords=['DSP', 'audio musaicking', 'granulation', 'machine learning',
               'ML', "MIR", 'music', 'sound design', 'concatenative synthesis'],
     classifiers=[
         'Development Status :: 5 - Production/Stable',

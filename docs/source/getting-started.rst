@@ -4,7 +4,7 @@ Getting started
 The following tutorial series will incrementally show you how to use **GAMuT** and what you can do with it.
 
 Although it assumes a basic understanding of Python and computer programming concepts, it hopes to be an
-approachable and user-friendly guide to `audio musaicing`, for musicians, sound designers, programmers, and audio
+approachable and user-friendly guide to `audio musaicking`, for musicians, sound designers, programmers, and audio
 enthusiasts with varying degrees of experience.
 
 However, **if you're brand new to Python** and would like to try **GAMuT** without writing any Python code, you may want to start :doc:`here <./cli>`.

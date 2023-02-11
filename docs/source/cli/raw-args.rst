@@ -4,7 +4,7 @@
 Option 1: Direct input arguments
 =================================
 
-The quickest, but perhaps **least efficient** way of doing audio musaicing with **GAMuT**'s command-line interface is by using `direct input arguments`. Let's start with the most basic example:
+The quickest, but perhaps **least efficient** way of doing audio musaicking with **GAMuT**'s command-line interface is by using `direct input arguments`. Let's start with the most basic example:
 
 .. code:: shell
 
@@ -38,4 +38,4 @@ We can additionally specify different audio parameters, such as grain duration (
 .. note:: 
    For a full list of audio parameters that can be used with the ``--params`` argument, click :class:`here<gamut.features.Audio>`.
 
-As you can see, however, :marked:`this workflow can quickly become cumbersome and messy, which is why GAMuT allows to do audio musaicing through JSON scripts.` This is explained :doc:`next <workspace>`.
+As you can see, however, :marked:`this workflow can quickly become cumbersome and messy, which is why GAMuT allows to do audio musaicking through JSON scripts.` This is explained :doc:`next <workspace>`.

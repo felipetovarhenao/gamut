@@ -8,13 +8,13 @@ GAMuT documentation
 Description
 ---------------------------------
 
-**GAMuT** is a high-level, user-friendly granular `audio musaicing` toolkit implemented in Python. `Audio musaicing` (also spelled `mosaicing`), 
+**GAMuT** is a high-level, user-friendly granular `audio musaicking` toolkit implemented in Python. `Audio musaicking` (also spelled `mosaicking`), 
 can be `defined <http://imtr.ircam.fr/imtr/Audio_Mosaicing>`_ as **"the process of recomposing the temporal evolution of a given target audio file from segments cut out of source audio materials"**.
 
-Audio musaicing: A visual analogy
+Audio musaicking: A visual analogy
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If you're new to `audio musaicing`, let's consider the following visual analogy:
+If you're new to `audio musaicking`, let's consider the following visual analogy:
 
    .. raw:: html
       
@@ -47,7 +47,7 @@ If you're new to `audio musaicing`, let's consider the following visual analogy:
             Although this wasn't actually done by a computer, but manually drawn by LA-based artist 
             <a href="https://en.wikipedia.org/wiki/Yung_Jake" rel="noreferrer" target="_blank">Yung Jake</a> 
             with the <a href="http://android.emoji.ink" rel="noreferrer" target="_blank">emoji.ink</a> tool, 
-            the idea still holds — <i>audio mosaicing</i> consists of reconstructing a <b>target</b> using a <b>corpus</b>, 
+            the idea still holds — <i>audio mosaicking</i> consists of reconstructing a <b>target</b> using a <b>corpus</b>, 
             but with audio instead of images. 
             <br/>
             <br/>
@@ -56,14 +56,14 @@ If you're new to `audio musaicing`, let's consider the following visual analogy:
          </div>
          <div>
             <img src="_static/bob_ross_yungjake.jpeg" class="example-img" alt="jung-jake">
-            <span class="caption">Visual analogy of audio musaicing: Emoji Bob Ross (by Yung Jake)</span>    
+            <span class="caption">Visual analogy of audio musaicking: Emoji Bob Ross (by Yung Jake)</span>    
          </div>
       </div>
 
 Audio examples
 ~~~~~~~~~~~~~~~~
 
-Here are **4 examples** of `audio musaicing` made with **GAMuT**, each using different **corpora** on the same audio **target**.
+Here are **4 examples** of `audio musaicking` made with **GAMuT**, each using different **corpora** on the same audio **target**.
 
 **Example 1**
 
@@ -144,18 +144,6 @@ Here are **4 examples** of `audio musaicing` made with **GAMuT**, each using dif
             </audio>
          </div>
          <div>
-            <b>String instruments corpus</b>
-         </div>
-         <div>
-            1234 audio files
-         </div>
-         <div>
-            <audio preload="none" controls="controls">
-               <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/media/audio/03+String_corpus+-+1234+files.mp3" type="audio/mpeg">
-               Your browser does not support the <code>audio</code> element. 
-            </audio>
-         </div>
-         <div>
             <b>Tam-tam corpus</b>
          </div>
          <div>
@@ -164,18 +152,6 @@ Here are **4 examples** of `audio musaicing` made with **GAMuT**, each using dif
          <div>
             <audio preload="none" controls="controls">
                <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/media/audio/04+Tamtam_corpus+-+2878+files.mp3" type="audio/mpeg">
-               Your browser does not support the <code>audio</code> element. 
-            </audio>
-         </div>
-         <div>
-            <b>Woodwinds corpus</b>
-         </div>
-         <div>
-            412 audio files
-         </div>
-         <div>
-            <audio preload="none" controls="controls">
-               <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/media/audio/05+Wind_corpus+-+412+files.mp3" type="audio/mpeg">
                Your browser does not support the <code>audio</code> element. 
             </audio>
          </div>

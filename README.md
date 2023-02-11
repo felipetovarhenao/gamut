@@ -11,7 +11,7 @@
 
 ### **Description**
 
-**GAMuT** is a high-level, user-friendly [_granular audio musaicing toolkit_](https://www.francoispachet.fr/musaicing/) implemented in Python.
+**GAMuT** is a high-level, user-friendly [_granular audio musaicking toolkit_](https://www.francoispachet.fr/musaicing/) implemented in Python.
 
 ### **Documentation**  
 

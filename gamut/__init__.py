@@ -212,7 +212,7 @@ def cli():
                         help="audio control parameters")
     parser.add_argument('--features',
                         nargs='+',
-                        help="audio features to base audio musaicing on",
+                        help="audio features to base audio musaicking on",
                         choices=['pitch', 'analysis'])
     parser.add_argument('--target',
                         help="path to audio target",

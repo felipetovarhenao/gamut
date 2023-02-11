@@ -1,7 +1,7 @@
-Tutorial 1: Basic audio musaicing with GAMuT
+Tutorial 1: Basic audio musaicking with GAMuT
 =================================================
 
-Broadly speaking, the audio musaicing pipeline with **GAMuT** is quite simple:
+Broadly speaking, the audio musaicking pipeline with **GAMuT** is quite simple:
 
 1. Create a ``Corpus`` from one or more audio sources.
 2. Create an ``Mosaic`` from one or more ``Corpus`` instances, given a `target` audio file.

@@ -60,7 +60,7 @@ Now let's open ``scripts/test.json`` and look what's inside:
    :emphasize-lines: 5, 13
    :caption: Boiler-plate content in ``scripts/test.json``
 
-This ``JSON`` file consists of **three blocks** that represent the basic `audio musaicing` pipeline in **GAMuT** — it essentially says `create a corpus, then a mosaic, and then an audio file.`
+This ``JSON`` file consists of **three blocks** that represent the basic `audio musaicking` pipeline in **GAMuT** — it essentially says `create a corpus, then a mosaic, and then an audio file.`
 We can think of this file as containing all the different settings that **GAMuT** can use to do its job.
 
 Highlighted, are the **two lines** that you should start to experiment with:

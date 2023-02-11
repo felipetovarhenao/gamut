@@ -435,7 +435,7 @@ class Mosaic(Analyzer):
     def __build(self, corpora: Iterable, sr: int | None = None) -> None:
         num_corpora = len(corpora)
         CONSOLE.log_process(
-            f'\N{brain} Building target from {"corpus" if num_corpora == 1 else f"{num_corpora} corpora"}...').print()
+            f'\N{brain} Building mosaic for {basename(self.target)} from {"corpus" if num_corpora == 1 else f"{num_corpora} corpora"}...').print()
         CONSOLE.log_subprocess('Loading target...').print()
         st = time()
         y, self.sr = load(self.target, sr=sr)

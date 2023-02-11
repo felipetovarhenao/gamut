@@ -15,7 +15,7 @@ If you see a success message afterwards, it means we're all set.
 Quickstart
 --------------
 
-When working with **GAMuT**'s command-line interface utility, there are two main aways of doing audio musaicing:
+When working with **GAMuT**'s command-line interface utility, there are two main aways of doing audio musaicking:
 
 .. toctree::
    :maxdepth: 2

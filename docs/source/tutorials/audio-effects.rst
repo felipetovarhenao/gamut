@@ -1,7 +1,7 @@
 Tutorial 9: Audio effects
 ============================
 
-Although the main focus of **GAMuT** is `audio mosaicing`, it might increasingly include a few simple, but useful ways to
+Although the main focus of **GAMuT** is `audio mosaicking`, it might increasingly include a few simple, but useful ways to
 apply audio effects to the resulting audio files.
 
 Currently, **GAMuT** supports `audio convolution <https://www.izotope.com/en/learn/the-basics-of-convolution-in-audio-production.html>`_,
