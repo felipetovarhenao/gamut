@@ -441,6 +441,7 @@ def cli():
 
             elif block_type == 'audio':
                 mosaic_file = params.pop('mosaic')
+                convolve = params.pop('convolve', None)
 
                 # clean mosaic path
                 safe_chdir(MOSAIC_DIR)
@@ -454,7 +455,6 @@ def cli():
                 safe_chdir(AUDIO_DIR)
 
                 # clean convolution
-                convolve = params.pop('convolve', None)
                 if convolve:
                     if 'impulse_response' not in convolve:
                         print_error('To apply audio convolution, you must provide an inpulse response')
