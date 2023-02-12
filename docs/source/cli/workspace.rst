@@ -93,7 +93,7 @@ Inside each block, you have other parameter fields that you can change. Aside fr
 
    * :class:`corpus<gamut.features.Corpus>`
    * :class:`mosaic<gamut.features.Mosaic>`
-   * :class:`audio<gamut.features.Audio>`
+   * :class:`audio<gamut.features.Mosaic.to_audio>`
 
 .. note::
    Once you feel more comfortable working with the **GAMuT** `command-line interface`, you may want to go through the :doc:`Python tutorials <../getting-started>` to have more control over your workflow.
