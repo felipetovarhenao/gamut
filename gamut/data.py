@@ -3,6 +3,7 @@ import numpy as np
 from .utils import get_nested_value, set_nested_value
 from .config import CONSOLE
 from random import randint
+from collections.abc import Iterable
 
 
 class KDTree:
@@ -88,10 +89,10 @@ class KDTree:
                                  self.__normalize_input(vector))
         fit(self.data, vector_path)
 
-    def __euclidean_distance(self, a, b):
+    def __euclidean_distance(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         return np.sqrt(np.sum((a-b)**2))
 
-    def knn(self, x: np.ndarray, vector_path: str, first_n: int = 10) -> list:
+    def knn(self, x: np.ndarray, vector_path: str, first_n: int = 10) -> Iterable:
         data = self.data
         data_point = self.__normalize_input(x)
         while 'node' in data:

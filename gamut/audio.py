@@ -51,18 +51,18 @@ class AudioBuffer:
             self.y = resample_array(self.y, int(round(len(self.y) * sr/self.sr)))
         self.sr = sr
 
-    def read(self, input_dir, sr: int | None = None, mono: bool = False) -> None:
+    def read(self, input_dir: str, sr: int | None = None, mono: bool = False) -> Self:
         """ Reads a ``.wav`` or ``.aif`` audio file from disk """
         self.y, self.sr = load(input_dir, sr=sr, mono=mono)
         self.y = self.y.T if len(self.y.shape) > 1 else self.y[:, np.newaxis]
         return self
 
     @property
-    def chans(self):
+    def chans(self) -> int:
         return self.y.shape[1]
 
     @property
-    def samps(self):
+    def samps(self) -> int:
         return self.y.shape[0]
 
     def write(self, output_dir: str) -> None:
@@ -73,13 +73,13 @@ class AudioBuffer:
         CONSOLE.log_disk_op('audio file', basename(output_dir)).print()
         write(output_dir, self.y, self.sr, f'PCM_{self.bit_depth}')
 
-    def to_mono(self):
+    def to_mono(self) -> None:
         """ Converts audio channels to mono """
         if self.chans == 1:
             return
         self.y = (self.y.sum(axis=1)[: np.newaxis] / self.chans).reshape((self.samps, 1))
 
-    def convolve(self, impulse_response: Self | str, mix: int | float | Iterable | Envelope = 0.125, normalize: bool = True):
+    def convolve(self, impulse_response: Self | str, mix: int | float | Iterable | Envelope = 0.125, normalize: bool = True) -> None:
         """ Applies impulse response convolution to audio """
         def parse_mix_param(mix, N):
             if isinstance(mix, Envelope):

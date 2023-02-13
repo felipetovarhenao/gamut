@@ -1,6 +1,7 @@
 from __future__ import annotations
 import numpy as np
-from typing import Any
+from typing import Any, Callable
+from collections.abc import Iterable
 
 
 def get_nested_value(obj: object, path: str | None, separator: str = ".") -> Any:
@@ -28,7 +29,7 @@ def get_nested_value(obj: object, path: str | None, separator: str = ".") -> Any
     return output
 
 
-def __set_nested_value(obj, paths, replace):
+def __set_nested_value(obj: object, paths: Iterable, replace: object) -> Any:
     if not paths:
         obj = replace
         return obj
@@ -42,7 +43,7 @@ def __set_nested_value(obj, paths, replace):
     return obj
 
 
-def set_nested_value(obj, path, replace, separator: str = '.') -> Any:
+def set_nested_value(obj: object, path: str, replace: object, separator: str = '.') -> Any:
     """
     Helper function to update an a nested value from an ``object`` of aribirary depth
 
@@ -60,11 +61,11 @@ def set_nested_value(obj, path, replace, separator: str = '.') -> Any:
     return __set_nested_value(obj, path.split(separator), replace)
 
 
-def resample_array(array, N):
+def resample_array(array: np.ndarray, N: int) -> np.ndarray:
     return np.interp(np.linspace(0, len(array) - 1, N), np.arange(0, len(array)), array)
 
 
-def catch_keyboard_interrupt(interrupt_func=None):
+def catch_keyboard_interrupt(interrupt_func: Callable | None = None) -> Callable:
     def decorator(function):
         def wrapper(*args, **kwargs):
             try:

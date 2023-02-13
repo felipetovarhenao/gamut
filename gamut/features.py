@@ -91,7 +91,7 @@ class Analyzer(ABC):
         self.portable = portable
         self.name = splitext(basename(output))[0]
         output_dir = splitext(output)[0]
-        CONSOLE.log_disk_op(f'{"" if portable else "non-"}portable {self.type}', f'{basename(output_dir)}{FILE_EXT}').print()
+        CONSOLE.log_disk_op(f'{"" if portable else "non-"}portable {self.type}', f'{realpath(output_dir)}{FILE_EXT}').print()
         serialized_object = self._serialize()
 
         # write file and set correct file extension
@@ -301,7 +301,7 @@ class Corpus(Analyzer):
     def print_feature_choices(cls) -> None:
         print(f'feature choices: {ANALYSIS_TYPES}')
 
-    def __set_source_root(self):
+    def __set_source_root(self) -> None:
         """ remove commonprefix from file paths to avoid size overhead when writing corpus to disk """
 
         if not self.soundfiles:
@@ -373,7 +373,7 @@ class Mosaic(Analyzer):
 
     def __init__(self,
                  target: str | None = None,
-                 corpus: Iterable | Corpus = None,
+                 corpus: Iterable | Corpus | None = None,
                  sr: int | None = None,
                  beat_unit: float | int | None = None,
                  *args,
@@ -395,7 +395,7 @@ class Mosaic(Analyzer):
             self.features = corpora[0].features
             self.__build(corpora=corpora, sr=sr)
 
-    def __validate(self, target, corpus):
+    def __validate(self, target: str | None, corpus: Iterable | Corpus | None) -> None:
         if any([target, corpus]) and not all([target, corpus]):
             CONSOLE.error(
                 ValueError,
@@ -409,7 +409,7 @@ class Mosaic(Analyzer):
         if kind is None or kind.mime not in MIME_TYPES:
             CONSOLE.error(ValueError, f'{basename(target)} seems to be an invalid or unsupported audio file format.')
 
-    def __parse_corpus(self, corpus: Iterable | Corpus, corpora: Iterable):
+    def __parse_corpus(self, corpus: Iterable | Corpus, corpora: Iterable) -> Iterable:
         if not corpus:
             return
 
@@ -486,7 +486,7 @@ class Mosaic(Analyzer):
         CONSOLE.bar.finish()
         CONSOLE.elapsed_time(st).print()
 
-    def _serialize(self):
+    def _serialize(self) -> dict:
         mosaic = deepcopy(vars(self))
 
         # if not portable, delete audio samples from soundfiles on write
@@ -506,7 +506,7 @@ class Mosaic(Analyzer):
             "num. of grains": len(self.frames)
         }
 
-    def _preload(self, obj):
+    def _preload(self, obj: dict) -> dict:
         # reload soundfiles if non-portable
         if not obj['portable']:
             self.__load_soundfiles(obj['soundfiles'])
@@ -515,7 +515,7 @@ class Mosaic(Analyzer):
     def read(self, file: str) -> Self:
         return super().read(file, warn_user=self.frames)
 
-    def __load_soundfiles(self, soundfiles):
+    def __load_soundfiles(self, soundfiles: Iterable) -> None:
         CONSOLE.counter.message = CONSOLE.log_subprocess('Loading audio files: ')
         for corpus_id in soundfiles:
             corpus = soundfiles[corpus_id]
@@ -536,7 +536,7 @@ class Mosaic(Analyzer):
                  stretch_factor: float | int | Envelope | Iterable = 1.0,
                  onset_var: float | int | Envelope | Iterable = 0,
                  pan_depth: float | int | Envelope | Iterable = 5,
-                 grain_env: Envelope | str | Iterable = "cosine",
+                 grain_env: str | Envelope | Iterable = "cosine",
                  corpus_weights: float | int | Envelope | Iterable = 1.0,
 
                  # static parameters

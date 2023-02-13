@@ -5,11 +5,12 @@ import numpy as np
 
 from .config import CONSOLE, ENVELOPE_TYPES
 from math import ceil
+from typing_extensions import Self
 
 
 class Points(np.ndarray):
     """ 
-    Points class
+    A subclass of a numpy array, mostly to allow inline method concatenation — e.g. x.a().b().c()
     """
 
     def __array_finalize__(self, obj):
@@ -18,39 +19,39 @@ class Points(np.ndarray):
     def __new__(cls, array: np.ndarray | list = []):
         return np.asarray(array).view(cls)
 
-    def fill(self, shape: tuple, value):
+    def fill(self, shape: Iterable, value: int | float) -> Self:
         tmp = np.empty(shape=shape)
         tmp.fill(value)
         return Points(tmp)
 
-    def concat(self, x, prepend: bool = False):
+    def concat(self, x: Points | np.ndarray, prepend: bool = False) -> Points:
         return Points(np.concatenate([x, self] if prepend else [self, x]))
 
-    def resample(self, N):
+    def resample(self, N: int) -> Points:
         if len(self) == N:
             return self
         return Points(np.interp(np.linspace(0, len(self) - 1, N), np.arange(0, len(self)), self))
 
-    def scale(self, out_min: float | int = 0.0, out_max: float | int = 1.0):
+    def scale(self, out_min: float | int = 0.0, out_max: float | int = 1.0) -> Points:
         amin, amax = np.amin(self), np.amax(self)
         return Points(((self - amin) / (amax - amin)) * (out_max - out_min) + out_min)
 
-    def replicate(self, n, axis: int = 0):
+    def replicate(self, n: int, axis: int = 0) -> Points:
         return Points(np.repeat(self, repeats=n, axis=axis))
 
-    def wrap(self, n: int = 1):
+    def wrap(self, n: int = 1) -> Self:
         out = self
         for _ in range(n):
             out = Points([out])
         return out
 
-    def quantize(self, n: float | int = 1):
+    def quantize(self, n: float | int = 1) -> Self:
         return Points(np.round(self / n) * n)
 
-    def abs(self):
+    def abs(self) -> Self:
         return Points(np.abs(self))
 
-    def clip(self, min: float | int | None = None, max: float | int | None = None):
+    def clip(self, min: float | int | None = None, max: float | int | None = None) -> Self:
         if min:
             self[self < min] = min
         if max:
@@ -61,7 +62,7 @@ class Points(np.ndarray):
 class Envelope:
     """
     ``Envelope`` instances are meant to be used as dynamic audio control parameters, when calling the ``Mosaic.to_audio()`` method.
-    For instance, to temporally change the grain duration, panning, playback speed, etc.
+    For instance, to temporally change audio parameters such as grain duration, panning, playback speed, etc.
     """
 
     def __init__(self, shape: Iterable | str = "cosine") -> None:
@@ -79,7 +80,7 @@ class Envelope:
     def __str__(self) -> str:
         return f"<{self.__class__.__name__.capitalize()}: {self.type if self.type else str(self._points)}>"
 
-    def __validate_points(self, points) -> Points:
+    def __validate_points(self, points: Iterable) -> Points:
         if isinstance(points[0], Iterable):
             prev_idx = points[0][0]
             for point in points[1:]:
@@ -117,7 +118,7 @@ class Envelope:
         plt.show()
 
     @property
-    def points(self):
+    def points(self) -> Points:
         return self._points
 
     def get_points(self, N: int) -> Points:
