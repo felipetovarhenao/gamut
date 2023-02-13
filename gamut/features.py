@@ -177,7 +177,7 @@ class Corpus(Analyzer):
     source: str | list | None = None
         Source file(s) from which to build the ``Corpus``. ``source`` can be either a ``str`` or a list of ``str``, where 
         ``str`` is an audio file path or a directory of audio files. Note that, for any directory path, ``Corpus`` will recursively look for
-        any ``.wav`` or ``.aif`` audio files in folders and subfolders.
+        any ``.wav``, ``.aif``, or ``.mp3`` audio files in folders and subfolders.
 
     max_duration: str | list | None = None
         Maximum audio file duration to use in ``Corpus``. Applies to all audio files found in ``source``.

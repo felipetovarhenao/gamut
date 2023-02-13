@@ -4,12 +4,12 @@ Tutorial 2: Creating an audio corpus
 A ``Corpus`` represents a collection of audio `sources` that can be used to re-construct a given audio `target`. 
 There are different ways in which we can specify the audio source(s):
 
-* A path to a ``.wav`` or ``.aif`` audio file, as a ``str``.
+* A path to a ``.wav``, ``.aif``, or ``.mp3`` audio file, as a ``str``.
 * A path to a **folder** containing audio files, as a ``str``.
 * A ``list`` of paths to folders and/or audio files.
 
 .. note::
-    When specifying a folder, **GAMuT** will recursively look for any ``.wav`` or ``.aif`` audio files in the directory, ignoring any other files.
+    When specifying a folder, **GAMuT** will recursively look for any ``.wav``, ``.aif``, or ``.mp3`` audio files in the directory, ignoring any other files.
 
 Note that creating a ``Corpus`` can easily be the most computationally expensive part when doing `audio musaicking`, especially when 
 we're dealing with large amounts of audio files. To make sure we can reuse every `corpus` we build, 

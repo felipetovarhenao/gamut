@@ -21,8 +21,8 @@ The workspace should look something like this:
 
    my-gamut-workspace
       ├── audio
-      │   ├── source.wav
-      │   └── target.wav
+      │   ├── source.mp3
+      │   └── target.mp3
       ├── corpora
       ├── mosaics
       └── scripts          
@@ -30,7 +30,7 @@ The workspace should look something like this:
    
 As you can see, it includes **4 folders** and **3 different files**. These files are:
 
-   * ``source.wav`` and ``target.wav``: Two default audio samples that we can use to test **GAMuT**.
+   * ``source.mp3`` and ``target.mp3``: Two default audio samples that we can use to test **GAMuT**.
    * ``test.json``: A JSON file containing boiler-plate information we can use to generate an audio mosaic. This is what we'll be modifying and feeding **GAMuT** to create new sounds.
 
 We can now create our first audio mosaic. Let's run the ``test.json`` script:

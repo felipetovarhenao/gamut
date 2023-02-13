@@ -120,7 +120,7 @@ def cli():
             "corpus": {
                 "name": f"{name}-corpus",
                 "source": [
-                    join(AUDIO_DIR, "source.wav")
+                    join(AUDIO_DIR, DEFAULT_SOURCE)
                 ],
                 "features": [
                     "timbre"
@@ -128,7 +128,7 @@ def cli():
             },
             "mosaic": {
                 "name": f"{name}-mosaic",
-                "target": join(AUDIO_DIR, "target.wav"),
+                "target": join(AUDIO_DIR, DEFAULT_TARGET),
                 "corpus": [
                     f"{name}-corpus"
                 ]
@@ -160,6 +160,8 @@ def cli():
     # ------------------------------------- #
     CACHED_OBJECTS = {}
     SCRIPT_MODES = ['corpus', 'mosaic', 'audio']
+    DEFAULT_SOURCE = 'source.mp3'
+    DEFAULT_TARGET = 'target.mp3'
 
     parser = ArgumentParser(prog='GAMuT parser',
                             description="Command-line utility for creating GAMuT audio musaicings with JSON files",
@@ -300,7 +302,7 @@ def cli():
         create_new_template(TEST_SCRIPT_DIR)
 
         base_url = 'https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/'
-        filenames = ['source.wav', 'target.wav']
+        filenames = [DEFAULT_SOURCE, DEFAULT_TARGET]
 
         if not args.no_download:
             try:
