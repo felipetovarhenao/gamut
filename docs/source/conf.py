@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath('../..'))
 project = 'GAMuT'
 copyright = '2023, Felipe Tovar-Henao'
 author = 'Felipe Tovar-Henao'
-release = '1.0.8'
+release = '1.0.9'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
