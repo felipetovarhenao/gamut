@@ -195,6 +195,9 @@ def cli():
     parser.add_argument('-p', '--play',
                         action='store_true',
                         help="enable audio playback after script runs")
+    parser.add_argument('--no-verbose',
+                        action='store_true',
+                        help="disables console printing")
     parser.add_argument('--skip',
                         nargs='+',
                         help="skip one or more blocks from the script")
@@ -233,6 +236,10 @@ def cli():
     if len(SKIP_WRITE) > 0 and NO_CACHE:
         print_error("You can't use --skip-write and --no-cache at the same time.")
 
+    if args.no_verbose:
+        from .sys import set_vebosity
+        set_vebosity(False)
+
     # ------------------------------------- #
     # PRINT GAMUT PACKAGE VERSION
     # ------------------------------------- #
@@ -248,8 +255,8 @@ def cli():
         TEST_DIR = realpath(TEST_DIR)
         try:
             safe_chdir(TEST_DIR)
-            run(['gamut', '--init'])
-            run(['gamut', '--script', join(basename(SCRIPTS_DIR), f"{TEST_NAME}.json"), '--no-cache'])
+            run(['gamut', '--init', '--no-verbose'])
+            run(['gamut', '--script', join(basename(SCRIPTS_DIR), f"{TEST_NAME}.json"), '--no-cache', '--no-verbose'])
             print_success('GAMuT test successful!')
         except Exception as e:
             print(e)
@@ -315,9 +322,8 @@ def cli():
                             copyfileobj(r.raw, f)
             except:
                 print('\tWarning: Unable to download audio examples')
-
-        print_success(
-            f"Your GAMuT project folder is ready!\nTry running:\n\tgamut --script scripts/{TEST_NAME}.json --play")
+        if not args.no_verbose:
+            print_success(f"Your GAMuT project folder is ready! Try running:\n\tgamut --script scripts/{TEST_NAME}.json --play")
 
     # ------------------------------------- #
     # CREATE TEMPLATE
