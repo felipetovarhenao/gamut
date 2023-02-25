@@ -1,3 +1,4 @@
+from __future__ import annotations
 from time import time
 from .sys import Console
 from typing import Any, Callable
@@ -35,7 +36,7 @@ ENVELOPE_TYPES = [
 ]
 
 
-def get_elapsed_time(func) -> Callable:
+def get_elapsed_time(func: Callable) -> Callable:
     """ Decorator to log how long a given function takes to run """
     def decorator(*args, **kwargs) -> Any:
         st = time()
