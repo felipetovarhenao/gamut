@@ -143,7 +143,5 @@ class Console:
         gamut = "~ GAMuT: Granular Audio Musaicing Toolkit ~"
         spectrum = [cls.rgb(*col) for col in np.array([resample_array(val, len(gamut))
                                                        for val in spectrum.T]).T.astype('int32')]
-        header = ""
-        for char, col in zip(gamut, spectrum):
-            header += f'{col}\033[1m{char}'
-        print(f'{header}\n')
+
+        print("".join([f'{col}\033[1m{char}' for char, col in zip(gamut, spectrum)]) + "\n")

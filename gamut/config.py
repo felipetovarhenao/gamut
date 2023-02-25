@@ -1,4 +1,6 @@
+from time import time
 from .sys import Console
+from typing import Any, Callable
 
 FILE_EXT = '.gamut'
 AUDIO_FORMATS = ['.wav', '.aif', '.aiff', '.mp3']
@@ -31,3 +33,13 @@ ENVELOPE_TYPES = [
     'triang',
     'tukey',
 ]
+
+
+def get_elapsed_time(func) -> Callable:
+    """ Decorator to log how long a given function takes to run """
+    def decorator(*args, **kwargs) -> Any:
+        st = time()
+        output = func(*args, **kwargs)
+        CONSOLE.elapsed_time(st).print()
+        return output
+    return decorator

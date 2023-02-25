@@ -8,7 +8,7 @@ from librosa.beat import tempo
 from .controls import Points, Envelope, object_to_points
 from .utils import resample_array
 from .audio import AudioBuffer
-from .config import FILE_EXT, CONSOLE, ANALYSIS_TYPES, MIME_TYPES
+from .config import FILE_EXT, CONSOLE, ANALYSIS_TYPES, MIME_TYPES, get_elapsed_time
 from .data import KDTree
 
 # os
@@ -85,9 +85,9 @@ class Analyzer(ABC):
             print(f"{CONSOLE.c4}{key.upper()}: {CONSOLE.reset}{val}")
         print(f'{CONSOLE.c3}{line}{CONSOLE.reset}')
 
+    @get_elapsed_time
     def write(self, output: str, portable: bool = False) -> None:
         """ Writes a ``.gamut`` file to disk """
-        st = time()
         self.portable = portable
         self.name = splitext(basename(output))[0]
         output_dir = splitext(output)[0]
@@ -97,9 +97,9 @@ class Analyzer(ABC):
         # write file and set correct file extension
         np.save(output_dir, serialized_object)
         rename(output_dir + '.npy', output_dir+FILE_EXT)
-        CONSOLE.elapsed_time(st).print()
         return self
 
+    @get_elapsed_time
     def read(self, file: str, warn_user=False) -> Self:
         """ Reads a ``.gamut`` file from disk """
         if warn_user:
@@ -108,7 +108,7 @@ class Analyzer(ABC):
         # validate file
         if splitext(file)[1] != FILE_EXT:
             CONSOLE.error(ValueError, 'Wrong file extension. Provide a directory for a {} file'.format(FILE_EXT))
-        st = time()
+
         serialized_object = np.load(file, allow_pickle=True).item()
         if serialized_object['type'] != self.type:
             CONSOLE.error(TypeError, 'The specified file .gamut file is a {}, not a {}.'.format(
@@ -123,7 +123,6 @@ class Analyzer(ABC):
             if hasattr(self, attr):
                 setattr(self, attr, serialized_object[attr])
 
-        CONSOLE.elapsed_time(st).print()
         return self
 
     def __get_type(self):
@@ -228,19 +227,16 @@ class Corpus(Analyzer):
 
         self.soundfiles = []
         if self.source:
-            st = time()
             self.__build()
-            CONSOLE.elapsed_time(st)
 
+    @get_elapsed_time
     def __build(self) -> None:
         """ build corpus from `source` """
-        st = time()
         CONSOLE.log_process('\N{brain} Building audio corpus...').print()
         data = self.__compile(source=None, data=[], excluded_files=[])
         CONSOLE.counter.finish()
         self.__set_source_root()
         self.tree.build(data=data, vector_path='features')
-        CONSOLE.elapsed_time(st).print()
 
     def _summarize(self) -> dict:
         filenames = "\n"
@@ -432,12 +428,12 @@ class Mosaic(Analyzer):
             CONSOLE.error(ValueError, f'{corpus} is not a corpus')
         return corpora
 
+    @get_elapsed_time
     def __build(self, corpora: Iterable, sr: int | None = None) -> None:
         num_corpora = len(corpora)
         CONSOLE.log_process(
             f'\N{brain} Building mosaic for {basename(self.target)} from {"corpus" if num_corpora == 1 else f"{num_corpora} corpora"}...').print()
         CONSOLE.log_subprocess('Loading target...').print()
-        st = time()
         y, self.sr = load(self.target, sr=sr)
 
         self.duration = len(y) / self.sr
@@ -484,7 +480,6 @@ class Mosaic(Analyzer):
             self.frames.append([x['value'] for x in sorted(matches, key=lambda x: x['cost'])])
             CONSOLE.bar.next()
         CONSOLE.bar.finish()
-        CONSOLE.elapsed_time(st).print()
 
     def _serialize(self) -> dict:
         mosaic = deepcopy(vars(self))
@@ -529,6 +524,7 @@ class Mosaic(Analyzer):
                 CONSOLE.counter.next()
         CONSOLE.counter.finish()
 
+    @get_elapsed_time
     def to_audio(self,
                  # dynamic control parameters
                  fidelity: float | int | Envelope | Iterable = 1.0,
@@ -588,7 +584,7 @@ class Mosaic(Analyzer):
             """ resolve parameter into a ``Points`` instance based on type """
             return object_to_points(param, N)
 
-        def parse_corpus_weights_param(param):
+        def parse_corpus_weights_param(param: Envelope | float | int) -> np.ndarray:
             """ Generates corpus weights table based on param type """
             even_weights = True
             num_corpora = len(self.soundfiles.keys()) - 1
@@ -625,7 +621,6 @@ class Mosaic(Analyzer):
             CONSOLE.counter.finish()
             return soundfiles
 
-        st = time()
         CONSOLE.log_process(f'\N{brain} Generating audio from mosaic target: {basename(self.target)}...').print()
         # playback ratio
         sr, sr_ratio = (self.sr, 1) if not sr else (sr, sr/self.sr)
@@ -706,7 +701,6 @@ class Mosaic(Analyzer):
             CONSOLE.bar.next()
 
         CONSOLE.bar.finish()
-        CONSOLE.elapsed_time(st).print()
 
         # return normalized buffer
         return AudioBuffer(y=(buffer / np.amax(np.abs(buffer))) * np.sqrt(0.5), sr=sr)

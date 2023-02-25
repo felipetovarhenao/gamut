@@ -8,7 +8,7 @@ from scipy import signal
 from typing_extensions import Self
 from collections.abc import Iterable
 
-from .config import AUDIO_FORMATS, CONSOLE
+from .config import AUDIO_FORMATS, CONSOLE, get_elapsed_time
 from .utils import resample_array
 from .controls import Envelope
 from .controls import Points
@@ -65,6 +65,7 @@ class AudioBuffer:
     def samps(self) -> int:
         return self.y.shape[0]
 
+    @get_elapsed_time
     def write(self, output_dir: str) -> None:
         """Writes audio to disk. This function is a simple wrapper of `sf.write()`"""
         ext = splitext(output_dir)[1]
