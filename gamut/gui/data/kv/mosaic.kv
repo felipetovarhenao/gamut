@@ -10,7 +10,7 @@
 		orientation: 'vertical'
 		spacing: app.theme.spacing
 		ModuleSubheader:
-			text: 'create a new mosaic'
+			text: 'NEW MOSAIC'
 		GridLayout:
 			cols: 2
 			orientation: 'tb-lr'
@@ -18,7 +18,7 @@
 			size_hint_y: None
 			height: self.minimum_height
 			TextLabel:
-				text: f"...{root.target[-42:]}" if len(root.target) > 42 else root.target
+				text: f"...{root.target[-32:]}" if len(root.target) > 32 else root.target
 			LargeButton:
 				text: "CHOOSE TARGET"	
 				on_release: root.load_target()
@@ -45,7 +45,7 @@
 			height: self.minimum_height
 			Label:
 			ModuleSubheader:
-				text: 'my mosaics'
+				text: 'MOSAIC MENU'
 				pos_hint: {'center_x': 0.5}
 			LargeDangerButton:
 				pos_hint: {'right': 1}

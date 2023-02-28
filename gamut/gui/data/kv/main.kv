@@ -1,9 +1,23 @@
 #:kivy 2.1.0
 
+<Logo@BoxLayout>:
+	orientation: 'vertical'
+	size_hint_y: None
+	height: self.minimum_height
+	spacing: app.theme.spacing
+	Image:
+		source: 'data/images/logo.png'
+		keep_ratio: True
+		size_hint_y: None
+		height: '120dp'
+	TextLabel:
+		padding_y: app.theme.pad(3)
+		color: app.theme.colors.txt2
+		text: "granular audio musaciking toolkit"
+		italic: True
+		bold: True
+
 <Main>:
-	header: header
-	body: body
-	footer: footer
 	console: console
 	mosaic_module: mosaic_module
 	corpus_module: corpus_module
@@ -20,59 +34,39 @@
 				size: self.size
 				pos: self.pos
 		BoxLayout:
-			id: header
-			size_hint_y: None
-			height: self.minimum_height
-			padding: [app.theme.pad(2), app.theme.pad(2)]
 			BoxLayout:
 				orientation: 'vertical'
-				TextLabel:
-					text: 'console'
-					bold: True
-					italic: True
-				ScrollView:
-					canvas.before:
-						Color:
-							rgba: app.theme.colors.bg2
-						RoundedRectangle:
-							size: self.size
-							pos: self.pos
-							radius: [15]
-					GridLayout:
-						id: console
-						cols: 1
-						orientation: 'tb-lr'
-						spacing: app.theme.spacing
-						size_hint_y: None
-						height: self.minimum_height
-			BoxLayout:
-				orientation: 'vertical'
-				size_hint_y: None
-				height: self.minimum_height
-				Image:
-					source: 'data/images/logo.png'
-					keep_ratio: True
-					size_hint_y: None
-					height: '120dp'
-				TextLabel:
-					padding_y: app.theme.pad()
-					color: app.theme.colors.txt2
-					text: "granular audio musaciking toolkit"
-					italic: True
-					bold: True
-			BoxLayout:
-		BoxLayout:
-			id: body
-			orientation: 'horizontal'
+				size_hint_x: 0.6
+				Logo:
+				Module:
+					size: root.size
+					pos: root.pos
+					ModuleHeader:
+						text: 'CONSOLE LOG'
+					ModuleContent:
+						ScrollView:
+							canvas.before:
+								Color:
+									rgba: app.theme.colors.bg2
+								RoundedRectangle:
+									size: self.size
+									pos: self.pos
+									radius: [15]
+							GridLayout:
+								id: console
+								cols: 1
+								orientation: 'tb-lr'
+								spacing: app.theme.spacing
+								size_hint_y: None
+								height: self.minimum_height
 			CorpusWidget:
 				id: corpus_module
 			MosaicWidget:
 				id: mosaic_module
 		BoxLayout:
-			id: footer
 			size_hint_y: None
 			height: self.minimum_height
-			padding: [app.theme.font.size('xs'), app.theme.font.size('xs')]
+			padding: [app.theme.pad(), app.theme.pad()]
 			TextLabel:
 				text: "To learn more, visit www.felipe-tovar-henao.com/gamut/"
 				font_size: app.theme.font.size('ms')

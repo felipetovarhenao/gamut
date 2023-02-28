@@ -65,7 +65,7 @@ class AudioWidget(Widget):
     @log_done
     def synth_audio(self) -> None:
         """ Triggers audio mosaic synthesis """
-
+        self.audio_buffer = None
         log_message('Synthesizing mosaic to audio...')
         params = self.get_parsed_params()
         mosaic_name = self.get_selected_mosaic()
@@ -92,7 +92,6 @@ class AudioWidget(Widget):
         """ Stops audio buffer playback """
         if self.audio_buffer:
             self.audio_buffer.stop()
-            log_message(["Audio stopped", '---'])
 
     @log_done
     def save_audio(self) -> None:

@@ -13,6 +13,12 @@ from kivy.uix.popup import Popup
 from kivy.uix.label import Label
 
 
+class ConsoleLog(Factory.TextLabel):
+    def __init__(self, *args, index, **kwargs) -> None:
+        self.index = index
+        super().__init__(*args, **kwargs)
+
+
 class ErrorPopup(Popup):
     def __init__(self, text: str = 'This is an error popup', **kwargs):
         super().__init__(**kwargs)
@@ -22,14 +28,42 @@ class ErrorPopup(Popup):
         self.size = (400, 400)
 
 
-def log_message(text: str | Iterable) -> None:
+APP = None
+
+
+def get_log_style(key):
+    app = get_app()
+    log_styles = {
+        'normal': {
+            'color': app.theme.colors.txt3,
+        },
+        'error': {
+            'color': app.theme.colors.danger,
+            'bold': True
+        },
+        'success': {
+            'color': app.theme.colors.txt_hl
+        },
+    }
+    return log_styles[key]
+
+
+def get_app():
+    global APP
+    if not APP:
+        APP = App.get_running_app()
+    return APP
+
+
+def log_message(text: str | Iterable, log_type: str = 'normal') -> None:
     """ Logs a message in the GUI console window """
-    root = App.get_running_app().root
+    root = get_app().root
     logs = [text] if isinstance(text, str) else text
+    style = get_log_style(log_type)
     for log in logs:
-        l = Factory.ConsoleLog(text=log)
+        l = ConsoleLog(text=log, index=len(root.console.children), **style)
         root.console.add_widget(l)
-    if len(root.console.children) > 6:
+    if len(root.console.children) > 16:
         root.console.parent.scroll_to(l)
 
 
@@ -40,7 +74,8 @@ def capture_exceptions(func):
             return func(*args, **kwargs)
         except Exception as e:
             error_type = type(e).__name__
-            log_message([traceback.format_exc(), f"{error_type}: {str(e)}", '---'])
+            msg = remove_ansi(str(e))
+            log_message([f"{error_type}: {msg}"], 'error')
     return decorator
 
 
@@ -48,7 +83,7 @@ def log_done(func):
     """ Decorator for logging successful callback execution """
     def decorator(*args, **kwargs):
         out = func(*args, **kwargs)
-        log_message("Done!\n---")
+        log_message("Done!", 'success')
         return out
     return decorator
 

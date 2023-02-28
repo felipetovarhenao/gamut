@@ -12,9 +12,11 @@ from .theme import Theme
 from .config import GAMUT_FILES_DIRECTORY, CORPUS_DIR, MOSAIC_DIR
 
 # kivy imports
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.widget import Widget
 from kivy.app import App
+from kivy.clock import Clock
+from .utils import log_message
 import os
 
 
@@ -23,12 +25,13 @@ class Main(Widget):
     Main UI Widget, containing all modules.
     Child widgets are included through the .kv file
     """
-    header = ObjectProperty(None)
-    body = ObjectProperty(None)
-    footer = ObjectProperty(None)
     console = ObjectProperty(None)
     mosaic_module = ObjectProperty(None)
     corpus_module = ObjectProperty(None)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        Clock.schedule_once(lambda _: log_message("GAMuT session intialized"), 1)
 
 
 class GUI(App):

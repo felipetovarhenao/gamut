@@ -11,11 +11,18 @@
 
 <ConsoleLog@TextLabel>:
 	valign: 'middle'
-	color: app.theme.colors.txt_hl
+	color: app.theme.colors.txt1
 	padding_x: app.theme.pad(2)
+	padding_y: app.theme.pad(2)
 	text_size: self.width, None
     size_hint_y: None
     height: self.texture_size[1]
+	canvas.before:
+		Color:
+			rgba: app.theme.colors.bg3 if root.index % 2 == 0 else app.theme.colors.bg4
+		Rectangle:
+			size: self.size
+			pos: self.pos
 
 
 <LeftTextLabel@TextLabel>:
@@ -40,7 +47,6 @@
 	font_size: app.theme.font.size('md')
 	color: app.theme.colors.txt3
 	bold: True
-	italic: True
 	canvas.before:
 		Clear:
 
