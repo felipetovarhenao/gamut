@@ -1,128 +1,128 @@
 #:kivy 2.1.0
 
 <CorpusFactoryWidget>
-	features_menu: features_menu
-	sources_menu: sources_menu
-	delete_sources_button: delete_sources_button
-	create_corpus_button: create_corpus_button 
-	corpus_name: corpus_name
-	BoxLayout:
-		size: root.size
-		pos: root.pos
-		orientation: 'vertical'
-		spacing: app.theme.spacing
-		ModuleSubheader:
-			text: 'NEW CORPUS'
-		BoxLayout:
-			spacing: app.theme.spacing
-			size_hint_y: 0.2
-			TextInput:
-				id: corpus_name
-				multiline: False
-				hint_text: "corpus name"
-			BoxLayout:
-				spacing: app.theme.spacing
-				orientation: 'vertical'
-				TextLabel:
-					text: 'features'
-					italic: True
-				BoxLayout:
-					id: features_menu
-					orientation: 'horizontal'
-					size_hint_y: None
-					height: self.minimum_height
-					ToggleButton:
-						text: 'timbre'
-						state: 'down'
-						on_release: root.update_selected('features')
-					ToggleButton:
-						text: 'pitch'		
-						on_release: root.update_selected('features')
-		BoxLayout:
-			spacing: app.theme.spacing
-			orientation: 'vertical'
-			TextLabel:
-				text: 'sources'
-				italic: True
-			ScrollView:
-				canvas.before:
-					Color:
-						rgba: app.theme.colors.bg2
-					RoundedRectangle:
-						size: self.size
-						pos: self.pos
-						radius: [15]
-				BoxLayout:
-					id: sources_menu
-					spacing: app.theme.spacing
-					orientation: 'vertical'
-					size_hint_y: None
-					height: self.minimum_height
-			BoxLayout:
-				spacing: app.theme.spacing
-				size_hint_y: None
-				height: self.minimum_height
-				LargeButton:
-					text: 'ADD SOURCE FILES'
-					on_release: root.load_file_paths()
-				LargeButton:
-					text: 'ADD SOURCE FOLDER'
-					on_release: root.load_folder_path()
-				LargeDangerButton:
-					id: delete_sources_button
-					on_release: root.delete_selected('sources')
-		LargeSuccessButton:
-			id: create_corpus_button
-			text: 'GENERATE'
-			on_release: root.create_corpus()
+    features_menu: features_menu
+    sources_menu: sources_menu
+    delete_sources_button: delete_sources_button
+    create_corpus_button: create_corpus_button 
+    corpus_name: corpus_name
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: 'vertical'
+        spacing: app.theme.spacing
+        ModuleSubheader:
+            text: 'NEW CORPUS'
+        BoxLayout:
+            spacing: app.theme.spacing
+            size_hint_y: 0.2
+            TextInput:
+                id: corpus_name
+                multiline: False
+                hint_text: "corpus name"
+            BoxLayout:
+                spacing: app.theme.spacing
+                orientation: 'vertical'
+                TextLabel:
+                    text: 'features'
+                    italic: True
+                BoxLayout:
+                    id: features_menu
+                    orientation: 'horizontal'
+                    size_hint_y: None
+                    height: self.minimum_height
+                    ToggleButton:
+                        text: 'timbre'
+                        state: 'down'
+                        on_release: root.update_selected('features')
+                    ToggleButton:
+                        text: 'pitch'		
+                        on_release: root.update_selected('features')
+        BoxLayout:
+            spacing: app.theme.spacing
+            orientation: 'vertical'
+            TextLabel:
+                text: 'sources'
+                italic: True
+            ScrollView:
+                canvas.before:
+                    Color:
+                        rgba: app.theme.colors.bg2
+                    RoundedRectangle:
+                        size: self.size
+                        pos: self.pos
+                        radius: [15]
+                BoxLayout:
+                    id: sources_menu
+                    spacing: app.theme.spacing
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: self.minimum_height
+            BoxLayout:
+                spacing: app.theme.spacing
+                size_hint_y: None
+                height: self.minimum_height
+                LargeButton:
+                    text: 'ADD SOURCE FILES'
+                    on_release: root.load_file_paths()
+                LargeButton:
+                    text: 'ADD SOURCE FOLDER'
+                    on_release: root.load_folder_path()
+                LargeDangerButton:
+                    id: delete_sources_button
+                    on_release: root.delete_selected('sources')
+        LargeSuccessButton:
+            id: create_corpus_button
+            text: 'GENERATE'
+            on_release: root.create_corpus()
 
 <CorpusMenuWidget>:
-	corpora_menu: corpora_menu
-	delete_corpora_button: delete_corpora_button
-	BoxLayout:	
-		size: root.size
-		pos: root.pos
-		orientation: 'vertical'
-		spacing: app.theme.spacing
-		BoxLayout:
-			spacing: app.theme.spacing
-			size_hint_y: None
-			height: self.minimum_height
-			Label:
-			ModuleSubheader:
-				text: 'CORPUS MENU'
-				pos_hint: {'center_x': 0.5}
-			LargeDangerButton:
-				pos_hint: {'right': 1}
-				id: delete_corpora_button
-				on_release: root.delete_selected_corpora()
-		ScrollView:
-			canvas.before:
-				Color:
-					rgba: app.theme.colors.bg2
-				RoundedRectangle:
-					size: self.size
-					pos: self.pos
-					radius: [15]
-			GridLayout:
-				id: corpora_menu
-				cols: 2
-				size_hint_y: None
-				height: self.minimum_height
+    corpora_menu: corpora_menu
+    delete_corpora_button: delete_corpora_button
+    BoxLayout:	
+        size: root.size
+        pos: root.pos
+        orientation: 'vertical'
+        spacing: app.theme.spacing
+        BoxLayout:
+            spacing: app.theme.spacing
+            size_hint_y: None
+            height: self.minimum_height
+            Label:
+            ModuleSubheader:
+                text: 'CORPUS MENU'
+                pos_hint: {'center_x': 0.5}
+            LargeDangerButton:
+                pos_hint: {'right': 1}
+                id: delete_corpora_button
+                on_release: root.delete_selected_corpora()
+        ScrollView:
+            canvas.before:
+                Color:
+                    rgba: app.theme.colors.bg2
+                RoundedRectangle:
+                    size: self.size
+                    pos: self.pos
+                    radius: [15]
+            GridLayout:
+                id: corpora_menu
+                cols: 2
+                size_hint_y: None
+                height: self.minimum_height
 
 <CorpusWidget>:
-	menu: menu
-	factory: factory
-	Module:
-		size: root.size
-		pos: root.pos
-		ModuleHeader:
-			text: "CORPUS"
-		ModuleContent:
-			orientation: 'vertical'
-			spacing: app.theme.spacing
-			CorpusFactoryWidget:
-				id: factory
-			CorpusMenuWidget:
-				id: menu
-			
+    menu: menu
+    factory: factory
+    Module:
+        size: root.size
+        pos: root.pos
+        ModuleHeader:
+            text: "CORPUS"
+        ModuleContent:
+            orientation: 'vertical'
+            spacing: app.theme.spacing
+            CorpusFactoryWidget:
+                id: factory
+            CorpusMenuWidget:
+                id: menu
+            

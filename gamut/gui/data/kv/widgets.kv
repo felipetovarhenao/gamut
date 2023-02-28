@@ -2,122 +2,122 @@
 
 # LABELS
 <TextLabel@Label>:
-	font_name: app.theme.font.name
-	color: app.theme.colors.txt1
-	size_hint_y: None
-	size: self.texture_size
-	font_size: app.theme.font.size()
-	pos_hint: {'center_y': 0.5}
+    font_name: app.theme.font.name
+    color: app.theme.colors.txt1
+    size_hint_y: None
+    size: self.texture_size
+    font_size: app.theme.font.size()
+    pos_hint: {'center_y': 0.5}
 
 <ConsoleLog@TextLabel>:
-	valign: 'middle'
-	color: app.theme.colors.txt1
-	padding_x: app.theme.pad(2)
-	padding_y: app.theme.pad(2)
-	text_size: self.width, None
+    valign: 'middle'
+    color: app.theme.colors.txt1
+    padding_x: app.theme.pad(2)
+    padding_y: app.theme.pad(2)
+    text_size: self.width, None
     size_hint_y: None
     height: self.texture_size[1]
-	canvas.before:
-		Color:
-			rgba: app.theme.colors.bg3 if root.index % 2 == 0 else app.theme.colors.bg4
-		Rectangle:
-			size: self.size
-			pos: self.pos
+    canvas.before:
+        Color:
+            rgba: app.theme.colors.bg3 if root.index % 2 == 0 else app.theme.colors.bg4
+        Rectangle:
+            size: self.size
+            pos: self.pos
 
 
 <LeftTextLabel@TextLabel>:
-	text_size: self.size
-	valign: 'middle'
-	padding_x: app.theme.pad(2)
+    text_size: self.size
+    valign: 'middle'
+    padding_x: app.theme.pad(2)
 
 <ModuleHeader@TextLabel>:
-	font_size: app.theme.font.size('ml')
-	padding_y: app.theme.pad()
-	color: app.theme.colors.txt_neg
-	bold: True
-	canvas.before:
-		Color:
-			rgba: app.theme.colors.bg4
-		RoundedRectangle:
-			size: self.size
-			pos: self.pos
-			radius: [10]
+    font_size: app.theme.font.size('ml')
+    padding_y: app.theme.pad()
+    color: app.theme.colors.txt_neg
+    bold: True
+    canvas.before:
+        Color:
+            rgba: app.theme.colors.bg4
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+            radius: [10]
 
 <ModuleSubheader@ModuleHeader>:
-	font_size: app.theme.font.size('md')
-	color: app.theme.colors.txt3
-	bold: True
-	canvas.before:
-		Clear:
+    font_size: app.theme.font.size('md')
+    color: app.theme.colors.txt3
+    bold: True
+    canvas.before:
+        Clear:
 
 # LAYOUTS
 
 <ModuleContent@BoxLayout>:
 
 <Module@BoxLayout>:
-	orientation: 'vertical'
-	padding: app.theme.pad(4)
-	spacing: 30
-	canvas.before:
-		Color:
-			rgba: app.theme.colors.border
-		Line:
+    orientation: 'vertical'
+    padding: app.theme.pad(4)
+    spacing: 30
+    canvas.before:
+        Color:
+            rgba: app.theme.colors.border
+        Line:
             width: 2
-			rectangle: self.x + (self.spacing/2), self.y + (self.spacing/2), self.width -(self.spacing/2), self.height -(self.spacing/2)
+            rectangle: self.x + (self.spacing/2), self.y + (self.spacing/2), self.width -(self.spacing/2), self.height -(self.spacing/2)
 
 # BUTTONS 
 
 <BaseButton>:
-	font_name: app.theme.font.name
-	font_size: app.theme.font.size('ms')
-	bold: True
-	background_normal: ''
-	background_down: ''
-	background_color: app.theme.colors.primary if self.state == 'normal' else app.theme.colors.secondary
-	background_disabled_normal: ''
-	disabled_color: app.theme.colors.disabled_mask
-	canvas.before:
-		Color:
-			rgba: self.background_color
-		RoundedRectangle:
-			size: self.size
-			pos: self.pos
-			radius: [15]
+    font_name: app.theme.font.name
+    font_size: app.theme.font.size('ms')
+    bold: True
+    background_normal: ''
+    background_down: ''
+    background_color: app.theme.colors.primary if self.state == 'normal' else app.theme.colors.secondary
+    background_disabled_normal: ''
+    disabled_color: app.theme.colors.disabled_mask
+    canvas.before:
+        Color:
+            rgba: self.background_color
+        RoundedRectangle:
+            size: self.size
+            pos: self.pos
+            radius: [15]
 
 
 <LargeButton>:
-	size_hint_y: None
-	height: app.theme.font.size('xxl')
+    size_hint_y: None
+    height: app.theme.font.size('xxl')
 
 <LargeDangerButton>:
-	background_color: app.theme.colors.danger if self.state == 'normal' else app.theme.colors.danger_hl
-	text: 'DELETE SELECTION'
-	disabled: True
+    background_color: app.theme.colors.danger if self.state == 'normal' else app.theme.colors.danger_hl
+    text: 'DELETE SELECTION'
+    disabled: True
 
 <LargeSuccessButton>:
-	background_color: app.theme.colors.success if self.state == 'normal' else app.theme.colors.success_hl
-	disabled: True
+    background_color: app.theme.colors.success if self.state == 'normal' else app.theme.colors.success_hl
+    disabled: True
 
 <ToggleButton>:
-	font_name: app.theme.font.name
-	font_size: app.theme.font.size()
-	color: app.theme.colors.txt1 if self.state == 'normal' else app.theme.colors.txt_neg
-	size_hint_y: None
-	height: app.theme.font.size('xxl')
-	background_normal: ''
-	background_down: ''
-	background_color: app.theme.colors.bg3 if self.state == 'normal' else app.theme.colors.secondary
-	canvas.before:
-		Color:
-			rgba: app.theme.colors.border
-		Line:
-			width: 2
-			rectangle: self.x, self.y, self.width, self.height
+    font_name: app.theme.font.name
+    font_size: app.theme.font.size()
+    color: app.theme.colors.txt1 if self.state == 'normal' else app.theme.colors.txt_neg
+    size_hint_y: None
+    height: app.theme.font.size('xxl')
+    background_normal: ''
+    background_down: ''
+    background_color: app.theme.colors.bg3 if self.state == 'normal' else app.theme.colors.secondary
+    canvas.before:
+        Color:
+            rgba: app.theme.colors.border
+        Line:
+            width: 2
+            rectangle: self.x, self.y, self.width, self.height
 
 <TextInput>:
-	font_name: app.theme.font.name
-	font_size: app.theme.font.size()
-	size_hint_y: None
-	height: app.theme.font.size('xxl')
-	background_color: app.theme.colors.bg3
-	foreground_color: app.theme.colors.txt_hl
+    font_name: app.theme.font.name
+    font_size: app.theme.font.size()
+    size_hint_y: None
+    height: app.theme.font.size('xxl')
+    background_color: app.theme.colors.bg3
+    foreground_color: app.theme.colors.txt_hl
