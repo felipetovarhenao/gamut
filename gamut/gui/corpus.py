@@ -3,7 +3,7 @@ from tkinter.filedialog import askdirectory, askopenfilenames
 from kivy.uix.widget import Widget
 from kivy.uix.togglebutton import ToggleButton
 from kivy.properties import ObjectProperty
-from .config import CORPUS_DIR
+from .config import CORPUS_DIR, LAST_VISITED_DIR
 from kivy.clock import Clock
 import os
 from .utils import log_message, capture_exceptions, log_done
@@ -52,15 +52,20 @@ class CorpusFactoryWidget(Widget):
         return [toggle.text.lower() for toggle in App.get_running_app().root.corpus_module.menu.corpora_menu.children]
 
     def load_folder_path(self):
-        path = askdirectory(title='Choose corpus source folder')
-        if path in self.sources:
+        global LAST_VISITED_DIR
+        path = askdirectory(title='Choose corpus source folder', initialdir=LAST_VISITED_DIR)
+        if not path or path in self.sources:
             return
+        LAST_VISITED_DIR = os.path.dirname(path)
         self.sources.append(path)
         self.sources_menu.add_widget(self.make_toggle(text=path, name='sources'))
         self.update_create_corpus_button()
 
     def load_file_paths(self):
-        files = askopenfilenames(filetypes=[("Audio files", " ".join(AUDIO_FORMATS))])
+        global LAST_VISITED_DIR
+        files = askopenfilenames(filetypes=[("Audio files", " ".join(AUDIO_FORMATS))], initialdir=LAST_VISITED_DIR)
+        if files:
+            LAST_VISITED_DIR = os.path.dirname(files[0])
         for file in files:
             if file in self.sources:
                 continue
@@ -119,7 +124,8 @@ class CorpusMenuWidget(Widget):
         self.clear_menu()
         for path in os.listdir(CORPUS_DIR):
             corpus_name = os.path.basename(os.path.splitext(path)[0])
-            t = ToggleButton(text=corpus_name, on_release=lambda _: self.update_delete_button() or self.update_create_mosaic_button())
+            t = ToggleButton(text=corpus_name, on_release=lambda _: self.update_delete_button()
+                             or self.update_create_mosaic_button())
             self.corpora_menu.add_widget(t)
         self.update_delete_button()
 

@@ -1,15 +1,19 @@
 from __future__ import annotations
+
+from kivy.clock import Clock
+from kivy.app import App
 from kivy.uix.widget import Widget
 from kivy.uix.togglebutton import ToggleButton
 from kivy.properties import ObjectProperty, StringProperty
-from .config import CORPUS_DIR, MOSAIC_DIR, CORPUS_CACHE, MOSAIC_CACHE
-from ..config import AUDIO_FORMATS
-from kivy.clock import Clock
-from ..features import Corpus, Mosaic
-import os
+
+from .config import CORPUS_DIR, MOSAIC_DIR, CORPUS_CACHE, MOSAIC_CACHE, LAST_VISITED_DIR
 from .utils import capture_exceptions, log_done, log_message
-from kivy.app import App
+
+from ..features import Corpus, Mosaic
+from ..config import AUDIO_FORMATS
+
 from tkinter.filedialog import askopenfilename
+import os
 
 
 class MosaicFactoryWidget(Widget):
@@ -38,7 +42,10 @@ class MosaicFactoryWidget(Widget):
         App.get_running_app().root.mosaic_module.menu.update_mosaic_menu()
 
     def load_target(self):
-        self.target = askopenfilename(filetypes=[('Audio files', " ".join(AUDIO_FORMATS))])
+        global LAST_VISITED_DIR
+        self.target = askopenfilename(filetypes=[('Audio files', " ".join(AUDIO_FORMATS))], initialdir=LAST_VISITED_DIR)
+        if self.target:
+            LAST_VISITED_DIR = os.path.dirname(self.target)
         self.update_create_mosaic_button()
 
     @capture_exceptions

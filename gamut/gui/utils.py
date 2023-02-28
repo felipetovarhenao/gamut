@@ -3,7 +3,6 @@ from collections.abc import Iterable
 
 # misc
 from ast import literal_eval
-import traceback
 import re
 
 # kivy
