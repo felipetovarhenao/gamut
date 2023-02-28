@@ -1,6 +1,11 @@
 from .utils import catch_keyboard_interrupt
 
 
+def gui():
+    from .gui import GUI
+    GUI().run()
+
+
 @catch_keyboard_interrupt()
 def cli():
     from argparse import ArgumentParser
@@ -172,6 +177,9 @@ def cli():
     parser.add_argument('--test',
                         action='store_true',
                         help='runs GAMuT package test.')
+    parser.add_argument('--gui',
+                        action='store_true',
+                        help='open GAMuT graphical user interface.')
     parser.add_argument('--no-check',
                         action='store_true',
                         help='Disable directory checking when reading a script')
@@ -245,6 +253,13 @@ def cli():
     # ------------------------------------- #
     if args.version:
         print_success(f'GAMuT v{pkg_resources.get_distribution("gamut").version}')
+
+    # ------------------------------------- #
+    # OPEN GRAPHICAL USER INTERFACE
+    # ------------------------------------- #
+    elif args.gui:
+        import subprocess
+        subprocess.run(['gamut-ui'])
 
     # ------------------------------------- #
     # RUN PACKAGE TEST

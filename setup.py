@@ -18,7 +18,7 @@ setup(
     license='OSI Approved :: ISC License (ISCL)',
     include_package_data=True,
     entry_points={
-        'console_scripts': ['gamut=gamut:cli']
+        'console_scripts': ['gamut=gamut:cli', 'gamut-ui=gamut:gui']
     },
     install_requires=[
         'librosa',
@@ -30,7 +30,9 @@ setup(
         'SoundFile',
         'sounddevice',
         'typing_extensions',
-        'filetype'
+        'filetype',
+        'Kivy',
+        'Kivy-Garden'
     ],
     keywords=['DSP', 'audio musaicking', 'granulation', 'machine learning',
               'ML', "MIR", 'music', 'sound design', 'concatenative synthesis'],
