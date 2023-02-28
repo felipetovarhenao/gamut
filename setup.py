@@ -1,11 +1,25 @@
 from setuptools import setup, find_packages
+from setuptools.command.install import install
 from pathlib import Path
 
 long_description = (Path(__file__).parent / "README.md").read_text()
 
 MODULE = 'gamut'
-VERSION = '1.0.9'
+VERSION = '1.0.10-dev0'
 DESCRIPTION = 'Granular Audio Musaicing Toolkit for Python'
+
+
+class GamutInstall(install):
+    """
+    Ensures correct kivy installation with pip
+    """
+
+    def run(self):
+        from sys import executable
+        from subprocess import run
+        super().run()
+        run([executable, '-m', 'pip', 'install', "kivy[base]"])
+
 
 setup(
     name=MODULE,
@@ -20,6 +34,7 @@ setup(
     entry_points={
         'console_scripts': ['gamut=gamut:cli', 'gamut-ui=gamut:gui']
     },
+    cmdclass={'install': GamutInstall},
     install_requires=[
         'librosa',
         'matplotlib',
@@ -30,9 +45,7 @@ setup(
         'SoundFile',
         'sounddevice',
         'typing_extensions',
-        'filetype',
-        'Kivy',
-        'Kivy-Garden'
+        'filetype'
     ],
     keywords=['DSP', 'audio musaicking', 'granulation', 'machine learning',
               'ML', "MIR", 'music', 'sound design', 'concatenative synthesis'],

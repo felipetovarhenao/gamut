@@ -11,5 +11,3 @@ filetype==1.2.0
 Sphinx==6.1.3
 sphinx-copybutton==0.5.1
 sphinx-rtd-theme==0.5.1
-Kivy==2.1.0
-Kivy-Garden==0.1.5
