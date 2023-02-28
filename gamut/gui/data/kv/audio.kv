@@ -1,0 +1,94 @@
+#:kivy 2.1.0
+
+<AudioWidget>:
+	params: params
+	synth_button: synth_button
+	save_button: save_button 
+	play_button: play_button
+	stop_button: stop_button
+	Module:
+		size: root.size
+		pos: root.pos
+		ModuleHeader:
+			text: "AUDIO"
+		ModuleContent:
+			orientation: 'vertical'
+			spacing: app.theme.spacing
+			GridLayout:
+				id: params
+				cols: 2
+				spacing: app.theme.spacing
+				Param:
+					label: 'fidelity (0-1)'
+					key: 'fidelity'
+					placeholder: 'e.g. 1'
+					input_filter: self.list_filter
+					value: '1.0'
+				Param:
+					label: 'grain duration (seconds)'
+					key: 'grain_dur'
+					input_filter: self.list_filter
+					value: '0.1'
+				Param:
+					label: 'grain envelope'
+					key: 'grain_env'
+					input_filter: self.window_filter
+					value: 'cosine'
+				Param:
+					label: 'corpus weights'
+					key: 'corpus_weights'
+					input_filter: self.list_filter
+					value: '1.0'
+				Param:
+					label: 'stretch factor'
+					key: 'stretch_factor'
+					input_filter: self.list_filter
+					value: '1.0'
+				Param:
+					label: 'pan depth (0-∞)'
+					key: 'pan_depth'
+					input_filter: self.list_filter
+					value: '3'
+				Param:
+					label: 'onset variation (seconds)'
+					key: 'onset_var'
+					placeholder: 'e.g. 0.2'
+					input_filter: self.list_filter
+					value: '0.0'
+				Param:
+					label: 'number of channels'
+					key: 'n_chans'
+					placeholder: 'e.g. 2'
+					input_filter: 'int'
+					value: '2'
+				Param:
+					label: 'sampling rate'
+					key: 'sr'
+					placeholder: 'e.g. 44100'
+					input_filter: 'int'
+					value: str(48000)
+
+			BoxLayout:
+				spacing: app.theme.spacing
+				size_hint_y: None
+				height: self.minimum_height
+				LargeSuccessButton:
+					id: synth_button
+					text: 'SYNTHESIZE'
+					disabled: True
+					on_release: root.synth_audio()
+				LargeButton:
+					id: play_button
+					text: 'PLAY'
+					disabled: True
+					on_release: root.play_audio()
+				LargeButton:
+					id: stop_button
+					text: 'STOP'
+					disabled: True
+					on_release: root.stop_audio()
+				LargeButton:
+					id: save_button
+					text: 'SAVE'
+					disabled: True
+					on_release: root.save_audio()

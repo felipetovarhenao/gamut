@@ -16,6 +16,7 @@ setup(
     url='https://felipetovarhenao.github.io/gamut',
     packages=find_packages(),
     license='OSI Approved :: ISC License (ISCL)',
+    include_package_data=True,
     entry_points={
         'console_scripts': ['gamut=gamut:cli']
     },

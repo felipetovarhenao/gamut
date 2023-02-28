@@ -35,15 +35,19 @@ class AudioBuffer:
         self.bit_depth = bit_depth
 
     @catch_keyboard_interrupt(lambda: CONSOLE.log_process("\N{speaker with cancellation stroke} Audio stopped").print())
-    def play(self) -> None:
+    def play(self, blocking: bool = True) -> None:
         """ Plays back inner audio buffer """
         CONSOLE.log_process('\N{speaker}Playing audio...').print()
         try:
-            sd.play(self.y, samplerate=self.sr, blocking=True)
+            sd.play(self.y, samplerate=self.sr, blocking=blocking)
         except sd.PortAudioError:
             CONSOLE.error(
                 sd.PortAudioError,
                 f'Unable to play audio stream. It\'s possible the number of output channels in the audio source ({self.chans}) is greater than what your device supports.')
+
+    def stop(self) -> None:
+        """ Stops audio buffer when using ``blocking=True`` in play method """
+        sd.stop()
 
     def set_sampling_rate(self, sr: int) -> None:
         """ Sampling rate setter method """

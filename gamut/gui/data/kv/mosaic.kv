@@ -1,0 +1,90 @@
+#:kivy 2.1.0
+
+<MosaicFactoryWidget>:
+	create_mosaic_button: create_mosaic_button
+	mosaic_name: mosaic_name
+	target: ''
+	BoxLayout:
+		size: root.size
+		pos: root.pos
+		orientation: 'vertical'
+		spacing: app.theme.spacing
+		ModuleSubheader:
+			text: 'create a new mosaic'
+		GridLayout:
+			cols: 2
+			orientation: 'tb-lr'
+			spacing: app.theme.spacing
+			size_hint_y: None
+			height: self.minimum_height
+			TextLabel:
+				text: f"...{root.target[-42:]}" if len(root.target) > 42 else root.target
+			LargeButton:
+				text: "CHOOSE TARGET"	
+				on_release: root.load_target()
+			TextInput:
+				id: mosaic_name
+				multiline: False
+				hint_text: "mosaic name"	
+			LargeSuccessButton:
+				id: create_mosaic_button
+				text: 'GENERATE'
+				on_release: root.create_mosaic()
+
+<MosaicMenuWidget>:
+	delete_mosaic_button: delete_mosaic_button 
+	mosaic_menu: mosaic_menu
+	BoxLayout:	
+		size: root.size
+		pos: root.pos
+		orientation: 'vertical'
+		spacing: app.theme.spacing
+		BoxLayout:
+			spacing: app.theme.spacing
+			size_hint_y: None
+			height: self.minimum_height
+			Label:
+			ModuleSubheader:
+				text: 'my mosaics'
+				pos_hint: {'center_x': 0.5}
+			LargeDangerButton:
+				pos_hint: {'right': 1}
+				id: delete_mosaic_button
+				on_release: root.delete_selected_mosaics()
+		ScrollView:
+			canvas.before:
+				Color:
+					rgba: app.theme.colors.bg2
+				RoundedRectangle:
+					size: self.size
+					pos: self.pos
+					radius: [15]
+			GridLayout:
+				id: mosaic_menu
+				cols: 2
+				size_hint_y: None
+				height: self.minimum_height
+
+<MosaicWidget>:
+	factory: factory
+	menu: menu	
+	audio_module: audio_module
+	BoxLayout:
+		size: root.size	
+		pos: root.pos
+		orientation: 'vertical'
+		Module:
+			size: root.size
+			pos: root.pos
+			ModuleHeader:
+				text: "MOSAIC"
+			ModuleContent:
+				orientation: 'vertical'
+				spacing: app.theme.spacing
+				MosaicFactoryWidget:
+					id: factory
+					size_hint_y: 0.35
+				MosaicMenuWidget:
+					id: menu
+		AudioWidget:
+			id: audio_module

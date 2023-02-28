@@ -1,0 +1,22 @@
+#:kivy 2.1.0
+
+<Param>
+	label: ""
+	value: ""
+	key: ""
+	placeholder: ""
+	input_filter: None
+	text_input: text_input
+	BoxLayout:
+		size: root.size
+		pos: root.pos
+		spacing: app.theme.spacing
+		orientation: 'vertical'
+		LeftTextLabel:
+			text: root.label
+			italic: True
+		TextInput:
+			id: text_input
+			input_filter: root.input_filter
+			text: root.value
+			text_hint: root.placeholder
