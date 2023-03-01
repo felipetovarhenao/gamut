@@ -297,16 +297,15 @@ def cli():
     # RUN PACKAGE TEST
     # ------------------------------------- #
     elif args.test:
-        TEST_DIR = '.gamut-test'
+        TEST_DIR = realpath('.gamut-test')
+        if exists(TEST_DIR):
+            rmtree(TEST_DIR)
         mkdir(TEST_DIR)
-        TEST_DIR = realpath(TEST_DIR)
-        try:
-            safe_chdir(TEST_DIR)
-            run(['gamut', '--init', '--no-verbose'])
-            run(['gamut', '--script', join(basename(SCRIPTS_DIR), f"{TEST_NAME}.json"), '--no-cache', '--no-verbose'])
-            print_success('GAMuT test successful!')
-        except Exception as e:
-            print(e)
+        safe_chdir(TEST_DIR)
+        print_success("Running test...")
+        run(['gamut', '--init', '--no-verbose'])
+        run(['gamut', '--script', join(basename(SCRIPTS_DIR), f"{TEST_NAME}.json"), '--no-cache', '--no-verbose'])
+        print_success("Done")
         rmtree(TEST_DIR)
 
     # ------------------------------------- #
