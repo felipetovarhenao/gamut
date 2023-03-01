@@ -44,6 +44,8 @@
                     ModuleHeader:
                         text: 'CONSOLE LOG'
                     ModuleContent:
+                        orientation: 'vertical'
+                        spacing: app.theme.spacing
                         ScrollView:
                             canvas.before:
                                 Color:
@@ -59,6 +61,9 @@
                                 spacing: app.theme.spacing
                                 size_hint_y: None
                                 height: self.minimum_height
+                        LargeButton:
+                            text: "CLEAR"
+                            on_release: console.clear_widgets()
             CorpusWidget:
                 id: corpus_module
             MosaicWidget:
