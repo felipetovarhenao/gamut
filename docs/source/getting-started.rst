@@ -1,20 +1,27 @@
 Getting started
 ===============
 
+.. hint::
+   Before starting, make sure you have installed the **GAMuT** package. If not, please read the :doc:`installation guide<./installation>`.
+
+There are **three different ways** in which you can learn how to use **GAMuT**, depending on your background, experience, and/or eagerness to start using it:
+   
+   * **Graphical user interface**: recommended if you have little to no programming experience. Although it's still in its beta stage, it's a very convenient and user-friendly way to get started. You can learn more about it :doc:`here<./gui/overview>`.
+   * **Command line utility**: recommended if you have programming experience but are not familiar with Python. You can learn more about it :doc:`here <./cli>`.
+   * **Python package**: recommended if you want to take full advantage of **GAMuT**. Below you will find some tutorials to get started.
+
+
+Tutorials
+-------------------
+
 The following tutorial series will incrementally show you how to use **GAMuT** and what you can do with it.
 
 Although it assumes a basic understanding of Python and computer programming concepts, it hopes to be an
 approachable and user-friendly guide to `audio musaicking`, for musicians, sound designers, programmers, and audio
 enthusiasts with varying degrees of experience.
 
-However, **if you're brand new to Python** and would like to try **GAMuT** without writing any Python code, you may want to start :doc:`here <./cli>`.
-
-.. hint::
-   Before starting, make sure you have installed the **GAMuT** package. If not, make sure to read the :doc:`./installation` guide.
-
 .. toctree::
    :maxdepth: 2
-   :caption: Tutorials:
 
    tutorials/basic-pipeline
    tutorials/basic-corpus

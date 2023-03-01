@@ -392,6 +392,7 @@ Here are **4 examples** of `audio musaicking` made with **GAMuT**, each using di
    installation
    getting-started
    cli
+   gui/overview
    modules
    
 To visualize contents in alphabetical order, see :ref:`genindex`.

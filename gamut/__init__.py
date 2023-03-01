@@ -1,8 +1,44 @@
 from .utils import catch_keyboard_interrupt
 
 
+def print_success(text):
+    print(f"\N{check mark} \033[32;1m{text}\033[0m")
+
+
+def print_warning(text):
+    print(f"\N{warning sign} \033[33;1m{text}\033[0m")
+
+
+def print_error(error):
+    print(f"\N{skull} \033[31;1m{error}\033[0m")
+    exit()
+
+
+def is_kivy_installed():
+    """ Check if kivy is installed """
+    import pkg_resources
+    return 'kivy' in list(map(lambda x: x.key, pkg_resources.working_set))
+
+
 def gui():
-    print(f"\033[32;1mLaunching user interface...\033[0m")
+    # Check if kivy has been installed
+    if not is_kivy_installed():
+        import subprocess
+        import threading
+        from sys import executable
+
+        # try installing on separate thread and wait until done
+        print_warning("Attempting to install missing dependencies...")
+        t = threading.Thread(target=lambda: subprocess.run([executable, '-m', 'pip', 'install', 'kivy[base]']))
+        t.start()
+        t.join()
+
+        # run with --retry flag to prevent infinite recursion (see conditional in cli())
+        print_success("Running again...")
+        subprocess.run(['gamut', '--gui', '--retry'])
+        exit()
+
+    print_success('Launching user interface...')
     from .gui import GUI
     GUI().run()
 
@@ -22,16 +58,6 @@ def cli():
     # ------------------------------------- #
     # HELPER FUNCTIONS
     # ------------------------------------- #
-
-    def print_success(text):
-        print(f"\N{check mark} \033[32;1m{text}\033[0m")
-
-    def print_warning(text):
-        print(f"\N{warning sign} \033[33;1m{text}\033[0m")
-
-    def print_error(error):
-        print(f"\N{skull} \033[31;1m{error}\033[0m")
-        exit()
 
     def parse_params(raw_params):
         params = {}
@@ -181,6 +207,9 @@ def cli():
     parser.add_argument('--gui',
                         action='store_true',
                         help='open GAMuT graphical user interface.')
+    parser.add_argument('--retry',
+                        action='store_true',
+                        help='Flag to signal attempt to re-run UI after kivy installation attempt.')
     parser.add_argument('--no-check',
                         action='store_true',
                         help='Disable directory checking when reading a script')
@@ -259,6 +288,8 @@ def cli():
     # OPEN GRAPHICAL USER INTERFACE
     # ------------------------------------- #
     elif args.gui:
+        if not is_kivy_installed() and args.retry:
+            print('Unable to install kivy library. Please visit https://kivy.org/doc/stable/gettingstarted/installation.html#install-pip to install it manually and try again afterwards.')
         import subprocess
         subprocess.run(['gamut-ui'])
 

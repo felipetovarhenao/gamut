@@ -1,4 +1,5 @@
 from __future__ import annotations
+from kivy.metrics import dp
 
 
 def rgba(hex: str) -> tuple:
@@ -45,18 +46,18 @@ class Font:
                  xl: int | float = 20,
                  xxl: int | float = 22) -> None:
         self.name = font_name
-        self._xs = xs
-        self._sm = sm
-        self._ms = ms
-        self._md = md
-        self._ml = ml
-        self._lg = lg
-        self._xl = xl
-        self._xxl = xxl
+        self._xs = dp(xs)
+        self._sm = dp(sm)
+        self._ms = dp(ms)
+        self._md = dp(md)
+        self._ml = dp(ml)
+        self._lg = dp(lg)
+        self._xl = dp(xl)
+        self._xxl = dp(xxl)
 
     def size(self, size: str | None = None):
         """ Font size getter """
-        return str(getattr(self, f"_{size or 'md'}")) + 'dp'
+        return getattr(self, f"_{size or 'md'}")
 
 
 class Theme:
@@ -65,7 +66,7 @@ class Theme:
     def __init__(self) -> None:
         self.colors = ColorPalette()
         self.font = Font()
-        self.spacing = 10
+        self.spacing = dp(10)
 
     def pad(self, n: int = 1):
-        return f'{3*n}dp'
+        return dp(3*n)
