@@ -84,18 +84,8 @@
         pos: root.pos
         orientation: 'vertical'
         spacing: app.theme.spacing
-        BoxLayout:
-            spacing: app.theme.spacing
-            size_hint_y: None
-            height: self.minimum_height
-            Label:
-            ModuleSubheader:
-                text: 'CORPUS MENU'
-                pos_hint: {'center_x': 0.5}
-            LargeDangerButton:
-                pos_hint: {'right': 1}
-                id: delete_corpora_button
-                on_release: root.delete_selected_corpora()
+        ModuleSubheader:
+            text: 'CORPUS MENU'
         ScrollView:
             canvas.before:
                 Color:
@@ -109,6 +99,15 @@
                 cols: 2
                 size_hint_y: None
                 height: self.minimum_height
+        BoxLayout:
+            spacing: app.theme.spacing
+            size_hint_y: None
+            height: self.minimum_height
+            Label:
+            Label:
+            LargeDangerButton:
+                id: delete_corpora_button
+                on_release: root.delete_selected_corpora()
 
 <CorpusWidget>:
     menu: menu

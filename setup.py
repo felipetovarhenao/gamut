@@ -1,3 +1,5 @@
+from sys import executable
+import subprocess
 from setuptools import setup, find_packages
 from setuptools.command.install import install
 from pathlib import Path
@@ -15,10 +17,8 @@ class GamutInstall(install):
     """
 
     def run(self):
-        from sys import executable
-        from subprocess import run
+        subprocess.run([executable, '-m', 'pip', 'install', '"kivy[base]"'])
         super().run()
-        run([executable, '-m', 'pip', 'install', "kivy[base]"])
 
 
 setup(

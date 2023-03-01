@@ -2,6 +2,7 @@ from .utils import catch_keyboard_interrupt
 
 
 def gui():
+    print(f"\033[32;1mLaunching user interface...\033[0m")
     from .gui import GUI
     GUI().run()
 

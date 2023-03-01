@@ -7,7 +7,7 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.properties import ObjectProperty, StringProperty
 
 from .config import CORPUS_DIR, MOSAIC_DIR, CORPUS_CACHE, MOSAIC_CACHE, LAST_VISITED_DIR
-from .utils import capture_exceptions, log_done, log_message
+from .utils import capture_exceptions, log_done, log_message, UserConfirmation
 
 from ..features import Corpus, Mosaic
 from ..config import AUDIO_FORMATS
@@ -83,10 +83,13 @@ class MosaicMenuWidget(Widget):
         Clock.schedule_once(lambda _: self.update_mosaic_menu(), 1)
 
     def update_mosaic_menu(self):
+        last_selected = [toggle.text for toggle in self.get_selected_toggles()]
         self.clear_menu()
-        for path in os.listdir(MOSAIC_DIR):
+        for path in sorted(os.listdir(MOSAIC_DIR)):
             mosaic_name = os.path.basename(os.path.splitext(path)[0])
+            state = 'down' if mosaic_name in last_selected else 'normal'
             t = ToggleButton(text=mosaic_name,
+                             state=state,
                              on_release=lambda toggle: self.exclusive_select(toggle) or self.update_delete_button())
             self.mosaic_menu.add_widget(t)
         self.update_delete_button()
@@ -107,12 +110,15 @@ class MosaicMenuWidget(Widget):
         self.update_audio_synth_button()
 
     def delete_selected_mosaics(self):
-        for toggle in self.get_selected_toggles():
-            self.mosaic_menu.remove_widget(toggle)
-            os.remove(os.path.join(MOSAIC_DIR, f"{toggle.text}.gamut"))
-        self.selected_mosaic = None
-        self.update_delete_button()
-        self.update_audio_synth_button()
+        def on_confirm():
+            for toggle in self.get_selected_toggles():
+                self.mosaic_menu.remove_widget(toggle)
+                os.remove(os.path.join(MOSAIC_DIR, f"{toggle.text}.gamut"))
+            self.selected_mosaic = None
+            self.update_delete_button()
+            self.update_audio_synth_button()
+            log_message(f"Mosaic deleted", log_type='error')
+        UserConfirmation(on_confirm=on_confirm, long_text=f"You're about to delete this mosaic.").open()
 
     def update_audio_synth_button(self):
         App.get_running_app().root.mosaic_module.audio_module.synth_button.set_disabled(not bool(self.selected_mosaic))

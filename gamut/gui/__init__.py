@@ -10,13 +10,13 @@ from .mosaic import *
 # misc
 from .theme import Theme
 from .config import GAMUT_FILES_DIRECTORY, CORPUS_DIR, MOSAIC_DIR
+from .utils import log_message
 
 # kivy imports
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.widget import Widget
 from kivy.app import App
 from kivy.clock import Clock
-from .utils import log_message
 import os
 
 

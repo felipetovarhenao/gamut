@@ -65,6 +65,38 @@
             width: 2
             rectangle: self.x + (self.spacing/2), self.y + (self.spacing/2), self.width -(self.spacing/2), self.height -(self.spacing/2)
 
+<UserConfirmation>:
+    auto_dismiss: False
+    size_hint: None, None
+    size: 600, 425
+    title: ''
+    BoxLayout:
+        orientation: 'vertical'
+        spacing: app.theme.spacing
+        BoxLayout:
+            orientation: 'vertical'
+            spacing: app.theme.spacing
+            Label:
+            TextLabel:
+                font_size: app.theme.font.size('ml')
+                bold: True
+                text: 'WAIT!'
+            Label:
+            TextLabel:
+                text: root.long_text
+        BoxLayout:
+            spacing: app.theme.spacing
+            LargeButton:
+                text: 'CANCEL'
+                on_release: root.dismiss()
+            LargeDangerButton:
+                text: 'DELETE'
+                disabled: False
+                on_release: root.on_confirm() or root.dismiss()
+
+
+
+
 # BUTTONS 
 
 <BaseButton>:

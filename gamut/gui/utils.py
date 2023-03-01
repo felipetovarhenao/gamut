@@ -18,13 +18,11 @@ class ConsoleLog(Factory.TextLabel):
         super().__init__(*args, **kwargs)
 
 
-class ErrorPopup(Popup):
-    def __init__(self, text: str = 'This is an error popup', **kwargs):
+class UserConfirmation(Popup):
+    def __init__(self, on_confirm, long_text: str | None, **kwargs):
+        self.on_confirm = on_confirm
+        self.long_text = '{}\nDo you want to proceed?'.format(long_text or "You\'re about to delete these item(s).")
         super().__init__(**kwargs)
-        self.title = 'ERROR'
-        self.text = Label(text=text)
-        self.size_hint = (None, None)
-        self.size = (400, 400)
 
 
 APP = None

@@ -66,9 +66,9 @@ class AudioWidget(Widget):
     def synth_audio(self) -> None:
         """ Triggers audio mosaic synthesis """
         self.stop_audio()
-        log_message('Synthesizing mosaic to audio...')
-        params = self.get_parsed_params()
         mosaic_name = self.get_selected_mosaic()
+        log_message(f'Synthesizing mosaic: {mosaic_name}...')
+        params = self.get_parsed_params()
         if mosaic_name in MOSAIC_CACHE:
             mosaic = MOSAIC_CACHE[mosaic_name]
         else:

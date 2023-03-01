@@ -1,16 +1,20 @@
 from __future__ import annotations
+
 from tkinter.filedialog import askdirectory, askopenfilenames
+
 from kivy.uix.widget import Widget
 from kivy.uix.togglebutton import ToggleButton
 from kivy.properties import ObjectProperty
-from .config import CORPUS_DIR, LAST_VISITED_DIR
 from kivy.clock import Clock
-import os
-from .utils import log_message, capture_exceptions, log_done
-from ..features import Corpus
-from .config import CORPUS_CACHE
-from ..config import AUDIO_FORMATS
 from kivy.app import App
+
+from .config import CORPUS_DIR, LAST_VISITED_DIR, CORPUS_CACHE
+from .utils import log_message, capture_exceptions, log_done, UserConfirmation
+
+from ..features import Corpus
+from ..config import AUDIO_FORMATS
+
+import os
 
 
 def on_toggle_click(self, toggle, name):
@@ -99,8 +103,8 @@ class CorpusFactoryWidget(Widget):
     @capture_exceptions
     @log_done
     def create_corpus(self):
-        corpus_name = self.corpus_name.text
-        log_message(f'Creating corpus: {self.corpus_name.text}...')
+        corpus_name = self.corpus_name.text.strip()
+        log_message(f'Creating corpus: {corpus_name}...')
         global CORPUS_CACHE
         corpus = Corpus(source=self.sources, features=self.selected_features)
         corpus.write(os.path.join(CORPUS_DIR, f'{corpus_name}.gamut'))
@@ -121,11 +125,14 @@ class CorpusMenuWidget(Widget):
         Clock.schedule_once(lambda _: self.update_corpus_menu(), 1)
 
     def update_corpus_menu(self):
+        last_selected = [toggle.text for toggle in self.get_selected_toggles()]
         self.clear_menu()
-        for path in os.listdir(CORPUS_DIR):
+        for path in sorted(os.listdir(CORPUS_DIR)):
             corpus_name = os.path.basename(os.path.splitext(path)[0])
-            t = ToggleButton(text=corpus_name, on_release=lambda _: self.update_delete_button()
-                             or self.update_create_mosaic_button())
+            state = 'down' if corpus_name in last_selected else 'normal'
+            t = ToggleButton(text=corpus_name,
+                             state=state,
+                             on_release=lambda _: self.update_delete_button() or self.update_create_mosaic_button())
             self.corpora_menu.add_widget(t)
         self.update_delete_button()
 
@@ -139,10 +146,18 @@ class CorpusMenuWidget(Widget):
         self.delete_corpora_button.set_disabled(not bool(self.get_selected_toggles()))
 
     def delete_selected_corpora(self):
-        for toggle in self.get_selected_toggles():
-            self.corpora_menu.remove_widget(toggle)
-            os.remove(os.path.join(CORPUS_DIR, f"{toggle.text}.gamut"))
-        self.update_delete_button()
+        selected = self.get_selected_toggles()
+        num_selected = len(selected)
+        item_name = 'corpus' if num_selected == 1 else 'corpora'
+        items = f'this {item_name}' if num_selected == 1 else f'these {num_selected} {item_name}'
+
+        def on_confirm():
+            for toggle in selected:
+                self.corpora_menu.remove_widget(toggle)
+                os.remove(os.path.join(CORPUS_DIR, f"{toggle.text}.gamut"))
+            self.update_delete_button()
+            log_message(f"{num_selected} {item_name} deleted", log_type='error')
+        UserConfirmation(on_confirm=on_confirm, long_text=f"You're about to delete {items}").open()
 
     def clear_menu(self):
         while self.corpora_menu.children:
