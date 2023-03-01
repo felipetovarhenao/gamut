@@ -67,6 +67,7 @@ class Theme:
         self.colors = ColorPalette()
         self.font = Font()
         self.spacing = dp(10)
+        self.line_width = dp(1)
 
     def pad(self, n: int = 1):
         return dp(3*n)

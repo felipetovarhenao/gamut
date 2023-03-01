@@ -41,7 +41,7 @@
         RoundedRectangle:
             size: self.size
             pos: self.pos
-            radius: [10]
+            radius: [dp(10)]
 
 <ModuleSubheader@ModuleHeader>:
     font_size: app.theme.font.size('md')
@@ -57,18 +57,18 @@
 <Module@BoxLayout>:
     orientation: 'vertical'
     padding: app.theme.pad(4)
-    spacing: 30
+    spacing: app.theme.spacing
     canvas.before:
         Color:
             rgba: app.theme.colors.border
         Line:
-            width: 2
+            width: app.theme.line_width
             rectangle: self.x + (self.spacing/2), self.y + (self.spacing/2), self.width -(self.spacing/2), self.height -(self.spacing/2)
 
 <UserConfirmation>:
     auto_dismiss: False
     size_hint: None, None
-    size: 600, 425
+    size: dp(350), dp(200)
     title: ''
     BoxLayout:
         orientation: 'vertical'
@@ -114,7 +114,7 @@
         RoundedRectangle:
             size: self.size
             pos: self.pos
-            radius: [15]
+            radius: [dp(15)]
 
 
 <LargeButton>:
@@ -143,13 +143,13 @@
         Color:
             rgba: app.theme.colors.border
         Line:
-            width: 2
+            width: app.theme.line_width
             rectangle: self.x, self.y, self.width, self.height
 
 <TextInput>:
     font_name: app.theme.font.name
     font_size: app.theme.font.size()
     size_hint_y: None
-    height: app.theme.font.size('xxl')
+    height: self.minimum_height
     background_color: app.theme.colors.bg3
     foreground_color: app.theme.colors.txt_hl
