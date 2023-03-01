@@ -4,8 +4,15 @@ from pathlib import Path
 long_description = (Path(__file__).parent / "README.md").read_text()
 
 MODULE = 'gamut'
-VERSION = '1.0.10-dev11'
+VERSION = '1.0.10-dev0'
 DESCRIPTION = 'Granular Audio Musaicing Toolkit for Python'
+
+
+def get_install_requires():
+    excluded = ['sphinx']
+    with open('requirements.txt', 'r') as f:
+        return [line for line in f.read().splitlines() if all(x not in line.lower() for x in excluded)]
+
 
 setup(
     name=MODULE,
@@ -20,20 +27,7 @@ setup(
     entry_points={
         'console_scripts': ['gamut=gamut:cli', 'gamut-ui=gamut:gui']
     },
-    install_requires=[
-        'numpy',
-        'librosa',
-        'matplotlib',
-        'progress',
-        'scipy',
-        'soundfile',
-        'sounddevice',
-        'typing_extensions',
-        'filetype',
-    ],
-    extras_require={
-        'gui': ['kivy[base]']
-    },
+    install_requires=get_install_requires(),
     keywords=['DSP', 'audio musaicking', 'granulation', 'machine learning',
               'ML', "MIR", 'music', 'sound design', 'concatenative synthesis'],
     classifiers=[

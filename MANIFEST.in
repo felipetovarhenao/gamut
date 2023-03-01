@@ -1,1 +1,2 @@
 graft gamut/gui/data/
+include requirements.txt
