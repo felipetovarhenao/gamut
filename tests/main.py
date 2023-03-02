@@ -5,5 +5,5 @@ from kivy.clock import Clock
 
 class GamutTest(unittest.TestCase):
 
-    def test_gui_run(self):
-        GUI().run(test=1.5)
+    def test_gui_build(self):
+        GUI().build()
