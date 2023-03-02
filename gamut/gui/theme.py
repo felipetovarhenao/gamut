@@ -1,4 +1,7 @@
+# typing
 from __future__ import annotations
+
+# ui
 from kivy.metrics import dp
 
 
@@ -55,7 +58,7 @@ class Font:
         self._xl = dp(xl)
         self._xxl = dp(xxl)
 
-    def size(self, size: str | None = None):
+    def size(self, size: str | None = None) -> float:
         """ Font size getter """
         return getattr(self, f"_{size or 'md'}")
 
@@ -69,5 +72,5 @@ class Theme:
         self.spacing = dp(10)
         self.line_width = dp(1)
 
-    def pad(self, n: int = 1):
+    def pad(self, n: int = 1) -> float:
         return dp(3*n)

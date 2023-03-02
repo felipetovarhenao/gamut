@@ -13,10 +13,10 @@ class Points(np.ndarray):
     A subclass of a numpy array, mostly to allow inline method concatenation — e.g. x.a().b().c()
     """
 
-    def __array_finalize__(self, obj):
+    def __array_finalize__(self, obj) -> Self:
         return obj
 
-    def __new__(cls, array: np.ndarray | list = []):
+    def __new__(cls, array: np.ndarray | list = []) -> Self:
         return np.asarray(array).view(cls)
 
     def fill(self, shape: Iterable, value: int | float) -> Self:
@@ -137,7 +137,7 @@ def object_to_points(param, N: int) -> Points:
         return Points().fill(N, param)
 
 
-def plot_envelope_list(env_list: Iterable, rows: int = 1):
+def plot_envelope_list(env_list: Iterable, rows: int = 1) -> None:
     from matplotlib import pyplot as plt
 
     envs = np.array([object_to_points(x, 100) for x in env_list]).T

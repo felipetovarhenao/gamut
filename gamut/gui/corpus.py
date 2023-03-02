@@ -1,23 +1,26 @@
+# typing
 from __future__ import annotations
+from collections.abc import Iterable
 
+# ui
 from tkinter.filedialog import askdirectory, askopenfilenames
-
 from kivy.uix.widget import Widget
 from kivy.uix.togglebutton import ToggleButton
 from kivy.properties import ObjectProperty
 from kivy.clock import Clock
 from kivy.app import App
 
+# gamut
 from .config import CORPUS_DIR, CORPUS_CACHE, GAMUT_SESSION
 from .utils import log_message, capture_exceptions, log_done, UserConfirmation
-
 from ..features import Corpus
 from ..config import AUDIO_FORMATS
 
+# misc
 import os
 
 
-def on_toggle_click(self, toggle, name):
+def on_toggle_click(self, toggle: ToggleButton, name: str) -> None:
     item_list = getattr(self, f'selected_{name}')
     delete_button = getattr(self, f'delete_{name}_button')
     if toggle.state == 'normal':
@@ -34,7 +37,7 @@ class CorpusFactoryWidget(Widget):
     create_corpus_button = ObjectProperty(None)
     corpus_name = ObjectProperty(None)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.sources = []
         self.selected_sources = []
@@ -42,20 +45,20 @@ class CorpusFactoryWidget(Widget):
         self.selected_features = ['timbre']
         Clock.schedule_once(lambda _: self.corpus_name.bind(text=self.corpus_name_filter), 1)
 
-    def update_create_corpus_button(self):
+    def update_create_corpus_button(self) -> None:
         self.create_corpus_button.set_disabled(not all([self.sources, self.selected_features, self.has_name]))
 
-    def update_corpus_menu(self):
+    def update_corpus_menu(self) -> None:
         App.get_running_app().root.corpus_module.menu.update_corpus_menu()
 
-    def corpus_name_filter(self, instance, value):
+    def corpus_name_filter(self, instance: Widget, value: str) -> None:
         self.has_name = bool(value)
         self.update_create_corpus_button()
 
-    def get_existent_corpus_names(self):
+    def get_existent_corpus_names(self) -> Iterable:
         return [toggle.text.lower() for toggle in App.get_running_app().root.corpus_module.menu.corpora_menu.children]
 
-    def load_folder_path(self):
+    def load_folder_path(self) -> None:
         path = askdirectory(title='Choose corpus source folder', initialdir=GAMUT_SESSION.get("last_dir"))
         if not path or path in self.sources:
             return
@@ -64,7 +67,7 @@ class CorpusFactoryWidget(Widget):
         self.sources_menu.add_widget(self.make_toggle(text=path, name='sources'))
         self.update_create_corpus_button()
 
-    def load_file_paths(self):
+    def load_file_paths(self) -> None:
         files = askopenfilenames(filetypes=[("Audio files", " ".join(AUDIO_FORMATS))], initialdir=GAMUT_SESSION.get('last_dir'))
         if files:
             GAMUT_SESSION.set('last_dir', os.path.dirname(files[0]))
@@ -75,7 +78,7 @@ class CorpusFactoryWidget(Widget):
             self.sources_menu.add_widget(self.make_toggle(text=file, name='sources'))
         self.update_create_corpus_button()
 
-    def update_selected(self, name):
+    def update_selected(self, name: str) -> None:
         setattr(self, f'selected_{name}', [toggle.text for toggle in getattr(
             self, f"{name}_menu").children if toggle.state == 'down'])
         btn_name = f'delete_{name}_button'
@@ -84,7 +87,7 @@ class CorpusFactoryWidget(Widget):
             btn.set_disabled(not bool(getattr(self, f'selected_{name}')))
         self.update_create_corpus_button()
 
-    def delete_selected(self, name):
+    def delete_selected(self, name: str) -> None:
         selected = getattr(self, f'selected_{name}')
         menu = getattr(self, f'{name}_menu')
         for item in selected:
@@ -100,7 +103,7 @@ class CorpusFactoryWidget(Widget):
 
     @capture_exceptions
     @log_done
-    def create_corpus(self):
+    def create_corpus(self) -> None:
         corpus_name = self.corpus_name.text.strip()
         log_message(f'Creating corpus: {corpus_name}...')
         global CORPUS_CACHE
@@ -109,7 +112,7 @@ class CorpusFactoryWidget(Widget):
         CORPUS_CACHE[corpus_name] = corpus
         self.update_corpus_menu()
 
-    def make_toggle(self, text, name):
+    def make_toggle(self, text: str, name: str) -> None:
         return ToggleButton(text=text, on_release=lambda _: self.update_selected(name))
 
 
@@ -118,11 +121,11 @@ class CorpusMenuWidget(Widget):
     selected_corpora = ObjectProperty(None)
     delete_corpora_button = ObjectProperty(None)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         Clock.schedule_once(lambda _: self.update_corpus_menu(), 1)
 
-    def update_corpus_menu(self):
+    def update_corpus_menu(self) -> None:
         last_selected = [toggle.text for toggle in self.get_selected_toggles()]
         self.clear_menu()
         for path in sorted(os.listdir(CORPUS_DIR)):
@@ -134,16 +137,16 @@ class CorpusMenuWidget(Widget):
             self.corpora_menu.add_widget(t)
         self.update_delete_button()
 
-    def get_selected_toggles(self):
+    def get_selected_toggles(self) -> Iterable:
         return [toggle for toggle in self.corpora_menu.children if toggle.state == 'down']
 
-    def update_create_mosaic_button(self):
+    def update_create_mosaic_button(self) -> None:
         App.get_running_app().root.mosaic_module.factory.update_create_mosaic_button()
 
-    def update_delete_button(self):
+    def update_delete_button(self) -> None:
         self.delete_corpora_button.set_disabled(not bool(self.get_selected_toggles()))
 
-    def delete_selected_corpora(self):
+    def delete_selected_corpora(self) -> None:
         selected = self.get_selected_toggles()
         num_selected = len(selected)
         item_name = 'corpus' if num_selected == 1 else 'corpora'
@@ -157,7 +160,7 @@ class CorpusMenuWidget(Widget):
             log_message(f"{num_selected} {item_name} deleted", log_type='error')
         UserConfirmation(on_confirm=on_confirm, long_text=f"You're about to delete {items}").open()
 
-    def clear_menu(self):
+    def clear_menu(self) -> None:
         while self.corpora_menu.children:
             self.corpora_menu.clear_widgets()
         self.update_delete_button()

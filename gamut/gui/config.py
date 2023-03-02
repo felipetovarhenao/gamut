@@ -1,4 +1,7 @@
+# typing
 from __future__ import annotations
+
+# misc
 from pathlib import Path
 import os
 import json
@@ -18,19 +21,19 @@ class GamutSession:
         self.last_dir = None
         self.load()
 
-    def clean_last_dir(self, attr, value):
+    def clean_last_dir(self, attr: str, value: str | float | int) -> str | float | int:
         if os.path.exists(value):
             return value
         default = self.get_default_attrs()[attr]
         setattr(self, attr, default)
         return default
 
-    def get_default_attrs(self):
+    def get_default_attrs(self) -> dict:
         return {
             'last_dir': str(Path.home()),
         }
 
-    def load(self):
+    def load(self) -> None:
         # create session file if it doesn't exist
         if not os.path.exists(SESSION_DATA_FILE):
             with open(SESSION_DATA_FILE, 'w') as f:
@@ -43,11 +46,11 @@ class GamutSession:
             for attr in vars(self):
                 setattr(self, attr, data[attr] if attr in data else default_attrs[attr])
 
-    def save(self):
+    def save(self) -> None:
         with open(SESSION_DATA_FILE, 'w') as f:
             json.dump(vars(self), f)
 
-    def get(self, attr):
+    def get(self, attr: str) -> str | float | int:
         value = getattr(self, attr)
         cleaner = getattr(self, f"clean_{attr}")
         if cleaner:
@@ -57,7 +60,7 @@ class GamutSession:
             return clean_value
         return value
 
-    def set(self, attr, value):
+    def set(self, attr: str, value: str | float | int) -> str | float | int:
         setattr(self, attr, value)
         self.save()
 

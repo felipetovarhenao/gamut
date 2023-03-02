@@ -1,9 +1,16 @@
+# typing
 from __future__ import annotations
+
+# ui
 import tkinter as tk
 from kivy.config import Config
 from kivy.resources import resource_add_path
 from kivy.lang import Builder
+
+# gamut
 from ..sys import set_vebosity
+
+# misc.
 import os
 
 # disable GAMuT CLI messages

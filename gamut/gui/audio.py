@@ -1,3 +1,4 @@
+# typing
 from __future__ import annotations
 
 # kivy
@@ -13,6 +14,7 @@ from ..features import Mosaic
 # tkinter
 from tkinter.filedialog import asksaveasfilename
 
+# misc
 import os
 
 
@@ -23,12 +25,12 @@ class Param(Widget):
     label = StringProperty('')
     value = StringProperty('')
 
-    def list_filter(self, value: str, from_undo: bool = False):
+    def list_filter(self, value: str, from_undo: bool = False) -> str | None:
         """ Text input filter for list-compatible parameters """
         if value.isdigit() or value in ['.', '(', ')', ' ']:
             return value
 
-    def window_filter(self, value: str, from_undo: bool = False):
+    def window_filter(self, value: str, from_undo: bool = False) -> str | None:
         """ Text input filter for list- and string-compatible parameters """
         if self.list_filter(value, from_undo) or value.isalpha():
             return value
@@ -44,11 +46,11 @@ class AudioWidget(Widget):
     play_button = ObjectProperty(None)
     stop_button = ObjectProperty(None)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.audio_buffer = None
 
-    def get_selected_mosaic(self):
+    def get_selected_mosaic(self) -> Widget:
         """ Short hand method to access selected mosaic in MosaicWidget """
         return App.get_running_app().root.mosaic_module.menu.selected_mosaic
 

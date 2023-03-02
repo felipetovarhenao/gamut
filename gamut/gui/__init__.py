@@ -1,3 +1,4 @@
+# typing
 from __future__ import annotations
 
 # import all widgets
@@ -7,7 +8,7 @@ from .corpus import *
 from .audio import *
 from .mosaic import *
 
-# misc
+# gamut
 from .theme import Theme
 from .config import GAMUT_FILES_DIRECTORY, CORPUS_DIR, MOSAIC_DIR
 from .utils import log_message
@@ -17,6 +18,8 @@ from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.widget import Widget
 from kivy.app import App
 from kivy.clock import Clock
+
+# misc
 import os
 
 
@@ -29,7 +32,7 @@ class Main(Widget):
     mosaic_module = ObjectProperty(None)
     corpus_module = ObjectProperty(None)
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         Clock.schedule_once(lambda _: log_message("GAMuT session intialized"), 1)
 
@@ -50,7 +53,8 @@ class GUI(App):
             if not os.path.exists(_dir):
                 os.mkdir(_dir)
 
-    def build(self):
+    def build(self) -> Widget:
+        """ Returns root widget """
         self.title = 'GAMuT user interface'
         self.icon = 'data/images/icon.png'
         return Main()

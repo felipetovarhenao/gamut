@@ -1,5 +1,6 @@
+# typing
 from __future__ import annotations
-from collections.abc import Iterable
+from collections.abc import Iterable, Callable
 
 # misc
 from ast import literal_eval
@@ -18,7 +19,7 @@ class ConsoleLog(Factory.TextLabel):
 
 
 class UserConfirmation(Popup):
-    def __init__(self, on_confirm, long_text: str | None, **kwargs):
+    def __init__(self, on_confirm, long_text: str | None, **kwargs) -> None:
         self.on_confirm = on_confirm
         self.long_text = '{}\nDo you want to proceed?'.format(long_text or "You\'re about to delete these item(s).")
         super().__init__(**kwargs)
@@ -27,7 +28,7 @@ class UserConfirmation(Popup):
 APP = None
 
 
-def get_log_style(key):
+def get_log_style(key) -> dict:
     app = get_app()
     log_styles = {
         'normal': {
@@ -44,7 +45,7 @@ def get_log_style(key):
     return log_styles[key]
 
 
-def get_app():
+def get_app() -> App:
     global APP
     if not APP:
         APP = App.get_running_app()
@@ -63,7 +64,7 @@ def log_message(text: str | Iterable, log_type: str = 'normal') -> None:
         root.console.parent.scroll_to(l)
 
 
-def capture_exceptions(func):
+def capture_exceptions(func) -> Callable:
     """ Decorator to prevent crashing by printing error in GUI console window """
     def decorator(*args, **kwargs):
         try:
@@ -75,7 +76,7 @@ def capture_exceptions(func):
     return decorator
 
 
-def log_done(func):
+def log_done(func) -> Callable:
     """ Decorator for logging successful callback execution """
     def decorator(*args, **kwargs):
         out = func(*args, **kwargs)
@@ -84,13 +85,13 @@ def log_done(func):
     return decorator
 
 
-def remove_ansi(text):
+def remove_ansi(text) -> str:
     """ Removes ANSI stuff from string """
     ansi_pattern = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     return ansi_pattern.sub('', text)
 
 
-def parse_param_string(raw_string: str):
+def parse_param_string(raw_string: str) -> Iterable:
     """ Parses a lisp-like formatted list string as Python list """
     # remove spacing at both ends
     value = raw_string.strip()

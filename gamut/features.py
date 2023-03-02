@@ -125,7 +125,7 @@ class Analyzer(ABC):
 
         return self
 
-    def __get_type(self):
+    def __get_type(self) -> str:
         """ Helper function to get subclass name """
         return self.__class__.__name__.lower()
 

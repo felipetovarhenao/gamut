@@ -1,26 +1,34 @@
+# typing
+from collections.abc import Iterable
+
+# gamut
 from .utils import catch_keyboard_interrupt
 
 
-def print_success(text):
+def print_success(text) -> None:
+    """ Prints green-colored message """
     print(f"\N{check mark} \033[32;1m{text}\033[0m")
 
 
-def print_warning(text):
+def print_warning(text) -> None:
+    """ Prints yellow-colored message """
     print(f"\N{warning sign} \033[33;1m{text}\033[0m")
 
 
-def print_error(error):
+def print_error(error) -> None:
+    """ Prints red-colored message """
     print(f"\N{skull} \033[31;1m{error}\033[0m")
     exit()
 
 
-def is_kivy_installed():
+def is_kivy_installed() -> bool:
     """ Check if kivy is installed """
     import pkg_resources
     return 'kivy' in list(map(lambda x: x.key, pkg_resources.working_set))
 
 
-def gui():
+def gui() -> None:
+    """ Entry points to launch GUI """
     # Check if kivy has been installed
     if not is_kivy_installed():
         import subprocess
@@ -45,6 +53,7 @@ def gui():
 
 @catch_keyboard_interrupt()
 def cli():
+    """ CLI entry point """
     from argparse import ArgumentParser
     from os import chdir, makedirs, remove, mkdir, getcwd
     from os.path import realpath, join, exists, splitext, basename
@@ -59,7 +68,7 @@ def cli():
     # HELPER FUNCTIONS
     # ------------------------------------- #
 
-    def parse_params(raw_params):
+    def parse_params(raw_params: Iterable) -> dict:
         params = {}
         if not raw_params:
             return params
@@ -77,15 +86,15 @@ def cli():
             params[key] = value
         return params
 
-    def safe_chdir(dest):
+    def safe_chdir(dest: str) -> None:
         if not exists(dest):
             return
         chdir(dest)
 
-    def abs_path(path, ext):
+    def abs_path(path: str, ext: str) -> str:
         return realpath(splitext(path)[0] + ext)
 
-    def write_file(path, obj, ext, script_block):
+    def write_file(path: str, obj: object, ext: str, script_block: str) -> None:
         out = abs_path(path, ext)
         if not NO_CACHE:
             CACHED_OBJECTS[out] = obj
@@ -94,13 +103,13 @@ def cli():
                 remove(out)
             obj.write(out)
 
-    def clean_path(file):
+    def clean_path(file: str) -> str:
         path = realpath(file)
         if not exists(path):
             print_error(f"{path} does not exist.")
         return path
 
-    def check_subdirectories(script):
+    def check_subdirectories(script: str) -> None:
         subdirs = [AUDIO_DIR, CORPUS_DIR, MOSAIC_DIR]
         missing = []
         for subdir in subdirs:
@@ -128,7 +137,7 @@ def cli():
         if answer.lower() in ['n', 'no']:
             exit()
 
-    def define_directories(root):
+    def define_directories(root: str) -> None:
         global ROOT_DIR
         global MOSAIC_DIR
         global CORPUS_DIR
@@ -144,7 +153,7 @@ def cli():
         TEST_NAME = 'test'
         TEST_SCRIPT_DIR = join(SCRIPTS_DIR, f'{TEST_NAME}.json')
 
-    def create_new_template(template):
+    def create_new_template(template: str) -> None:
         chdir(ROOT_DIR)
         out_path = splitext(template)[0]
         name = basename(out_path)
