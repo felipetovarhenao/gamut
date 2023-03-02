@@ -1,17 +1,18 @@
 # typing
 from __future__ import annotations
+from collections.abc import Iterable
 
 # gui
-from tkinter.filedialog import askopenfilename
 from kivy.clock import Clock
 from kivy.app import App
 from kivy.uix.widget import Widget
-from kivy.uix.togglebutton import ToggleButton
 from kivy.properties import ObjectProperty, StringProperty
 
 # gamut
 from .config import CORPUS_DIR, MOSAIC_DIR, CORPUS_CACHE, MOSAIC_CACHE, GAMUT_SESSION
 from .utils import capture_exceptions, log_done, log_message, UserConfirmation
+from .dialogs import LoadDialog
+from .buttons import MenuItem
 
 from ..features import Corpus, Mosaic
 from ..config import AUDIO_FORMATS
@@ -32,7 +33,7 @@ class MosaicFactoryWidget(Widget):
         Clock.schedule_once(lambda _: self.mosaic_name.bind(text=self.on_mosaic_name_update), 1)
 
     def get_selected_corpora(self) -> None:
-        return [toggle.text for toggle in App.get_running_app().root.corpus_module.menu.corpora_menu.children if toggle.state == 'down']
+        return [toggle.value for toggle in App.get_running_app().root.corpus_module.menu.corpora_menu.children if toggle.state == 'down']
 
     def update_create_mosaic_button(self) -> None:
         value = all([self.has_name, self.get_selected_corpora(), self.target])
@@ -46,16 +47,18 @@ class MosaicFactoryWidget(Widget):
         App.get_running_app().root.mosaic_module.menu.update_mosaic_menu()
 
     def load_target(self) -> None:
-        self.target = askopenfilename(filetypes=[('Audio files', " ".join(AUDIO_FORMATS))],
-                                      initialdir=GAMUT_SESSION.get('last_dir'))
-        if self.target:
+        def on_load(selected: Iterable):
+            self.target = selected[0]
             GAMUT_SESSION.set('last_dir', os.path.dirname(self.target))
-        self.update_create_mosaic_button()
+            self.update_create_mosaic_button()
+        LoadDialog(on_load=on_load,
+                   title='CHOOSE TARGET',
+                   filters=[f"*{ft}" for ft in AUDIO_FORMATS]).open()
 
     @capture_exceptions
     @log_done
     def create_mosaic(self) -> None:
-        mosaic_name = self.mosaic_name.text
+        mosaic_name = self.mosaic_name.value
         log_message(f"Creating mosaic: {mosaic_name}...")
         corpus_names = self.get_selected_corpora()
         corpora = []
@@ -87,14 +90,14 @@ class MosaicMenuWidget(Widget):
         Clock.schedule_once(lambda _: self.update_mosaic_menu(), 1)
 
     def update_mosaic_menu(self) -> None:
-        last_selected = [toggle.text for toggle in self.get_selected_toggles()]
+        last_selected = [toggle.value for toggle in self.get_selected_toggles()]
         self.clear_menu()
         for path in sorted(os.listdir(MOSAIC_DIR)):
             mosaic_name = os.path.basename(os.path.splitext(path)[0])
             state = 'down' if mosaic_name in last_selected else 'normal'
-            t = ToggleButton(text=mosaic_name,
-                             state=state,
-                             on_release=lambda toggle: self.exclusive_select(toggle) or self.update_delete_button())
+            t = MenuItem(value=mosaic_name,
+                         state=state,
+                         on_release=lambda toggle: self.exclusive_select(toggle) or self.update_delete_button())
             self.mosaic_menu.add_widget(t)
         self.update_delete_button()
 
@@ -110,14 +113,14 @@ class MosaicMenuWidget(Widget):
             for child in self.mosaic_menu.children:
                 if child != toggle:
                     child.state = 'normal'
-            self.selected_mosaic = toggle.text
+            self.selected_mosaic = toggle.value
         self.update_audio_synth_button()
 
     def delete_selected_mosaics(self) -> None:
         def on_confirm():
             for toggle in self.get_selected_toggles():
                 self.mosaic_menu.remove_widget(toggle)
-                os.remove(os.path.join(MOSAIC_DIR, f"{toggle.text}.gamut"))
+                os.remove(os.path.join(MOSAIC_DIR, f"{toggle.value}.gamut"))
             self.selected_mosaic = None
             self.update_delete_button()
             self.update_audio_synth_button()

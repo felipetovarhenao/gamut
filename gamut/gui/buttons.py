@@ -1,5 +1,8 @@
 # ui
 from kivy.uix.button import Button
+from kivy.uix.togglebutton import ToggleButton
+
+import os
 
 
 class BaseButton(Button):
@@ -16,3 +19,10 @@ class LargeDangerButton(LargeButton):
 
 class LargeSuccessButton(LargeButton):
     pass
+
+
+class MenuItem(ToggleButton):
+    def __init__(self, value: str = 'item', **kwargs):
+        self.value = value
+        super().__init__(**kwargs)
+        self.text = os.path.basename(self.value)

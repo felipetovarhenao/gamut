@@ -1,0 +1,58 @@
+<LoadDialog>:
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserIconView:
+            id: filechooser
+			path: root.path
+            font_name: app.theme.font.name
+			multiselect: root.multiselect
+			dirselect: root.dirselect
+			filters: root.filters
+            on_selection: root.on_selection(filechooser) or load_button.set_disabled(not filechooser.selection)
+        BoxLayout:
+            size_hint_y: None
+            height: self.minimum_height
+			spacing: app.theme.spacing
+			padding_y: app.theme.pad()
+            LargeButton:
+                text: "CANCEL"
+                on_release: root.on_cancel()
+            LargeSuccessButton:
+                id: load_button
+                text: "LOAD"
+                on_release: root.on_load(filechooser.selection) or root.on_cancel()
+
+            
+<SaveDialog>:
+    text_input: text_input
+    save_button: save_button
+    BoxLayout:
+        size: root.size
+        pos: root.pos
+        orientation: "vertical"
+        FileChooserListView:
+            id: filechooser
+            title: root.title
+            on_selection: text_input.text = self.selection and self.selection[0] or ''
+        TextInput:
+            id: text_input
+            size_hint_y: None
+            font_size: app.theme.font.size('ml')
+            height: self.minimum_height
+            hint_text: 'e.g. my audio mosaic.wav'
+            multiline: False
+        BoxLayout:
+            size_hint_y: None
+            height: self.minimum_height
+			spacing: app.theme.spacing
+			padding_y: app.theme.pad()
+            LargeButton:
+                text: "CANCEL"
+                disabled: False
+                on_release: root.on_cancel()
+            LargeSuccessButton:
+                id: save_button
+                text: "SAVE"
+                on_release: root.on_save(filechooser.path, text_input.text) or root.on_cancel()

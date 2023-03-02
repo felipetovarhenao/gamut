@@ -35,7 +35,7 @@ class ColorPalette:
 
 class Font:
     """
-    Utility class to create consistent tkinter font tuples
+    Utility class to centralize font sizes for GUI
     """
 
     def __init__(self,

@@ -9,10 +9,8 @@ from kivy.properties import ObjectProperty, StringProperty
 # gamut
 from .config import MOSAIC_CACHE, MOSAIC_DIR, GAMUT_SESSION
 from .utils import parse_param_string, capture_exceptions, log_done, log_message
+from .dialogs import SaveDialog
 from ..features import Mosaic
-
-# tkinter
-from tkinter.filedialog import asksaveasfilename
 
 # misc
 import os
@@ -95,13 +93,14 @@ class AudioWidget(Widget):
         if self.audio_buffer:
             self.audio_buffer.stop()
 
+    @capture_exceptions
     @log_done
     def save_audio(self) -> None:
         """ Writes audio file at chosen directory """
-        filename = asksaveasfilename()
-        if not filename:
-            return
-        GAMUT_SESSION.set('last_dir', os.path.dirname(filename))
-        filename = f"{os.path.splitext(filename)[0]}.wav"
-        log_message(f'Saving audio file: {filename}')
-        self.audio_buffer.write(filename)
+        def on_save(path, text):
+            GAMUT_SESSION.set('last_dir', os.path.dirname(path))
+            filename = os.path.join(path, text)
+            filename = f"{os.path.splitext(filename)[0]}.wav"
+            log_message(f'Saving audio file: {filename}')
+            self.audio_buffer.write(filename)
+        SaveDialog(title="SAVE AUDIO MOSAIC", on_save=on_save).open()

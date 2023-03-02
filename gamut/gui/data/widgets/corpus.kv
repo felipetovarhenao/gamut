@@ -31,12 +31,14 @@
                     orientation: 'horizontal'
                     size_hint_y: None
                     height: self.minimum_height
-                    ToggleButton:
-                        text: 'timbre'
+                    MenuItem:
+                        value: 'timbre'
+                        text: self.value
                         state: 'down'
                         on_release: root.update_selected('features')
-                    ToggleButton:
-                        text: 'pitch'		
+                    MenuItem:
+                        value: 'pitch'
+                        text: self.value		
                         on_release: root.update_selected('features')
         BoxLayout:
             spacing: app.theme.spacing
@@ -63,11 +65,8 @@
                 size_hint_y: None
                 height: self.minimum_height
                 LargeButton:
-                    text: 'ADD SOURCE FILES'
-                    on_release: root.load_file_paths()
-                LargeButton:
-                    text: 'ADD SOURCE FOLDER'
-                    on_release: root.load_folder_path()
+                    text: 'ADD SOURCES'
+                    on_release: root.add_sources()
                 LargeDangerButton:
                     id: delete_sources_button
                     on_release: root.delete_selected('sources')

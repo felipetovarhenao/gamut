@@ -146,6 +146,9 @@
             width: app.theme.line_width
             rectangle: self.x, self.y, self.width, self.height
 
+<MenuItem>:
+    text: self.value[-10:]
+
 <TextInput>:
     font_name: app.theme.font.name
     font_size: app.theme.font.size()
