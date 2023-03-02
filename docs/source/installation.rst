@@ -59,4 +59,4 @@ Once **GAMuT** is installed, you can test that everything works, by running:
 		gamut --version
 		gamut --test
 
-If you see a success message afterwards, it means **GAMuT** can run in your machine.
+If you don't see any errors, it means **GAMuT** runs properly in your machine.
