@@ -1,3 +1,6 @@
+# typing
+from __future__ import annotations
+
 # ui
 from kivy.uix.button import Button
 from kivy.uix.togglebutton import ToggleButton
@@ -22,7 +25,7 @@ class LargeSuccessButton(LargeButton):
 
 
 class MenuItem(ToggleButton):
-    def __init__(self, value: str = 'item', **kwargs):
+    def __init__(self, value: str = 'item', **kwargs) -> None:
         self.value = value
         super().__init__(**kwargs)
         self.text = os.path.basename(self.value)

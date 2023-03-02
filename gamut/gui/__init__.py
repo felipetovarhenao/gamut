@@ -59,7 +59,7 @@ class GUI(App):
         self.icon = 'data/images/icon.png'
         return Main()
 
-    def run(self, test: int | None = None):
+    def run(self, test: int | None = None) -> None:
         if test:
             Clock.schedule_once(lambda _: self.stop(), test)
         super().run()
