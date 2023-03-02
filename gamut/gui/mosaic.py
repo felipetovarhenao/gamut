@@ -58,7 +58,7 @@ class MosaicFactoryWidget(Widget):
     @capture_exceptions
     @log_done
     def create_mosaic(self) -> None:
-        mosaic_name = self.mosaic_name.value
+        mosaic_name = self.mosaic_name.text
         log_message(f"Creating mosaic: {mosaic_name}...")
         corpus_names = self.get_selected_corpora()
         corpora = []

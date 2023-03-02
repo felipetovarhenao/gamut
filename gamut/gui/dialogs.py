@@ -10,19 +10,28 @@ class BaseDialog(FloatLayout):
     def __init__(self,
                  title: str = 'LOAD FILE OR FOLDER',
                  **kwargs):
-        self.path = GAMUT_SESSION.get('last_dir')
         self.popup = None
         self.title = title
+        self.last_path = GAMUT_SESSION.get('last_dir')
         super().__init__(**kwargs)
 
     def open(self):
-        self.popup = Popup(title=self.title,
+        self.popup = Popup(title=self.get_popup_title(),
                            content=self,
                            size_hint=(0.9, 0.9))
         self.popup.open()
 
     def on_cancel(self):
         self.popup.dismiss()
+
+    def on_entry_added(self, chooser):
+        if chooser.path != self.last_path:
+            chooser.selection = []
+            self.last_path = chooser.path
+            self.popup.title = self.get_popup_title()
+
+    def get_popup_title(self):
+        return f"{self.title}: {self.last_path}"
 
 
 class LoadDialog(BaseDialog):
@@ -36,16 +45,7 @@ class LoadDialog(BaseDialog):
         self.multiselect = multiselect
         self.dirselect = dirselect
         self.filters = filters or []
-        self.last_path = None
         super().__init__(**kwargs)
-
-    def on_selection(self, chooser) -> None:
-        # clear selection on directory change
-        if not self.last_path:
-            self.last_path = chooser.path
-        elif chooser.path != self.last_path:
-            chooser.selection = []
-            self.last_path = chooser.path
 
 
 class SaveDialog(BaseDialog):

@@ -5,12 +5,13 @@
         orientation: "vertical"
         FileChooserIconView:
             id: filechooser
-			path: root.path
+			path: root.last_path
             font_name: app.theme.font.name
 			multiselect: root.multiselect
 			dirselect: root.dirselect
 			filters: root.filters
-            on_selection: root.on_selection(filechooser) or load_button.set_disabled(not filechooser.selection)
+            on_entries_cleared: root.on_entry_added(filechooser) or load_button.set_disabled(not filechooser.selection)
+            on_selection: load_button.set_disabled(not filechooser.selection)
         BoxLayout:
             size_hint_y: None
             height: self.minimum_height
@@ -32,9 +33,11 @@
         size: root.size
         pos: root.pos
         orientation: "vertical"
-        FileChooserListView:
+        spacing: app.theme.spacing
+        FileChooserIconView:
             id: filechooser
             title: root.title
+            on_entries_cleared: root.on_entry_added(filechooser)
             on_selection: text_input.text = self.selection and self.selection[0] or ''
         TextInput:
             id: text_input

@@ -96,7 +96,7 @@ class CorpusFactoryWidget(Widget):
     @capture_exceptions
     @log_done
     def create_corpus(self) -> None:
-        corpus_name = self.corpus_name.value.strip()
+        corpus_name = self.corpus_name.text.strip()
         log_message(f'Creating corpus: {corpus_name}...')
         global CORPUS_CACHE
         corpus = Corpus(source=self.sources, features=self.selected_features)
