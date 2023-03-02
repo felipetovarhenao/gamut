@@ -36,6 +36,7 @@ class GamutSession:
     def load(self) -> None:
         # create session file if it doesn't exist
         if not os.path.exists(SESSION_DATA_FILE):
+            os.makedirs(os.path.dirname(SESSION_DATA_FILE))
             with open(SESSION_DATA_FILE, 'w') as f:
                 json.dump(self.get_default_attrs(), f)
 
