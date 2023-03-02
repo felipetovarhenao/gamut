@@ -51,7 +51,10 @@ class GamutSession:
         value = getattr(self, attr)
         cleaner = getattr(self, f"clean_{attr}")
         if cleaner:
-            return cleaner(attr, value)
+            clean_value = cleaner(attr, value)
+            if clean_value != value:
+                self.set(attr, clean_value)
+            return clean_value
         return value
 
     def set(self, attr, value):
