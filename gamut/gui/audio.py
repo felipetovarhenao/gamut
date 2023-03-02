@@ -6,7 +6,7 @@ from kivy.uix.widget import Widget
 from kivy.properties import ObjectProperty, StringProperty
 
 # gamut
-from .config import MOSAIC_CACHE, MOSAIC_DIR, LAST_VISITED_DIR
+from .config import MOSAIC_CACHE, MOSAIC_DIR, GAMUT_SESSION
 from .utils import parse_param_string, capture_exceptions, log_done, log_message
 from ..features import Mosaic
 
@@ -96,11 +96,10 @@ class AudioWidget(Widget):
     @log_done
     def save_audio(self) -> None:
         """ Writes audio file at chosen directory """
-        global LAST_VISITED_DIR
         filename = asksaveasfilename()
         if not filename:
             return
-        LAST_VISITED_DIR = os.path.dirname(filename)
+        GAMUT_SESSION.set('last_dir', os.path.dirname(filename))
         filename = f"{os.path.splitext(filename)[0]}.wav"
         log_message(f'Saving audio file: {filename}')
         self.audio_buffer.write(filename)

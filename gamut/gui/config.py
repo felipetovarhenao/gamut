@@ -1,11 +1,62 @@
 from __future__ import annotations
 from pathlib import Path
 import os
+import json
 
 
-LAST_VISITED_DIR = Path.home()
 GAMUT_FILES_DIRECTORY = os.path.join(Path.home(), '.gamut')
 CORPUS_DIR = os.path.join(GAMUT_FILES_DIRECTORY, 'corpora')
 MOSAIC_DIR = os.path.join(GAMUT_FILES_DIRECTORY, 'mosaics')
+SESSION_DATA_FILE = os.path.join(GAMUT_FILES_DIRECTORY, 'session_data.json')
 CORPUS_CACHE = {}
 MOSAIC_CACHE = {}
+
+
+class GamutSession:
+
+    def __init__(self) -> None:
+        self.last_dir = None
+        self.load()
+
+    def clean_last_dir(self, attr, value):
+        if os.path.exists(value):
+            return value
+        default = self.get_default_attrs()[attr]
+        setattr(self, attr, default)
+        return default
+
+    def get_default_attrs(self):
+        return {
+            'last_dir': str(Path.home()),
+        }
+
+    def load(self):
+        # create session file if it doesn't exist
+        if not os.path.exists(SESSION_DATA_FILE):
+            with open(SESSION_DATA_FILE, 'w') as f:
+                json.dump(self.get_default_attrs(), f)
+
+        # open file an populate attributes
+        with open(SESSION_DATA_FILE, 'rb') as f:
+            data = json.load(f)
+            default_attrs = self.get_default_attrs()
+            for attr in vars(self):
+                setattr(self, attr, data[attr] if attr in data else default_attrs[attr])
+
+    def save(self):
+        with open(SESSION_DATA_FILE, 'w') as f:
+            json.dump(vars(self), f)
+
+    def get(self, attr):
+        value = getattr(self, attr)
+        cleaner = getattr(self, f"clean_{attr}")
+        if cleaner:
+            return cleaner(attr, value)
+        return value
+
+    def set(self, attr, value):
+        setattr(self, attr, value)
+        self.save()
+
+
+GAMUT_SESSION = GamutSession()

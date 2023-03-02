@@ -6,7 +6,7 @@ from kivy.uix.widget import Widget
 from kivy.uix.togglebutton import ToggleButton
 from kivy.properties import ObjectProperty, StringProperty
 
-from .config import CORPUS_DIR, MOSAIC_DIR, CORPUS_CACHE, MOSAIC_CACHE, LAST_VISITED_DIR
+from .config import CORPUS_DIR, MOSAIC_DIR, CORPUS_CACHE, MOSAIC_CACHE, GAMUT_SESSION
 from .utils import capture_exceptions, log_done, log_message, UserConfirmation
 
 from ..features import Corpus, Mosaic
@@ -42,10 +42,10 @@ class MosaicFactoryWidget(Widget):
         App.get_running_app().root.mosaic_module.menu.update_mosaic_menu()
 
     def load_target(self):
-        global LAST_VISITED_DIR
-        self.target = askopenfilename(filetypes=[('Audio files', " ".join(AUDIO_FORMATS))], initialdir=LAST_VISITED_DIR)
+        self.target = askopenfilename(filetypes=[('Audio files', " ".join(AUDIO_FORMATS))],
+                                      initialdir=GAMUT_SESSION.get('last_dir'))
         if self.target:
-            LAST_VISITED_DIR = os.path.dirname(self.target)
+            GAMUT_SESSION.set('last_dir', os.path.dirname(self.target))
         self.update_create_mosaic_button()
 
     @capture_exceptions

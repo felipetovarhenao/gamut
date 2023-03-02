@@ -8,7 +8,7 @@ from kivy.properties import ObjectProperty
 from kivy.clock import Clock
 from kivy.app import App
 
-from .config import CORPUS_DIR, LAST_VISITED_DIR, CORPUS_CACHE
+from .config import CORPUS_DIR, CORPUS_CACHE, GAMUT_SESSION
 from .utils import log_message, capture_exceptions, log_done, UserConfirmation
 
 from ..features import Corpus
@@ -56,20 +56,18 @@ class CorpusFactoryWidget(Widget):
         return [toggle.text.lower() for toggle in App.get_running_app().root.corpus_module.menu.corpora_menu.children]
 
     def load_folder_path(self):
-        global LAST_VISITED_DIR
-        path = askdirectory(title='Choose corpus source folder', initialdir=LAST_VISITED_DIR)
+        path = askdirectory(title='Choose corpus source folder', initialdir=GAMUT_SESSION.get("last_dir"))
         if not path or path in self.sources:
             return
-        LAST_VISITED_DIR = os.path.dirname(path)
+        GAMUT_SESSION.set('last_dir', os.path.dirname(path))
         self.sources.append(path)
         self.sources_menu.add_widget(self.make_toggle(text=path, name='sources'))
         self.update_create_corpus_button()
 
     def load_file_paths(self):
-        global LAST_VISITED_DIR
-        files = askopenfilenames(filetypes=[("Audio files", " ".join(AUDIO_FORMATS))], initialdir=LAST_VISITED_DIR)
+        files = askopenfilenames(filetypes=[("Audio files", " ".join(AUDIO_FORMATS))], initialdir=GAMUT_SESSION.get('last_dir'))
         if files:
-            LAST_VISITED_DIR = os.path.dirname(files[0])
+            GAMUT_SESSION.set('last_dir', os.path.dirname(files[0]))
         for file in files:
             if file in self.sources:
                 continue

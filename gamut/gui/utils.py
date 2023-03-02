@@ -9,7 +9,6 @@ import re
 from kivy.factory import Factory
 from kivy.app import App
 from kivy.uix.popup import Popup
-from kivy.uix.label import Label
 
 
 class ConsoleLog(Factory.TextLabel):
