@@ -115,16 +115,21 @@ class CorpusMenuWidget(Widget):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        Clock.schedule_once(lambda _: self.update_corpus_menu(), 1)
+        Clock.schedule_once(lambda _: self.update_corpus_menu(is_first_time=True), 1)
 
-    def update_corpus_menu(self) -> None:
-        last_selected = [toggle.value for toggle in self.get_selected_toggles()]
+    def update_corpus_menu(self, is_first_time: bool = False) -> None:
         self.clear_menu()
-        for path in sorted(os.listdir(CORPUS_DIR)):
+        # get full corpus paths
+        paths = sorted([os.path.join(CORPUS_DIR, basename) for basename in os.listdir(CORPUS_DIR)])
+
+        # get most recent file, if any
+        most_recent = max(paths, key=os.path.getctime) if (paths and not is_first_time) else None
+
+        # add a widget for each path, and select most recent by default
+        for path in paths:
             corpus_name = os.path.basename(os.path.splitext(path)[0])
-            state = 'down' if corpus_name in last_selected else 'normal'
             t = MenuItem(value=corpus_name,
-                         state=state,
+                         state='down' if path == most_recent else 'normal',
                          on_release=lambda _: self.update_delete_button() or self.update_create_mosaic_button())
             self.corpora_menu.add_widget(t)
         self.update_delete_button()

@@ -87,18 +87,32 @@ class MosaicMenuWidget(Widget):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.selected_mosaic = None
-        Clock.schedule_once(lambda _: self.update_mosaic_menu(), 1)
+        Clock.schedule_once(lambda _: self.update_mosaic_menu(is_first_time=True), 1)
 
-    def update_mosaic_menu(self) -> None:
-        last_selected = [toggle.value for toggle in self.get_selected_toggles()]
+    def update_mosaic_menu(self, is_first_time: bool = False) -> None:
         self.clear_menu()
-        for path in sorted(os.listdir(MOSAIC_DIR)):
+        # get full corpus paths
+        paths = sorted([os.path.join(MOSAIC_DIR, basename) for basename in os.listdir(MOSAIC_DIR)])
+
+        # get most recent file, if any
+        most_recent = max(paths, key=os.path.getctime) if (paths and not is_first_time) else None
+
+        # add a widget for each path, and select most recent by default
+        for path in paths:
             mosaic_name = os.path.basename(os.path.splitext(path)[0])
-            state = 'down' if mosaic_name in last_selected else 'normal'
+
+            # set newest as selected
+            if not is_first_time and path == most_recent:
+                self.selected_mosaic = mosaic_name
+
+            # create menu item toggle
             t = MenuItem(value=mosaic_name,
-                         state=state,
+                         state='down' if path == most_recent else 'normal',
                          on_release=lambda toggle: self.exclusive_select(toggle) or self.update_delete_button())
+
             self.mosaic_menu.add_widget(t)
+        if not is_first_time:
+            self.update_audio_synth_button()
         self.update_delete_button()
 
     def clear_menu(self) -> None:
