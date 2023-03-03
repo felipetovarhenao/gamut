@@ -11,7 +11,7 @@
 			dirselect: root.dirselect
 			filters: root.filters
             on_entries_cleared: root.on_entry_added(filechooser) or load_button.set_disabled(not filechooser.selection)
-            on_selection: load_button.set_disabled(not filechooser.selection)
+            on_selection: load_button.set_disabled(not [x for x in filechooser.selection if not x.startswith('..')])
         BoxLayout:
             size_hint_y: None
             height: self.minimum_height
@@ -36,7 +36,11 @@
         spacing: app.theme.spacing
         FileChooserIconView:
             id: filechooser
-            title: root.title
+			path: root.last_path
+            font_name: app.theme.font.name
+			multiselect: root.multiselect
+			dirselect: root.dirselect
+			filters: root.filters
             on_entries_cleared: root.on_entry_added(filechooser)
             on_selection: text_input.text = self.selection and self.selection[0] or ''
         TextInput:

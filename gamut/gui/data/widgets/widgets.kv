@@ -105,16 +105,18 @@
     bold: True
     background_normal: ''
     background_down: ''
-    background_color: app.theme.colors.primary if self.state == 'normal' else app.theme.colors.secondary
+    bg_color: app.theme.colors.primary
+    bg_color_down: app.theme.colors.secondary
+    background_color: 0,0,0,0
     background_disabled_normal: ''
     disabled_color: app.theme.colors.disabled_mask
     canvas.before:
         Color:
-            rgba: self.background_color
+            rgba: root.bg_color if root.state == 'normal' else root.bg_color_down
         RoundedRectangle:
             size: self.size
             pos: self.pos
-            radius: [dp(15)]
+            radius: [dp(3)]
 
 
 <LargeButton>:
@@ -122,12 +124,14 @@
     height: app.theme.font.size('xxl')
 
 <LargeDangerButton>:
-    background_color: app.theme.colors.danger if self.state == 'normal' else app.theme.colors.danger_hl
+    bg_color: app.theme.colors.danger
+    bg_color_down: app.theme.colors.danger_hl
     text: 'DELETE SELECTION'
     disabled: True
 
 <LargeSuccessButton>:
-    background_color: app.theme.colors.success if self.state == 'normal' else app.theme.colors.success_hl
+    bg_color: app.theme.colors.success
+    bg_color_down: app.theme.colors.success_hl
     disabled: True
 
 <ToggleButton>:
@@ -135,7 +139,7 @@
     font_size: app.theme.font.size()
     color: app.theme.colors.txt1 if self.state == 'normal' else app.theme.colors.txt_neg
     size_hint_y: None
-    height: app.theme.font.size('xxl')
+    height: self.texture_size[1] + app.theme.pad(2)
     background_normal: ''
     background_down: ''
     background_color: app.theme.colors.bg3 if self.state == 'normal' else app.theme.colors.secondary

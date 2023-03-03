@@ -22,8 +22,10 @@ import os
 
 
 class MosaicFactoryWidget(Widget):
-    delete_mosaic_button = ObjectProperty(None)
+    """ Submodule for creating mosaics """
+
     create_mosaic_button = ObjectProperty(None)
+    choose_target_button = ObjectProperty(None)
     mosaic_name = ObjectProperty(None)
     target = StringProperty('')
 
@@ -35,22 +37,25 @@ class MosaicFactoryWidget(Widget):
     def get_selected_corpora(self) -> None:
         return [toggle.value for toggle in App.get_running_app().root.corpus_module.menu.corpora_menu.children if toggle.state == 'down']
 
-    def update_create_mosaic_button(self) -> None:
-        value = all([self.has_name, self.get_selected_corpora(), self.target])
+    def update_mosaic_buttons(self) -> None:
+        selected_corpora = self.get_selected_corpora()
+        self.choose_target_button.set_disabled(not selected_corpora)
+        value = all([self.has_name, selected_corpora, self.target])
         self.create_mosaic_button.set_disabled(not value)
 
     def on_mosaic_name_update(self, instance: Widget, value: str) -> None:
         self.has_name = bool(value)
-        self.update_create_mosaic_button()
+        self.update_mosaic_buttons()
 
     def update_mosaic_menu(self) -> None:
         App.get_running_app().root.mosaic_module.menu.update_mosaic_menu()
 
     def load_target(self) -> None:
+        """ Open load file dialog """
         def on_load(selected: Iterable):
             self.target = selected[0]
             GAMUT_SESSION.set('last_dir', os.path.dirname(self.target))
-            self.update_create_mosaic_button()
+            self.update_mosaic_buttons()
         LoadDialog(on_load=on_load,
                    title='CHOOSE TARGET',
                    filters=[f"*{ft}" for ft in AUDIO_FORMATS]).open()
@@ -58,6 +63,7 @@ class MosaicFactoryWidget(Widget):
     @capture_exceptions
     @log_done
     def create_mosaic(self) -> None:
+        """ Creates a mosaic based on selected corpus and chosen target """
         mosaic_name = self.mosaic_name.text
         log_message(f"Creating mosaic: {mosaic_name}...")
         corpus_names = self.get_selected_corpora()
@@ -80,6 +86,7 @@ class MosaicFactoryWidget(Widget):
 
 
 class MosaicMenuWidget(Widget):
+    """ Submodule menu of existing mosaics """
     delete_mosaic_button = ObjectProperty(None)
     mosaic_menu = ObjectProperty(None)
     audio_module = ObjectProperty(None)
@@ -87,18 +94,33 @@ class MosaicMenuWidget(Widget):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
         self.selected_mosaic = None
-        Clock.schedule_once(lambda _: self.update_mosaic_menu(), 1)
+        Clock.schedule_once(lambda _: self.update_mosaic_menu(is_first_time=True), 1)
 
-    def update_mosaic_menu(self) -> None:
-        last_selected = [toggle.value for toggle in self.get_selected_toggles()]
+    def update_mosaic_menu(self, is_first_time: bool = False) -> None:
         self.clear_menu()
-        for path in sorted(os.listdir(MOSAIC_DIR)):
+        # get full corpus paths
+        paths = sorted([os.path.join(MOSAIC_DIR, basename) for basename in os.listdir(MOSAIC_DIR)])
+
+        # get most recent file, if any
+        most_recent = max(paths, key=os.path.getctime) if (paths and not is_first_time) else None
+
+        # add a widget for each path, and select most recent by default
+        for path in paths:
             mosaic_name = os.path.basename(os.path.splitext(path)[0])
-            state = 'down' if mosaic_name in last_selected else 'normal'
+
+            # set newest as selected
+            if not is_first_time and path == most_recent:
+                self.selected_mosaic = mosaic_name
+
+            # create menu item toggle
             t = MenuItem(value=mosaic_name,
-                         state=state,
-                         on_release=lambda toggle: self.exclusive_select(toggle) or self.update_delete_button())
+                         state='down' if path == most_recent else 'normal',
+                         group='mosaics',
+                         on_release=lambda toggle: self.on_select(toggle) or self.update_delete_button())
+
             self.mosaic_menu.add_widget(t)
+        if not is_first_time:
+            self.update_audio_synth_button()
         self.update_delete_button()
 
     def clear_menu(self) -> None:
@@ -106,14 +128,8 @@ class MosaicMenuWidget(Widget):
             self.mosaic_menu.clear_widgets()
         self.update_delete_button()
 
-    def exclusive_select(self, toggle: Widget) -> None:
-        if toggle.state == 'normal':
-            self.selected_mosaic = None
-        else:
-            for child in self.mosaic_menu.children:
-                if child != toggle:
-                    child.state = 'normal'
-            self.selected_mosaic = toggle.value
+    def on_select(self, toggle: Widget) -> None:
+        self.selected_mosaic = toggle.value if toggle.state == 'down' else None
         self.update_audio_synth_button()
 
     def delete_selected_mosaics(self) -> None:
