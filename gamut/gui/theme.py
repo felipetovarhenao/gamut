@@ -21,7 +21,7 @@ class ColorPalette:
         self.txt1 = rgba("e1e1e1")
         self.txt2 = rgba("d6d6d6")
         self.txt3 = rgba("c1c1c1")
-        self.txt_hl = rgba("C7D0FF")
+        self.txt_hl = rgba("D8E4FF")
         self.txt_neg = rgba("ffffff")
         self.primary = rgba("4d5360")
         self.secondary = rgba("5b6476")
