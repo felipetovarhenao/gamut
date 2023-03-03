@@ -2,6 +2,7 @@
 
 <MosaicFactoryWidget>:
     create_mosaic_button: create_mosaic_button
+    choose_target_button: choose_target_button
     mosaic_name: mosaic_name
     target: ''
     BoxLayout:
@@ -20,7 +21,9 @@
             TextLabel:
                 text: f"...{root.target[-32:]}" if len(root.target) > 32 else root.target
             LargeButton:
+                id: choose_target_button
                 text: "CHOOSE TARGET"	
+                disabled: True
                 on_release: root.load_target()
             TextInput:
                 id: mosaic_name

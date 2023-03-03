@@ -128,17 +128,21 @@ class CorpusMenuWidget(Widget):
         # add a widget for each path, and select most recent by default
         for path in paths:
             corpus_name = os.path.basename(os.path.splitext(path)[0])
+
             t = MenuItem(value=corpus_name,
                          state='down' if path == most_recent else 'normal',
-                         on_release=lambda _: self.update_delete_button() or self.update_create_mosaic_button())
+                         on_release=lambda _: self.update_delete_button() or self.update_mosaic_buttons())
             self.corpora_menu.add_widget(t)
+        if not is_first_time:
+            # 
+            self.update_mosaic_buttons()
         self.update_delete_button()
 
     def get_selected_toggles(self) -> Iterable:
         return [toggle for toggle in self.corpora_menu.children if toggle.state == 'down']
 
-    def update_create_mosaic_button(self) -> None:
-        App.get_running_app().root.mosaic_module.factory.update_create_mosaic_button()
+    def update_mosaic_buttons(self) -> None:
+        App.get_running_app().root.mosaic_module.factory.update_mosaic_buttons()
 
     def update_delete_button(self) -> None:
         self.delete_corpora_button.set_disabled(not bool(self.get_selected_toggles()))

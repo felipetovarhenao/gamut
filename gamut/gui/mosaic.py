@@ -22,8 +22,8 @@ import os
 
 
 class MosaicFactoryWidget(Widget):
-    delete_mosaic_button = ObjectProperty(None)
     create_mosaic_button = ObjectProperty(None)
+    choose_target_button = ObjectProperty(None)
     mosaic_name = ObjectProperty(None)
     target = StringProperty('')
 
@@ -35,13 +35,15 @@ class MosaicFactoryWidget(Widget):
     def get_selected_corpora(self) -> None:
         return [toggle.value for toggle in App.get_running_app().root.corpus_module.menu.corpora_menu.children if toggle.state == 'down']
 
-    def update_create_mosaic_button(self) -> None:
-        value = all([self.has_name, self.get_selected_corpora(), self.target])
+    def update_mosaic_buttons(self) -> None:
+        selected_corpora = self.get_selected_corpora()
+        self.choose_target_button.set_disabled(not selected_corpora)
+        value = all([self.has_name, selected_corpora, self.target])
         self.create_mosaic_button.set_disabled(not value)
 
     def on_mosaic_name_update(self, instance: Widget, value: str) -> None:
         self.has_name = bool(value)
-        self.update_create_mosaic_button()
+        self.update_mosaic_buttons()
 
     def update_mosaic_menu(self) -> None:
         App.get_running_app().root.mosaic_module.menu.update_mosaic_menu()
@@ -50,7 +52,7 @@ class MosaicFactoryWidget(Widget):
         def on_load(selected: Iterable):
             self.target = selected[0]
             GAMUT_SESSION.set('last_dir', os.path.dirname(self.target))
-            self.update_create_mosaic_button()
+            self.update_mosaic_buttons()
         LoadDialog(on_load=on_load,
                    title='CHOOSE TARGET',
                    filters=[f"*{ft}" for ft in AUDIO_FORMATS]).open()
