@@ -61,7 +61,7 @@ class CorpusFactoryWidget(Widget):
     def add_sources(self) -> None:
         def on_load(selected):
             for source in selected:
-                if source in self.sources:
+                if source in self.sources or source.startswith('..'):
                     continue
                 self.sources.append(source)
                 self.sources_menu.add_widget(self.make_toggle(value=source, name='sources'))
