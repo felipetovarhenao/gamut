@@ -135,7 +135,7 @@
     font_size: app.theme.font.size()
     color: app.theme.colors.txt1 if self.state == 'normal' else app.theme.colors.txt_neg
     size_hint_y: None
-    height: app.theme.font.size('xxl')
+    height: self.texture_size[1] + app.theme.pad(2)
     background_normal: ''
     background_down: ''
     background_color: app.theme.colors.bg3 if self.state == 'normal' else app.theme.colors.secondary
