@@ -8,14 +8,35 @@
 
 import os
 import sys
-from gamut.__version__ import __version__
+import codecs
+
+
+def read(rel_path):
+    here = os.path.abspath(os.path.dirname(__file__))
+    with codecs.open(os.path.join(here, rel_path), 'r') as fp:
+        return fp.read()
+
+
+def get_version(rel_path):
+    for line in read(rel_path).splitlines():
+        if line.startswith('__version__'):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
+
+
+def get_logo():
+    here = os.path.dirname(__file__)
+    return os.path.join(os.path.realpath(here), '../../gamut/gui/data/images/logo.png')
+
 
 sys.path.insert(0, os.path.abspath('../..'))
 
 project = 'GAMuT'
 copyright = '2023, Felipe Tovar-Henao'
 author = 'Felipe Tovar-Henao'
-version = f"v{__version__}"
+version = "v{}".format(get_version('../../gamut/__version__.py'))
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -36,7 +57,7 @@ html_favicon = '_static/favicon.ico'
 
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
-html_logo = '../../gamut/gui/data/images/logo.png'
+html_logo = get_logo()
 html_theme_options = {
     'logo_only': True,
     'display_version': True,
