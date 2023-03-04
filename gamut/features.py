@@ -8,7 +8,7 @@ from librosa.beat import tempo
 from .controls import Points, Envelope, object_to_points
 from .utils import resample_array
 from .audio import AudioBuffer
-from .config import FILE_EXT, CONSOLE, ANALYSIS_TYPES, MIME_TYPES, get_elapsed_time
+from .config import FILE_EXT, CONSOLE, ANALYSIS_TYPES, MIME_TYPES, AUDIO_DIR, get_elapsed_time
 from .data import KDTree
 
 # os
@@ -20,6 +20,7 @@ import filetype
 from random import choices, random
 from copy import deepcopy
 from time import time
+import os
 
 # typing
 from typing_extensions import Self
@@ -227,6 +228,8 @@ class Corpus(Analyzer):
 
         self.soundfiles = []
         if self.source:
+            self.source = [self.source] if isinstance(self.source, str) else self.source
+            self.source.append(os.path.join(AUDIO_DIR, 'silence.mp3'))
             self.__build()
 
     @get_elapsed_time

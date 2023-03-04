@@ -2,10 +2,12 @@ from __future__ import annotations
 from time import time
 from .sys import Console
 from typing import Any, Callable
+import os
 
 FILE_EXT = '.gamut'
 AUDIO_FORMATS = ['.wav', '.aif', '.aiff', '.mp3']
 MIME_TYPES = ['audio/x-wav', 'audio/x-aiff', 'audio/mpeg']
+AUDIO_DIR = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'gui/data/audio/')
 CONSOLE = Console()
 ANALYSIS_TYPES = ['timbre', 'pitch']
 ENVELOPE_TYPES = [
