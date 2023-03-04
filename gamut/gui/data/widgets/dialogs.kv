@@ -63,3 +63,53 @@
                 id: save_button
                 text: "SAVE"
                 on_release: root.on_save(filechooser.path, text_input.text) or root.on_cancel()
+
+<SummaryLabel@LeftTextLabel>:
+    color: app.theme.colors.txt2
+    valign: 'top'
+    text_size: self.width, None
+    size_hint_y: None
+    height: self.texture_size[1]
+
+<SummaryField>:
+    size_hint_y: None
+    height: self.minimum_height
+    spacing: app.theme.spacing
+    padding: app.theme.pad()
+    SummaryLabel:
+        size_hint_x: 0.5
+        size_hint_y: 1
+        text: root.key
+        bold: True
+    SummaryLabel:
+        text: root.value
+        color: app.theme.colors.txt_hl
+    
+<Summary>:
+    body: body
+    BoxLayout:
+        orientation: 'vertical'
+        pos: root.pos
+        size: root.size
+        ScrollView:
+            GridLayout:
+                id: body
+                cols: 1
+                size_hint_y: None
+                height: self.minimum_height
+                spacing: app.theme.spacing
+                padding: [app.theme.pad(), app.theme.pad(4), app.theme.pad(), app.theme.pad(4)]
+        BoxLayout:
+            size_hint_y: None
+            height: self.minimum_height
+            spacing: app.theme.spacing
+            padding: app.theme.pad()
+            Label:
+            LargeButton:
+                text: "CLOSE"
+                disabled: False
+                on_release: root.on_cancel()
+            Label:
+
+
+        

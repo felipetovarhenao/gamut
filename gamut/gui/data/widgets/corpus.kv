@@ -78,6 +78,7 @@
 <CorpusMenuWidget>:
     corpora_menu: corpora_menu
     delete_corpora_button: delete_corpora_button
+    corpus_summary_button: corpus_summary_button 
     BoxLayout:	
         size: root.size
         pos: root.pos
@@ -103,7 +104,10 @@
             size_hint_y: None
             height: self.minimum_height
             Label:
-            Label:
+            LargeButton:
+                id: corpus_summary_button
+                text: 'SUMMARY'
+                on_release: root.open_summary()
             LargeDangerButton:
                 id: delete_corpora_button
                 on_release: root.delete_selected_corpora()

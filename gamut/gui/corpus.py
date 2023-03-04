@@ -10,7 +10,7 @@ from kivy.app import App
 
 # gamut
 from .config import CORPUS_DIR, CORPUS_CACHE, GAMUT_SESSION
-from .dialogs import LoadDialog
+from .dialogs import LoadDialog, Summary
 from .utils import log_message, capture_exceptions, log_done, UserConfirmation
 from ..features import Corpus
 from ..config import AUDIO_FORMATS
@@ -112,6 +112,7 @@ class CorpusMenuWidget(Widget):
     corpora_menu = ObjectProperty(None)
     selected_corpora = ObjectProperty(None)
     delete_corpora_button = ObjectProperty(None)
+    corpus_summary_button = ObjectProperty(None)
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
@@ -134,7 +135,7 @@ class CorpusMenuWidget(Widget):
                          on_release=lambda _: self.update_delete_button() or self.update_mosaic_buttons())
             self.corpora_menu.add_widget(t)
         if not is_first_time:
-            # 
+            #
             self.update_mosaic_buttons()
         self.update_delete_button()
 
@@ -145,7 +146,21 @@ class CorpusMenuWidget(Widget):
         App.get_running_app().root.mosaic_module.factory.update_mosaic_buttons()
 
     def update_delete_button(self) -> None:
-        self.delete_corpora_button.set_disabled(not bool(self.get_selected_toggles()))
+        selected = self.get_selected_toggles()
+        self.delete_corpora_button.set_disabled(not selected)
+        self.corpus_summary_button.set_disabled(not len(selected) == 1)
+
+    @capture_exceptions
+    def open_summary(self):
+        """ Opens a modal window with information about the currently selected corpus """
+        global CORPUS_CACHE
+        corpus_name = self.get_selected_toggles()[0].value
+        if corpus_name in CORPUS_CACHE:
+            corpus = CORPUS_CACHE[corpus_name]
+        else:
+            corpus = Corpus().read(os.path.join(CORPUS_DIR, f'{corpus_name}.gamut'))
+            CORPUS_CACHE[corpus_name] = corpus
+        Summary(title="CORPUS SUMMARY", summary=corpus._summarize()).open()
 
     def delete_selected_corpora(self) -> None:
         selected = self.get_selected_toggles()

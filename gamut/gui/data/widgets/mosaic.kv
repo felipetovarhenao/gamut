@@ -37,6 +37,7 @@
 <MosaicMenuWidget>:
     delete_mosaic_button: delete_mosaic_button 
     mosaic_menu: mosaic_menu
+    mosaic_summary_button: mosaic_summary_button
     BoxLayout:	
         size: root.size
         pos: root.pos
@@ -62,7 +63,10 @@
             size_hint_y: None
             height: self.minimum_height
             Label:
-            Label:
+            LargeButton:
+                id: mosaic_summary_button
+                text: "SUMMARY"
+                on_release: root.open_summary()
             LargeDangerButton:
                 id: delete_mosaic_button
                 on_release: root.delete_selected_mosaics()

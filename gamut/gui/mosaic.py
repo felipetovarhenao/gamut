@@ -11,7 +11,7 @@ from kivy.properties import ObjectProperty, StringProperty
 # gamut
 from .config import CORPUS_DIR, MOSAIC_DIR, CORPUS_CACHE, MOSAIC_CACHE, GAMUT_SESSION
 from .utils import capture_exceptions, log_done, log_message, UserConfirmation
-from .dialogs import LoadDialog
+from .dialogs import LoadDialog, Summary
 from .buttons import MenuItem
 
 from ..features import Corpus, Mosaic
@@ -88,6 +88,7 @@ class MosaicFactoryWidget(Widget):
 class MosaicMenuWidget(Widget):
     """ Submodule menu of existing mosaics """
     delete_mosaic_button = ObjectProperty(None)
+    mosaic_summary_button = ObjectProperty(None)
     mosaic_menu = ObjectProperty(None)
     audio_module = ObjectProperty(None)
 
@@ -150,7 +151,21 @@ class MosaicMenuWidget(Widget):
         return [toggle for toggle in self.mosaic_menu.children if toggle.state == 'down']
 
     def update_delete_button(self) -> None:
-        self.delete_mosaic_button.set_disabled(not bool(self.get_selected_toggles()))
+        selected = self.get_selected_toggles()
+        self.delete_mosaic_button.set_disabled(not bool(selected))
+        self.mosaic_summary_button.set_disabled(len(selected) != 1)
+
+    @capture_exceptions
+    def open_summary(self):
+        """ Opens a modal window with information about the currently selected mosaic """
+        global MOSAIC_CACHE
+        mosaic_name = self.get_selected_toggles()[0].value
+        if mosaic_name in MOSAIC_CACHE:
+            mosaic = MOSAIC_CACHE[mosaic_name]
+        else:
+            mosaic = Mosaic().read(os.path.join(MOSAIC_DIR, f'{mosaic_name}.gamut'))
+            MOSAIC_CACHE[mosaic_name] = mosaic
+        Summary(title="MOSAIC SUMMARY", summary=mosaic._summarize()).open()
 
 
 class MosaicWidget(Widget):

@@ -6,6 +6,7 @@ from collections.abc import Callable, Iterable
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
+from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty
 from kivy.clock import Clock
 
@@ -13,23 +14,32 @@ from kivy.clock import Clock
 from .config import GAMUT_SESSION
 
 
-class BaseDialog(FloatLayout):
-    def __init__(self,
-                 title: str = 'LOAD FILE OR FOLDER',
-                 **kwargs):
+class Modal(FloatLayout):
+    def __init__(self, title: str, window_hint: tuple = (0.9, 0.9), **kwargs):
         self.popup = None
         self.title = title
-        self.last_path = GAMUT_SESSION.get('last_dir')
+        self.window_hint = window_hint
         super().__init__(**kwargs)
 
     def open(self) -> None:
         self.popup = Popup(title=self.get_popup_title(),
                            content=self,
-                           size_hint=(0.9, 0.9))
+                           size_hint=self.window_hint)
         self.popup.open()
+
+    def get_popup_title(self):
+        return self.title
 
     def on_cancel(self) -> None:
         self.popup.dismiss()
+
+
+class BaseDialog(Modal):
+    def __init__(self,
+                 title: str = 'LOAD FILE OR FOLDER',
+                 **kwargs):
+        self.last_path = GAMUT_SESSION.get('last_dir')
+        super().__init__(title=title, **kwargs)
 
     def on_entry_added(self, chooser: Widget) -> None:
         if chooser.path != self.last_path:
@@ -66,3 +76,22 @@ class SaveDialog(BaseDialog):
 
     def on_text_change(self, instance: Widget, value: str) -> None:
         self.save_button.set_disabled(not value)
+
+
+class SummaryField(BoxLayout):
+    def __init__(self, key: str, value: str, **kwargs):
+        self.key = " ".join(key.split(sep=None))
+        self.value = " ".join(value.split(sep=None)) if value else "None"
+        super().__init__(**kwargs)
+
+
+class Summary(Modal):
+    body = ObjectProperty(None)
+
+    def __init__(self, summary: dict, **kwargs):
+        super().__init__(window_hint=(0.5, 0.9), **kwargs)
+        Clock.schedule_once(lambda _: self.__compile(summary))
+
+    def __compile(self, summary: dict) -> None:
+        for key in summary:
+            self.body.add_widget(SummaryField(key=key.upper(), value=str(summary[key])))

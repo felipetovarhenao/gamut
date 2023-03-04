@@ -19,7 +19,7 @@ from os import walk, rename
 import filetype
 from random import choices, random
 from copy import deepcopy
-from time import time
+import datetime
 import os
 
 # typing
@@ -212,6 +212,7 @@ class Corpus(Analyzer):
         self.source = source
         self.max_duration = max_duration
         self.features = features
+        self.total_duration = 0
         self.source_root = ""
         self.tree = KDTree(leaf_size=leaf_size)
         CONSOLE.reset_counter('Analyzing audio samples: ')
@@ -246,12 +247,14 @@ class Corpus(Analyzer):
         for i, sf in enumerate(self.soundfiles):
             fn = basename(sf['file'])
             filenames += [f'\t{fn}', f', {fn}', f', {fn}\n'][[0, 1, 1, 2][i % 4]]
+
         return {
             "source root": self.source_root,
             "portable": self.portable,
+            "total duration (H:M:S)": str(datetime.timedelta(seconds=int(self.total_duration))),
             "max. duration per source": f'{self.max_duration}' + ("s" if self.max_duration else ""),
             "max. tree leaf size": self.tree.leaf_size,
-            "analysis features": f'[{", ".join(self.features)}, ]',
+            "analysis features": ", ".join(self.features),
             f'sources ({len(self.soundfiles)})': filenames,
         }
 
@@ -286,6 +289,7 @@ class Corpus(Analyzer):
             'sr': sr,
             'y': y
         })
+        self.total_duration += len(y)/sr
         analysis, markers = self._analyze_audio_file(y=y, features=self.features, sr=sr)
         CONSOLE.counter.next()
         data.extend([{
@@ -495,12 +499,22 @@ class Mosaic(Analyzer):
         return mosaic
 
     def _summarize(self) -> dict:
+        duration = str(datetime.timedelta(seconds=int(self.duration))) if self.duration else None
+        num_corpora = 0
+        num_sources = []
+        for k in self.soundfiles:
+            num_corpora += 1
+            N = len(self.soundfiles[k]['sources'])
+            info = f"{N} source(s) from corpus {num_corpora}"
+            num_sources.append(info)
+
         return {
             "target": basename(self.target) if self.target else None,
-            "num. of corpora": len([x for x in self.soundfiles]),
-            "analysis features": self.features,
+            "num. of corpora": num_corpora,
+            "num. of sources": ", ".join(num_sources),
+            "analysis features": ", ".join(self.features),
             "portable": self.portable,
-            "duration": f'{round(self.duration * 10) / 10}s' if self.duration else None,
+            "duration": duration,
             "num. of grains": len(self.frames)
         }
 
