@@ -4,7 +4,7 @@ from pathlib import Path
 long_description = (Path(__file__).parent / "README.md").read_text()
 
 MODULE = 'gamut'
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 DESCRIPTION = 'Granular Audio Musaicing Toolkit for Python'
 
 
