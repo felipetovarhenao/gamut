@@ -29,6 +29,7 @@ def is_kivy_installed() -> bool:
 
 def gui() -> None:
     """ Entry points to launch GUI """
+
     # Check if kivy has been installed
     if not is_kivy_installed():
         import subprocess
@@ -45,6 +46,9 @@ def gui() -> None:
         print_success("Running again...")
         subprocess.run(['gamut', '--gui', '--retry'])
         exit()
+
+    import os
+    os.environ["KIVY_NO_CONSOLELOG"] = "1"
 
     print_success('Launching user interface...')
     from .gui import GUI

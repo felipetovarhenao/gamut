@@ -245,13 +245,15 @@ class Corpus(Analyzer):
     def _summarize(self) -> dict:
         filenames = "\n"
         for i, sf in enumerate(self.soundfiles):
+            if i == -1:
+                continue
             fn = basename(sf['file'])
             filenames += [f'\t{fn}', f', {fn}', f', {fn}\n'][[0, 1, 1, 2][i % 4]]
 
         return {
             "source root": self.source_root,
             "portable": self.portable,
-            "total duration (H:M:S)": str(datetime.timedelta(seconds=int(self.total_duration))),
+            "duration (H:M:S)": str(datetime.timedelta(seconds=int(self.total_duration))),
             "max. duration per source": f'{self.max_duration}' + ("s" if self.max_duration else ""),
             "max. tree leaf size": self.tree.leaf_size,
             "analysis features": ", ".join(self.features),
@@ -503,18 +505,20 @@ class Mosaic(Analyzer):
         num_corpora = 0
         num_sources = []
         for k in self.soundfiles:
+            if k < 0:
+                continue
             num_corpora += 1
             N = len(self.soundfiles[k]['sources'])
             info = f"{N} source(s) from corpus {num_corpora}"
             num_sources.append(info)
 
         return {
-            "target": basename(self.target) if self.target else None,
+            "target": basename(str(self.target)),
+            "portable": self.portable,
+            "duration (H:M:S)": duration,
             "num. of corpora": num_corpora,
             "num. of sources": ", ".join(num_sources),
             "analysis features": ", ".join(self.features),
-            "portable": self.portable,
-            "duration": duration,
             "num. of grains": len(self.frames)
         }
 
