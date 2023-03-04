@@ -24,6 +24,7 @@ class Modal(FloatLayout):
     def open(self) -> None:
         self.popup = Popup(title=self.get_popup_title(),
                            content=self,
+                           auto_dismiss=False,
                            size_hint=self.window_hint)
         self.popup.open()
 
