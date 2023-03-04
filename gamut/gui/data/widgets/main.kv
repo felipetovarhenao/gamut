@@ -10,12 +10,22 @@
         keep_ratio: True
         size_hint_y: None
         height: dp(120)
-    TextLabel:
-        padding_y: app.theme.pad(3)
-        color: app.theme.colors.txt2
-        text: "granular audio musaciking toolkit"
-        italic: True
-        bold: True
+    BoxLayout:
+        size_hint_y: None
+        orientation: 'vertical'
+        height: self.minimum_height
+        padding: app.theme.pad(3)
+        TextLabel:
+            color: app.theme.colors.txt2
+            text: "granular audio musaciking toolkit"
+            halign: 'center'
+            italic: True
+            bold: True
+        TextLabel:
+            color: app.theme.colors.txt3
+            text: app.version
+            halign: 'center'
+            bold: True
 
 <Main>:
     console: console

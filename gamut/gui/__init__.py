@@ -9,8 +9,8 @@ from .audio import *
 from .mosaic import *
 
 # gamut
+from ..__version__ import __version__
 from .theme import Theme
-from .config import GAMUT_FILES_DIRECTORY, CORPUS_DIR, MOSAIC_DIR
 from .utils import log_message
 
 # kivy imports
@@ -18,9 +18,6 @@ from kivy.properties import ObjectProperty
 from kivy.uix.widget import Widget
 from kivy.app import App
 from kivy.clock import Clock
-
-# misc
-import os
 
 
 class Main(Widget):
@@ -44,14 +41,8 @@ class GUI(App):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
-        self.__create_root_directory()
         self.theme = Theme()
-
-    def __create_root_directory(self) -> None:
-        """ Create storage directories """
-        for _dir in [GAMUT_FILES_DIRECTORY, CORPUS_DIR, MOSAIC_DIR]:
-            if not os.path.exists(_dir):
-                os.mkdir(_dir)
+        self.version = f"v{__version__}"
 
     def build(self) -> Widget:
         """ Returns root widget """
