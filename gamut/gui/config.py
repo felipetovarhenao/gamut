@@ -15,6 +15,16 @@ CORPUS_CACHE = {}
 MOSAIC_CACHE = {}
 
 
+def create_root_directories() -> None:
+    """ Create data storage directories """
+    for directory in [GAMUT_FILES_DIRECTORY, CORPUS_DIR, MOSAIC_DIR]:
+        if not os.path.exists(directory):
+            os.mkdir(directory)
+
+
+create_root_directories()
+
+
 class GamutSession:
 
     def __init__(self) -> None:
@@ -36,7 +46,6 @@ class GamutSession:
     def load(self) -> None:
         # create session file if it doesn't exist
         if not os.path.exists(SESSION_DATA_FILE):
-            os.makedirs(os.path.dirname(SESSION_DATA_FILE))
             with open(SESSION_DATA_FILE, 'w') as f:
                 json.dump(self.get_default_attrs(), f)
 
