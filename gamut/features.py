@@ -1,7 +1,7 @@
 from __future__ import annotations
 # librosa
 from librosa import magphase, stft, samples_like, load
-from librosa.feature import mfcc, chroma_stft, rms
+from librosa.feature import mfcc, chroma_stft, rms, zero_crossing_rate
 from librosa.beat import tempo
 
 # gamut
@@ -147,6 +147,9 @@ class Analyzer(ABC):
             analysis.extend(mfcc_features)
 
         if 'pitch' in features:
+            zerox = zero_crossing_rate(y=y,
+                                       frame_length=self.win_length,
+                                       hop_length=self.hop_length)
             loudness = rms(S=S,
                            frame_length=self.win_length,
                            hop_length=self.hop_length)
@@ -155,7 +158,7 @@ class Analyzer(ABC):
                                           n_fft=self.n_fft,
                                           win_length=self.win_length,
                                           hop_length=self.hop_length)
-            analysis.extend(np.concatenate([chroma_features, loudness]))
+            analysis.extend(np.concatenate([chroma_features, loudness, zerox]))
 
         analysis = np.array(analysis).T[:-1]
 

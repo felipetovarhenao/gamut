@@ -62,7 +62,6 @@ def cli():
     from os import chdir, makedirs, remove, mkdir, getcwd
     from os.path import realpath, join, exists, splitext, basename
     from shutil import rmtree, copyfileobj
-    import pkg_resources
     from subprocess import run
     from pathlib import Path
     import json
@@ -295,7 +294,8 @@ def cli():
     # PRINT GAMUT PACKAGE VERSION
     # ------------------------------------- #
     if args.version:
-        print_success(f'GAMuT v{pkg_resources.get_distribution("gamut").version}')
+        from .__version__ import __version__
+        print_success(f'GAMuT v{__version__}')
 
     # ------------------------------------- #
     # OPEN GRAPHICAL USER INTERFACE
