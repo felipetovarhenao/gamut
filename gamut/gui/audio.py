@@ -25,7 +25,7 @@ class Param(Widget):
 
     def list_filter(self, value: str, from_undo: bool = False) -> str | None:
         """ Text input filter for list-compatible parameters """
-        if value.isdigit() or value in ['.', '(', ')', ' ']:
+        if value.isdigit() or value in '.() ':
             return value
 
     def window_filter(self, value: str, from_undo: bool = False) -> str | None:

@@ -51,6 +51,11 @@ class BaseDialog(Modal):
     def get_popup_title(self) -> None:
         return f"{self.title}: {self.last_path}"
 
+    def sort_dirs(self, files: Iterable, filesystem: Iterable) -> Iterable:
+        def key(x): return x.lower()
+        return (sorted((f for f in files if filesystem.is_dir(f)), key=key) +
+                sorted((f for f in files if not filesystem.is_dir(f)), key=key))
+
 
 class LoadDialog(BaseDialog):
     def __init__(self,
