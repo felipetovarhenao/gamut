@@ -30,8 +30,16 @@ To install on **Debian-based Linux**:
 		apt-get update -y
 		apt-get install -y libportaudio2 libasound-dev libsndfile1 ffmpeg
 
-.. note::
-	If you're a Windows user, please Google how to install these libraries in your machine.
+.. admonition:: Note for Windows users
+	:class: warning
+	
+	Installing these libraries on Windows can be a bit tedious, so please Google how to install them in your machine.
+	Also notice that for both the libraries and Python, **you will likely have to manually add the executables to the system PATH**. For a detailed guide
+	on this, please read these two sources:
+	
+	- `How to add Python to PATH variable in Windows <https://www.educative.io/answers/how-to-add-python-to-path-variable-in-windows>`_
+	- `How to add executables to your PATH in Windows <https://medium.com/@kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53>`_.
+
 
 
 Python package
