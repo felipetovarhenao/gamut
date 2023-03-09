@@ -1,2 +1,5 @@
-pip uninstall gamut
-python3 setup.py install --record files.txt
+pip3 uninstall gamut
+rm -rf ./build 
+rm -rf ./dist
+rm -rf ./gamut.egg-info
+pip3 install .

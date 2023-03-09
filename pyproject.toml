@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gamut"
+authors = [
+	{ name = "Felipe Tovar-Henao", email = "felipe.tovar.henao@gmail.com" },
+]
+description = "Granular Audio Musaicing Toolkit for Python"
+readme = "README.md"
+requires-python = ">=3.7"
+keywords = [
+	'DSP',
+	'audio musaicking',
+	'granulation',
+	'machine learning',
+	'ML',
+	"MIR",
+	'music',
+	'sound design',
+	'concatenative synthesis',
+]
+license = { text = "OSI Approved :: ISC License (ISCL)" }
+classifiers = [
+	'Development Status :: 5 - Production/Stable',
+	'Intended Audience :: Other Audience',
+	'Natural Language :: English',
+	'Operating System :: MacOS :: MacOS X',
+	'Operating System :: Microsoft :: Windows',
+	'Programming Language :: Python',
+]
+dynamic = ["version", "dependencies"]
+
+[tool.setuptools.dynamic]
+version = { attr = "gamut.__version__.__version__" }
+readme = { file = ["README.md"] }
+dependencies = { file = ["requirements.txt"] }
+
+[project.scripts]
+gamut = "gamut:cli"
+gamut-ui = "gamut:gui"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+mypkg = ["*.mp3", "*.png", "*.kv"]
