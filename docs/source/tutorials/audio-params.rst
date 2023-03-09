@@ -52,7 +52,7 @@ This would result in the following grain envelope:
     :height: 250px
 
 .. warning::
-    When specifying envelopes as a ``list``, make sure that the envelope **starts and ends** in ``0``. Otherwise, you'll likely get audio clippings in the audio output with every grain.
+    When specifying envelopes as a ``list``, make sure that the envelope **starts and ends** in ``0``. Otherwise, you'll likely get unintended audio clicks in the audio output with every grain.
 
 
 Another convenient way of specifying time-varying or `dynamic` parameters, is through a 
