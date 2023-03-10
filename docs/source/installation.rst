@@ -10,20 +10,19 @@ Here's a step-by-step guide on how to install the **GAMuT** package, assumming, 
 Dependencies
 --------------
 
-Before installing **GAMuT**, you'll need a few system-wide audio and media libraries:
+For **GAMuT** to work, you'll need to install `ffmpeg <https://ffmpeg.org/>`_ and at least one of the following audio libraries (listed in order of preference):
 
-	* `portaudio <http://www.portaudio.com/>`_
-	* `libsoundio <http://libsound.io/>`_
 	* `libsndfile <https://libsndfile.github.io/libsndfile/>`_
-	* `ffmpeg <https://ffmpeg.org/>`_
+	* `libsoundio <http://libsound.io/>`_
+	* `portaudio <http://www.portaudio.com/>`_
 
-To install on **MacOS**, run (assuming you already have `Homebrew <https://brew.sh/>`_ installed):
+To install them on **MacOS**, run (assuming you already have `Homebrew <https://brew.sh/>`_ installed):
 
 	.. code:: shell
 
 		brew install portaudio libsoundio libsndfile ffmpeg
 
-To install on **Debian-based Linux**:
+To install them on **Debian-based Linux**:
 
 	.. code:: shell
 
