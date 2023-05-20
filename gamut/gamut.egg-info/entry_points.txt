@@ -1,3 +1,0 @@
-[console_scripts]
-gamut = gamut:cli
-gamut-ui = gamut:gui
