@@ -1,0 +1,265 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Option 1: Direct input arguments &mdash; GAMuT  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Option 2: GAMuT workspace (recommended)" href="workspace.html" />
+    <link rel="prev" title="Command-line interface" href="../cli.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> GAMuT
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                v1.2.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Table of contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting-started.html">Getting started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../cli.html">Command-line interface</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../cli.html#quickstart">Quickstart</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Option 1: Direct input arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workspace.html">Option 2: GAMuT workspace</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../gui/overview.html">Graphical user interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Reference</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GAMuT</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../cli.html">Command-line interface</a> &raquo;</li>
+        
+      <li>Option 1: Direct input arguments</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/cli/raw-args.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <section id="option-1-direct-input-arguments">
+<h1>Option 1: Direct input arguments<a class="headerlink" href="#option-1-direct-input-arguments" title="Permalink to this heading">¶</a></h1>
+<p>The quickest, but perhaps <strong>least efficient</strong> way of doing audio musaicking with <strong>GAMuT</strong>’s command-line interface is by using <cite>direct input arguments</cite>. Let’s start with the most basic example:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gamut<span class="w"> </span>--target<span class="w"> </span>/path/to/audio/target.wav<span class="w"> </span>--source<span class="w"> </span>/path/to/audio/source.wav
+</pre></div>
+</div>
+<p>This will generate an audio mosaic for the given <code class="docutils literal notranslate"><span class="pre">--target</span></code>, based on the given <code class="docutils literal notranslate"><span class="pre">--source</span></code>. The final audio output will be written to disk as <code class="docutils literal notranslate"><span class="pre">gamut-audio.wav</span></code> in the current directory.
+To play back the audio at the end of the process, we can use the <code class="docutils literal notranslate"><span class="pre">--play</span></code> argument, and also specify the audio output filename path, with the <code class="docutils literal notranslate"><span class="pre">--audio</span></code> argument.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gamut<span class="w"> </span><span class="se">\</span>
+--target<span class="w"> </span>/path/to/audio/target.wav<span class="w"> </span><span class="se">\</span>
+--source<span class="w"> </span>/path/to/audio/source.wav<span class="w"> </span><span class="se">\</span>
+--audio<span class="w">  </span>/path/to/audio/output.wav<span class="w"> </span><span class="se">\</span>
+--play
+</pre></div>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">\</span></code> above is simply to break the command into multiple lines, and make the code snippet more readable.</p>
+</div>
+<p>We can additionally specify different audio parameters, such as grain duration (<code class="docutils literal notranslate"><span class="pre">grain_dur</span></code>), grain envelope (<code class="docutils literal notranslate"><span class="pre">grain_env</span></code>), or the mix between the corpus sources and the original target (<code class="docutils literal notranslate"><span class="pre">corpus_weights</span></code>), like so:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gamut<span class="w"> </span><span class="se">\</span>
+--target<span class="w"> </span>/path/to/audio/target.wav<span class="w"> </span><span class="se">\</span>
+--source<span class="w"> </span>/path/to/audio/source.wav<span class="w"> </span><span class="se">\</span>
+--audio<span class="w">  </span>/path/to/audio/output.wav<span class="w"> </span><span class="se">\</span>
+--params<span class="w"> </span><span class="nv">grain_dur</span><span class="o">=</span><span class="m">0</span>.3<span class="w"> </span><span class="nv">grain_env</span><span class="o">={</span><span class="m">0</span>,1,0.2,0.1,0<span class="o">}</span><span class="w"> </span><span class="nv">corpus_weights</span><span class="o">=</span><span class="m">0</span>.75<span class="w"> </span><span class="se">\</span>
+--play
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For a full list of audio parameters that can be used with the <code class="docutils literal notranslate"><span class="pre">--params</span></code> argument, click <code class="xref py py-class docutils literal notranslate"><span class="pre">here</span></code>.</p>
+</div>
+<p>As you can see, however, <span class="marked">this workflow can quickly become cumbersome and messy, which is why GAMuT allows to do audio musaicking through JSON scripts.</span> This is explained <a class="reference internal" href="workspace.html"><span class="doc">next</span></a>.</p>
+</section>
+
+
+           </div>
+           
+          </div>
+          <footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+        <a href="workspace.html" class="btn btn-neutral float-right" title="Option 2: GAMuT workspace (recommended)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="../cli.html" class="btn btn-neutral float-left" title="Command-line interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2023, Felipe Tovar-Henao.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
