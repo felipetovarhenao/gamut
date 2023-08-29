@@ -196,7 +196,7 @@ Here are **4 examples** of `audio musaicking` made with **GAMuT**, each using di
             </span>
          </div>
          <div>
-            <b>Electric guitar corpus</b>
+            <b>Guitar corpus</b>
          </div>
          <div>
             28 audio files
