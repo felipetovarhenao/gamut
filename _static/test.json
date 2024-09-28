@@ -1,0 +1,31 @@
+{
+    "corpus": {
+        "name": "test-corpus",
+        "source": [
+            "/Users/felipe-tovar-henao/Documents/gamut/audio/source.wav"
+        ],
+        "features": [
+            "timbre"
+        ]
+    },
+    "mosaic": {
+        "name": "test-mosaic",
+        "target": "/Users/felipe-tovar-henao/Documents/gamut/audio/target.wav",
+        "corpus": [
+            "test-corpus"
+        ]
+    },
+    "audio": {
+        "name": "test-audio",
+        "mosaic": "test-mosaic",
+        "fidelity": 1.0,
+        "grain_dur": 0.1,
+        "grain_env": "cosine",
+        "corpus_weights": 1.0,
+        "stretch_factor": 1.0,
+        "pan_depth": 3,
+        "onset_var": 0,
+        "n_chans": 2,
+        "sr": 44100
+    }
+}

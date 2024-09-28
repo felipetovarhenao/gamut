@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GAMuT documentation &mdash; GAMuT  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Installation" href="installation.html" />
+    <link href="_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#">
+            
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v1.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command-line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui/overview.html">Graphical user interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">GAMuT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">GAMuT documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gamut-documentation">
+<h1>GAMuT documentation<a class="headerlink" href="#gamut-documentation" title="Link to this heading"></a></h1>
+<a class="reference internal image-reference" href="_images/gamut-logo.png"><img alt="_images/gamut-logo.png" class="align-center" src="_images/gamut-logo.png" style="height: 200px;" /></a>
+<section id="description">
+<h2>Description<a class="headerlink" href="#description" title="Link to this heading"></a></h2>
+<p><strong>GAMuT</strong> is a high-level, user-friendly granular <cite>audio musaicking</cite> toolkit implemented in Python. <cite>Audio musaicking</cite> (also spelled <cite>mosaicking</cite>),
+can be <a class="reference external" href="http://imtr.ircam.fr/imtr/Audio_Mosaicing">defined</a> as <strong>“the process of recomposing the temporal evolution of a given target audio file from segments cut out of source audio materials”</strong>.</p>
+<section id="audio-musaicking-a-visual-analogy">
+<h3>Audio musaicking: A visual analogy<a class="headerlink" href="#audio-musaicking-a-visual-analogy" title="Link to this heading"></a></h3>
+<p>If you’re new to <cite>audio musaicking</cite>, let’s consider the following visual analogy:</p>
+<blockquote>
+<div><div class="img-grid">
+   <div>
+      <span>
+         • Let's imagine we want the computer to reconstruct this <b>portait of Bob Ross</b>,
+         but only using bits and pieces of other images.
+         We will call this portait the <b>target</b>, and the collection of other
+         images the <b>corpus</b>.
+      </span>
+   </div>
+   <div>
+      <img src="_static/bob_ross_target.jpeg" class="example-img" alt="bob-ross">
+      <span class="caption">The target: A portrait of Bob Ross</span>
+   </div>
+   <div>
+      • Now, let's imagine we tell the computer that the <b>corpus</b> will be all available <b>emojis</b>.
+      The computer will then try to find <i>the best</i> subset of emojis, based on how similar they are in shape,
+      color, and other features to the <b>target</b>, and attempt to reconstruct the portrait of Bob Ross.
+   </div>
+   <div>
+      <img src="_static/emoji.webp" class="example-img" alt="emoji">
+      <span class="caption">The corpus: A collection of emoji</span>
+   </div>
+   <div>
+      • Thus, the computer might give us something like this — <b>a portrat of Bob Ross, made with several emoji</b>.
+      <br/>
+      <br/>
+      Although this wasn't actually done by a computer, but manually drawn by LA-based artist
+      <a href="https://en.wikipedia.org/wiki/Yung_Jake" rel="noreferrer" target="_blank">Yung Jake</a>
+      with the <a href="http://android.emoji.ink" rel="noreferrer" target="_blank">emoji.ink</a> tool,
+      the idea still holds — <i>audio mosaicking</i> consists of reconstructing a <b>target</b> using a <b>corpus</b>,
+      but with audio instead of images.
+      <br/>
+      <br/>
+      The computer would then go through a collection of audio files, analyze every sound, and try to pick the bits and pieces (i.e., <i>audio grains</i>)
+      that are most similar to the target, and assembled them into an <b>audio mosaic</b>.
+   </div>
+   <div>
+      <img src="_static/bob_ross_yungjake.jpeg" class="example-img" alt="jung-jake">
+      <span class="caption">Visual analogy of audio musaicking: Emoji Bob Ross (by Yung Jake)</span>
+   </div>
+</div></div></blockquote>
+</section>
+<section id="audio-examples">
+<h3>Audio examples<a class="headerlink" href="#audio-examples" title="Link to this heading"></a></h3>
+<p>Here are <strong>4 examples</strong> of <cite>audio musaicking</cite> made with <strong>GAMuT</strong>, each using different <strong>corpora</strong> on the same audio <strong>target</strong>.</p>
+<p><strong>Example 1</strong></p>
+<blockquote>
+<div><div class='audio-examples-grid'>
+   <div>
+      <i><b>Target name</b></i>
+   </div>
+   <div></div>
+   <div>
+      <i><b>Audio input</b></i>
+   </div>
+   <div>
+      Excerpt of Ángel Gonzalez'&nbsp;<i>muerte en el olvido</i>:
+      <br/>
+      <br/>
+      <div class="poem">
+         <i>Yo sé que existo</i>
+         <br/>
+         <i>porque tú me imaginas.</i>
+         <br/>
+         <i>Soy alto porque tú me crees</i>
+         <br/>
+         <i>alto, y limpio porque tú me miras</i>
+         <br/>
+         <i>con buenos ojos,</i>
+         <br/>
+         <i>con mirada limpia.</i>
+         <br/>
+      </div>
+   </div>
+   <div>
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/media/audio/00+target_AG-muerte_en_el_olvido.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+   <div>
+      <span>
+         <i><b>Corpus name</b></i>
+      </span>
+   </div>
+   <div>
+      <span>
+         <i><b>Corpus size</b></i>
+      </span>
+   </div>
+   <div>
+      <span>
+         <i><b>Audio output</b></i>
+      </span>
+   </div>
+   <div>
+      <b>Female singer voice corpus</b>
+   </div>
+   <div>
+      1221 audio files
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/media/audio/01+Female_corpus+-+1221+files.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+   <div>
+      <b>Cmaj7 chord notes corpus</b>
+   </div>
+   <div>
+      340 audio files
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/media/audio/02+CMaj_corpus+-+340+files.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+   <div>
+      <b>Tam-tam corpus</b>
+   </div>
+   <div>
+      2878 audio files
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/media/audio/04+Tamtam_corpus+-+2878+files.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+</div></div></blockquote>
+<p><strong>Example 2</strong></p>
+<blockquote>
+<div><div class='audio-examples-grid'>
+   <div>
+      <i><b>Target name</b></i>
+   </div>
+   <div></div>
+   <div>
+      <i><b>Audio input</b></i>
+   </div>
+   <div>
+      Drumset loop
+   </div>
+   <div>
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/drums.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+   <div>
+      <span>
+         <i><b>Corpus name</b></i>
+      </span>
+   </div>
+   <div>
+      <span>
+         <i><b>Corpus size</b></i>
+      </span>
+   </div>
+   <div>
+      <span>
+         <i><b>Audio output</b></i>
+      </span>
+   </div>
+   <div>
+      <b>Guitar corpus</b>
+   </div>
+   <div>
+      28 audio files
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/electric-guitar-drums.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+   <div>
+      <b>Animal sounds corpus</b>
+   </div>
+   <div>
+      51 audio files
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/animal-drums.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+   <div>
+      <b>Vocal sounds corpus</b>
+   </div>
+   <div>
+      768 audio files
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/vocal-drums.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+</div></div></blockquote>
+<p><strong>Example 3</strong></p>
+<blockquote>
+<div><div class='audio-examples-grid'>
+   <div>
+      <i><b>Target name</b></i>
+   </div>
+   <div></div>
+   <div>
+      <i><b>Audio input</b></i>
+   </div>
+   <div>
+      Excerpt from J.S. Bach's&nbsp;<i>Badinerie</i>
+   </div>
+   <div>
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/badinerie.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+   <div>
+      <span>
+         <i><b>Corpus name</b></i>
+      </span>
+   </div>
+   <div>
+      <span>
+         <i><b>Corpus size</b></i>
+      </span>
+   </div>
+   <div>
+      <span>
+         <i><b>Audio output</b></i>
+      </span>
+   </div>
+   <div>
+      <b>Orchestral music corpus</b>
+   </div>
+   <div>
+      64 audio files
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/orchestral-badinerie.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+   <div>
+      <b>Percussion corpus</b>
+   </div>
+   <div>
+      282 audio files
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/percussion-badinerie.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+   <div>
+      <b>Violin sounds corpus</b>
+   </div>
+   <div>
+      658 audio files
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/violin-badinerie.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+</div></div></blockquote>
+<p><strong>Example 4</strong></p>
+<blockquote>
+<div><div class='audio-examples-grid'>
+   <div>
+      <i><b>Target name</b></i>
+   </div>
+   <div></div>
+   <div>
+      <i><b>Audio input</b></i>
+   </div>
+   <div>
+      Female pop singer
+   </div>
+   <div>
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/singer.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+   <div>
+      <span>
+         <i><b>Corpus name</b></i>
+      </span>
+   </div>
+   <div>
+      <span>
+         <i><b>Corpus size</b></i>
+      </span>
+   </div>
+   <div>
+      <span>
+         <i><b>Audio output</b></i>
+      </span>
+   </div>
+   <div>
+      <b>Piano corpus</b>
+   </div>
+   <div>
+      177 audio files
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/piano-singer.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+   <div>
+      <b>Violin corpus</b>
+   </div>
+   <div>
+      658 audio files
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/violin-singer.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+   <div>
+      <b>Commercial music corpus</b>
+   </div>
+   <div>
+      140 audio files
+   </div>
+   <div>
+      <audio preload="none" controls="controls">
+         <source src="https://d2cqospqxtt8fw.cloudfront.net/personal-website/gamut/pop-singer.mp3" type="audio/mpeg">
+         Your browser does not support the <code>audio</code> element.
+      </audio>
+   </div>
+</div></div></blockquote>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Table of contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#python-package">Python package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#test">Test</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="getting-started.html#tutorials">Tutorials</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/basic-pipeline.html">Tutorial 1: Basic audio musaicking with GAMuT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/basic-corpus.html">Tutorial 2: Creating an audio corpus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/basic-mosaic.html">Tutorial 3: Creating an audio mosaic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/basic-audio.html">Tutorial 4: Converting mosaic to audio</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/audio-params.html">Tutorial 5: Audio musaicking parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/corpus-features.html">Tutorial 6: Audio feature analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/mixing-corpora.html">Tutorial 7: Mixing corpora</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/portability.html">Tutorial 8: Portability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/audio-effects.html">Tutorial 9: Audio effects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorials/next-steps.html">Next steps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command-line interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cli.html#quickstart">Quickstart</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="cli/raw-args.html">Option 1: Direct input arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cli/workspace.html">Option 2: GAMuT workspace</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="gui/overview.html">Graphical user interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="gui/overview.html#setup">Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gui/overview.html#running-the-application">Running the application</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="features.html">gamut.features</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="features.html#corpus">Corpus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="features.html#mosaic">Mosaic</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="controls.html">gamut.controls</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="controls.html#envelope">Envelope</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="audio.html">gamut.audio</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="audio.html#audiobuffer">AudioBuffer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<p>To visualize contents in alphabetical order, see <a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a>.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Felipe Tovar-Henao.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

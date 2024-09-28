@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorial 7: Mixing corpora &mdash; GAMuT  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tutorial 8: Portability" href="portability.html" />
+    <link rel="prev" title="Tutorial 6: Audio feature analysis" href="corpus-features.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v1.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../getting-started.html">Getting started</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../getting-started.html#tutorials">Tutorials</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="basic-pipeline.html">Tutorial 1: Basic audio musaicking with GAMuT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basic-corpus.html">Tutorial 2: Creating an audio corpus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basic-mosaic.html">Tutorial 3: Creating an audio mosaic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basic-audio.html">Tutorial 4: Converting mosaic to audio</a></li>
+<li class="toctree-l3"><a class="reference internal" href="audio-params.html">Tutorial 5: Audio musaicking parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="corpus-features.html">Tutorial 6: Audio feature analysis</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Tutorial 7: Mixing corpora</a></li>
+<li class="toctree-l3"><a class="reference internal" href="portability.html">Tutorial 8: Portability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="audio-effects.html">Tutorial 9: Audio effects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="next-steps.html">Next steps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gui/overview.html">Graphical user interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GAMuT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../getting-started.html">Getting started</a></li>
+      <li class="breadcrumb-item active">Tutorial 7: Mixing corpora</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/mixing-corpora.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial-7-mixing-corpora">
+<h1>Tutorial 7: Mixing corpora<a class="headerlink" href="#tutorial-7-mixing-corpora" title="Link to this heading"></a></h1>
+<p>As has been mentioned in previous tutorials:</p>
+<ul class="simple">
+<li><p>It is possible to use multiple audio <code class="docutils literal notranslate"><span class="pre">Corpus</span></code> instances when creating a <code class="docutils literal notranslate"><span class="pre">Mosaic</span></code>, by passing a <code class="docutils literal notranslate"><span class="pre">list</span></code> to the <code class="docutils literal notranslate"><span class="pre">corpus</span></code> argument in <code class="docutils literal notranslate"><span class="pre">Mosaic</span></code>.</p></li>
+<li><p>Additionally, we can also control the “mix” between the original audio target and the <code class="docutils literal notranslate"><span class="pre">Corpus</span></code> instances when converting a <code class="docutils literal notranslate"><span class="pre">Mosaic</span></code> to audio, with the <code class="docutils literal notranslate"><span class="pre">corpus_weights</span></code> argument in the <code class="docutils literal notranslate"><span class="pre">Mosaic.to_audio()</span></code> method.</p></li>
+</ul>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Technically speaking, the <code class="docutils literal notranslate"><span class="pre">corpus_weights</span></code> argument does something more specific than controlling the mix or gain between <cite>target</cite> and <cite>corpora</cite>.
+It sets the likelihood of a <code class="docutils literal notranslate"><span class="pre">Corpus</span></code> grain being chosen over one from the original audio <cite>target</cite>,
+which results in something akin to controlling the mix between the two.</p>
+</div>
+<p>For instance, let’s consider different cases using <strong>one</strong> <code class="docutils literal notranslate"><span class="pre">Mosaic</span></code> that uses <strong>three</strong> different <code class="docutils literal notranslate"><span class="pre">Corpus</span></code> instances. Let’s first create the <code class="docutils literal notranslate"><span class="pre">Mosaic</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gamut.features</span> <span class="kn">import</span> <span class="n">Corpus</span><span class="p">,</span> <span class="n">Mosaic</span>
+
+<span class="n">corpus_1</span> <span class="o">=</span> <span class="n">Corpus</span><span class="p">()</span>
+<span class="n">corpus</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;path/to/my_corpus_1.gamut&#39;</span><span class="p">)</span>
+
+<span class="n">corpus_2</span> <span class="o">=</span> <span class="n">Corpus</span><span class="p">()</span>
+<span class="n">corpus</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;path/to/my_corpus_2.gamut&#39;</span><span class="p">)</span>
+
+<span class="n">corpus_3</span> <span class="o">=</span> <span class="n">Corpus</span><span class="p">()</span>
+<span class="n">corpus</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;path/to/my_corpus_3.gamut&#39;</span><span class="p">)</span>
+
+<span class="n">mosaic</span> <span class="o">=</span> <span class="n">Mosaic</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="s1">&#39;/path/to/target/audio/file.wav&#39;</span><span class="p">,</span> <span class="n">corpus</span><span class="o">=</span><span class="p">[</span><span class="n">corpus_1</span><span class="p">,</span> <span class="n">corpus_2</span><span class="p">,</span> <span class="n">corpus_3</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>There are multiple ways in which we could control the mix between each input <code class="docutils literal notranslate"><span class="pre">Corpus</span></code> instances, and the original audio target:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">int</span></code> <strong>or</strong> <code class="docutils literal notranslate"><span class="pre">float</span></code> <strong>value</strong>: The simplest one is by specifying a single value that sets the mix between target and corpora, from beginning to end.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># corpus grains will be chosen with a likelihood of 80%, and target grains with a 20% likelihood.</span>
+<span class="n">mosaic</span><span class="o">.</span><span class="n">to_audio</span><span class="p">(</span><span class="n">corpus_weights</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">list</span></code> <strong>of</strong> <code class="docutils literal notranslate"><span class="pre">int</span></code> <strong>and/or</strong> <code class="docutils literal notranslate"><span class="pre">float</span></code> <strong>values</strong>: To fine-tune things further, we can dynamically vary the likelihood with a <code class="docutils literal notranslate"><span class="pre">list</span></code>, as previously shown in <a class="reference internal" href="audio-params.html"><span class="doc">Tutorial 5: Audio musaicking parameters</span></a>. This would represent the time-varying likelihood for all <cite>corpora</cite>, <strong>evenly distributed among them</strong>, vs. the original audio <cite>target</cite>.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># The likelihood of corpus grains will gradually increase from 0% to 100%. This would result in</span>
+<span class="c1"># starting with sounds excusively from the original audio target and gradually grains from the corpora</span>
+<span class="n">mosaic</span><span class="o">.</span><span class="n">to_audio</span><span class="p">(</span><span class="n">corpus_weights</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>It’s also possible to use the <cite>(x, y)</cite> coordinate format, by making a <code class="docutils literal notranslate"><span class="pre">list</span></code> of <code class="docutils literal notranslate"><span class="pre">tuples</span></code> instead of single <code class="docutils literal notranslate"><span class="pre">float</span></code> or <code class="docutils literal notranslate"><span class="pre">int</span></code> values.</p>
+</div>
+<p>The most nuanced approach, however, is to individually control the likelihood of <cite>target</cite> and <cite>corpora</cite>.
+This is achieved by creating a <cite>list</cite> of <cite>lists</cite>, where the elements of the inner <cite>lists</cite> can be <cite>int</cite>/ <cite>float</cite> values, or <cite>tuples</cite>.</p>
+<p>This provide much more control over the way the <cite>target</cite> and <cite>corpora</cite> in the final audio output. Here’s an example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># likelihood of target gradually changes from 50% down to 0%</span>
+<span class="n">target_weight</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># likelihood of corpus 1 will fluctuate between 50% and around 33%</span>
+<span class="n">corpus_1_weight</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1"># likelihood of corpus 2 gradually changes from 0% to 50%</span>
+<span class="n">corpus_2_weight</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># likelihood of corpus 3 gradually changes from 0%, to around 33% half way through, back to 0% by the end.</span>
+<span class="n">corpus_3_weight</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># group weights in a list</span>
+<span class="n">corpus_weights</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">target_weight</span><span class="p">,</span>
+    <span class="n">corpus_1_weight</span><span class="p">,</span>
+    <span class="n">corpus_2_weight</span><span class="p">,</span>
+    <span class="n">corpus_3_weight</span><span class="p">,</span>
+<span class="p">]</span>
+
+<span class="c1"># convert mosaic to audio and play back blend of corpora with different weight envelopes</span>
+<span class="n">mosaic</span><span class="o">.</span><span class="n">to_audio</span><span class="p">(</span><span class="n">corpus_weights</span><span class="o">=</span><span class="n">corpus_weights</span><span class="p">)</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Here’s a visual representation of all weights interacting with each other:</p>
+<img alt="../_images/multi-weight.png" src="../_images/multi-weight.png" />
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>As the plot shows, the actual weights may change once combined, since they must be normalized to ensure their sum along the <cite>y</cite> axis is always <code class="docutils literal notranslate"><span class="pre">1.0</span></code>.
+For instance, this explains why <strong>corpus 1</strong>, despite having a constant value of <code class="docutils literal notranslate"><span class="pre">1</span></code> in the code, does fluctuate, due to the other weights affecting the fraction that it represents relative to <code class="docutils literal notranslate"><span class="pre">1.0</span></code>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When taking this approach, the order of items in <code class="docutils literal notranslate"><span class="pre">list</span></code> passed to <code class="docutils literal notranslate"><span class="pre">corpus_weights</span></code> matters: The first weight is always the target (i.e., weight at index 0), and the subsequent ones belong to each <code class="docutils literal notranslate"><span class="pre">Corpus</span></code> in the input.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Make sure the number of <code class="docutils literal notranslate"><span class="pre">Corpus</span></code> matches the number of weights passed to <code class="docutils literal notranslate"><span class="pre">corpus_weights</span></code>.</p>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="corpus-features.html" class="btn btn-neutral float-left" title="Tutorial 6: Audio feature analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="portability.html" class="btn btn-neutral float-right" title="Tutorial 8: Portability" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Felipe Tovar-Henao.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

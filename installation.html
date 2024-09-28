@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; GAMuT  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Getting started" href="getting-started.html" />
+    <link rel="prev" title="GAMuT documentation" href="index.html" />
+    <link href="_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v1.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#python-package">Python package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#test">Test</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="getting-started.html">Getting started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="cli.html">Command-line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="gui/overview.html">Graphical user interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">GAMuT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
+<p>Here’s a step-by-step guide on how to install the <strong>GAMuT</strong> package, assumming, of course, that you already have <a class="reference external" href="https://www.python.org/downloads/release/python-3113/">Python</a> installed.</p>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading"></a></h2>
+<p>For <strong>GAMuT</strong> to work, you’ll need to install <a class="reference external" href="https://ffmpeg.org/">ffmpeg</a> and at least one of the following audio libraries (listed in order of preference):</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="https://libsndfile.github.io/libsndfile/">libsndfile</a></p></li>
+<li><p><a class="reference external" href="http://libsound.io/">libsoundio</a></p></li>
+<li><p><a class="reference external" href="http://www.portaudio.com/">portaudio</a></p></li>
+</ul>
+</div></blockquote>
+<p>To install them on <strong>MacOS</strong>, run (assuming you already have <a class="reference external" href="https://brew.sh/">Homebrew</a> installed):</p>
+<blockquote>
+<div><div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>brew<span class="w"> </span>install<span class="w"> </span>portaudio<span class="w"> </span>libsoundio<span class="w"> </span>libsndfile<span class="w"> </span>ffmpeg
+</pre></div>
+</div>
+</div></blockquote>
+<p>To install them on <strong>Debian-based Linux</strong>:</p>
+<blockquote>
+<div><div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>apt-get<span class="w"> </span>update<span class="w"> </span>-y
+apt-get<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>libportaudio2<span class="w"> </span>libasound-dev<span class="w"> </span>libsndfile1<span class="w"> </span>ffmpeg
+</pre></div>
+</div>
+</div></blockquote>
+<div class="warning admonition">
+<p class="admonition-title">Note for Windows users</p>
+<p>Installing these libraries on Windows can be a bit tedious, so please Google how to install them in your machine.
+Also notice that for both the libraries and Python, <strong>you will likely have to manually add the executables to the system PATH</strong>. For a detailed guide
+on this, please read these two sources:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.educative.io/answers/how-to-add-python-to-path-variable-in-windows">How to add Python to PATH variable in Windows</a></p></li>
+<li><p><a class="reference external" href="https://medium.com/&#64;kevinmarkvi/how-to-add-executables-to-your-path-in-windows-5ffa4ce61a53">How to add executables to your PATH in Windows</a>.</p></li>
+</ul>
+</div>
+</section>
+<section id="python-package">
+<h2>Python package<a class="headerlink" href="#python-package" title="Link to this heading"></a></h2>
+<p>Once these libraries are installed, simply run:</p>
+<blockquote>
+<div><div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>gamut
+</pre></div>
+</div>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This package was developed, and has only been tested on <strong>MacOS</strong>. If you’re able to use it in another
+operating system and would like to share the installation process, please submit a <code class="docutils literal notranslate"><span class="pre">pull</span> <span class="pre">request</span></code>
+to the <a class="reference external" href="https://github.com/felipetovarhenao/gamut">GAMuT github repo</a>.</p>
+</div>
+</section>
+<section id="test">
+<h2>Test<a class="headerlink" href="#test" title="Link to this heading"></a></h2>
+<p>Once <strong>GAMuT</strong> is installed, you can test that everything works, by running:</p>
+<blockquote>
+<div><div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gamut<span class="w"> </span>--version
+gamut<span class="w"> </span>--test
+</pre></div>
+</div>
+</div></blockquote>
+<p>If you don’t see any errors, it means <strong>GAMuT</strong> runs properly in your machine.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="GAMuT documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="getting-started.html" class="btn btn-neutral float-right" title="Getting started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Felipe Tovar-Henao.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

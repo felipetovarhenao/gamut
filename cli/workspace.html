@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Option 2: GAMuT workspace (recommended) &mdash; GAMuT  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Graphical user interface" href="../gui/overview.html" />
+    <link rel="prev" title="Option 1: Direct input arguments" href="raw-args.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v1.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting-started.html">Getting started</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../cli.html">Command-line interface</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../cli.html#quickstart">Quickstart</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="raw-args.html">Option 1: Direct input arguments</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Option 2: GAMuT workspace</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../gui/overview.html">Graphical user interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GAMuT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../cli.html">Command-line interface</a></li>
+      <li class="breadcrumb-item active">Option 2: GAMuT workspace (recommended)</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/cli/workspace.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="option-2-gamut-workspace-recommended">
+<h1>Option 2: GAMuT workspace (recommended)<a class="headerlink" href="#option-2-gamut-workspace-recommended" title="Link to this heading"></a></h1>
+<p>A more convenient way to start working with <strong>GAMuT</strong> is by creating a workspace folder. Navigate to where you would want your workplace folder to be, and run:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gamut<span class="w"> </span>--init<span class="w"> </span>my-gamut-workspace
+</pre></div>
+</div>
+<p>You may choose to name your workspace folder differently, instead of <code class="docutils literal notranslate"><span class="pre">my-gamut-workspace</span></code>. In this case, a folder named <cite>my-gamut-workspace</cite> will automatically be created, and will contain some boilerplate files and folders to help you get started.
+We can go into the directory and the current folder structure:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>./my-gamut-workspace
+ls
+</pre></div>
+</div>
+<p>The workspace should look something like this:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>my-gamut-workspace
+   ├── audio
+   │   ├── source.mp3
+   │   └── target.mp3
+   ├── corpora
+   ├── mosaics
+   └── scripts
+       └── test.json
+</pre></div>
+</div>
+<p>As you can see, it includes <strong>4 folders</strong> and <strong>3 different files</strong>. These files are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">source.mp3</span></code> and <code class="docutils literal notranslate"><span class="pre">target.mp3</span></code>: Two default audio samples that we can use to test <strong>GAMuT</strong>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">test.json</span></code>: A JSON file containing boiler-plate information we can use to generate an audio mosaic. This is what we’ll be modifying and feeding <strong>GAMuT</strong> to create new sounds.</p></li>
+</ul>
+</div></blockquote>
+<p>We can now create our first audio mosaic. Let’s run the <code class="docutils literal notranslate"><span class="pre">test.json</span></code> script:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>gamut<span class="w"> </span>--script<span class="w"> </span>./scripts/test.json<span class="w"> </span>--play
+</pre></div>
+</div>
+<p>Let’s understand what this does:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--script</span></code> specifies we want <code class="docutils literal notranslate"><span class="pre">gamut</span></code> to run a script. We can optionally type <code class="docutils literal notranslate"><span class="pre">-s</span></code> instead of <code class="docutils literal notranslate"><span class="pre">--script</span></code> to make it shorter.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">./scripts/test.json</span></code> is the location of the script we want to run. We’ll take a loot at this file soon and understand its main components.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--play</span></code> tells <code class="docutils literal notranslate"><span class="pre">gamut</span></code> to play the resulting audio at the end of the process. If absent, it won’t play it automatically, but the file will still be created.</p></li>
+</ul>
+</div></blockquote>
+<p>After running this, we should find a newly created files:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">./corpora/test-corpus.gamut</span></code>: A binary file that represents a <strong>corpus</strong> built from <code class="docutils literal notranslate"><span class="pre">source.wav</span></code>,</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">./mosaics/test-mosaic.gamut</span></code>: A binary file that represents a <strong>mosaic</strong> built from the audio target <code class="docutils literal notranslate"><span class="pre">target.wav</span></code>, and the corpus <code class="docutils literal notranslate"><span class="pre">test-corpus.gamut</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">./audio/test-audio.wav</span></code>: The resulting <strong>audio mosaic</strong> in <code class="docutils literal notranslate"><span class="pre">.wav</span></code> format.</p></li>
+</ul>
+</div></blockquote>
+<p>Now let’s open <code class="docutils literal notranslate"><span class="pre">scripts/test.json</span></code> and look what’s inside:</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">Boiler-plate content in <code class="docutils literal notranslate"><span class="pre">scripts/test.json</span></code></span><a class="headerlink" href="#id1" title="Link to this code"></a></div>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="p">{</span>
+<span class="linenos"> 2</span><span class="w">    </span><span class="nt">&quot;corpus&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos"> 3</span><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test-corpus&quot;</span><span class="p">,</span>
+<span class="linenos"> 4</span><span class="w">        </span><span class="nt">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="hll"><span class="linenos"> 5</span><span class="w">            </span><span class="s2">&quot;/Users/felipe-tovar-henao/Documents/gamut/audio/source.wav&quot;</span>
+</span><span class="linenos"> 6</span><span class="w">        </span><span class="p">],</span>
+<span class="linenos"> 7</span><span class="w">        </span><span class="nt">&quot;features&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos"> 8</span><span class="w">            </span><span class="s2">&quot;timbre&quot;</span>
+<span class="linenos"> 9</span><span class="w">        </span><span class="p">]</span>
+<span class="linenos">10</span><span class="w">    </span><span class="p">},</span>
+<span class="linenos">11</span><span class="w">    </span><span class="nt">&quot;mosaic&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">12</span><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test-mosaic&quot;</span><span class="p">,</span>
+<span class="hll"><span class="linenos">13</span><span class="w">        </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/Users/felipe-tovar-henao/Documents/gamut/audio/target.wav&quot;</span><span class="p">,</span>
+</span><span class="linenos">14</span><span class="w">        </span><span class="nt">&quot;corpus&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="linenos">15</span><span class="w">            </span><span class="s2">&quot;test-corpus&quot;</span>
+<span class="linenos">16</span><span class="w">        </span><span class="p">]</span>
+<span class="linenos">17</span><span class="w">    </span><span class="p">},</span>
+<span class="linenos">18</span><span class="w">    </span><span class="nt">&quot;audio&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="linenos">19</span><span class="w">        </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test-audio&quot;</span><span class="p">,</span>
+<span class="linenos">20</span><span class="w">        </span><span class="nt">&quot;mosaic&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;test-mosaic&quot;</span><span class="p">,</span>
+<span class="linenos">21</span><span class="w">        </span><span class="nt">&quot;fidelity&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span>
+<span class="linenos">22</span><span class="w">        </span><span class="nt">&quot;grain_dur&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.1</span><span class="p">,</span>
+<span class="linenos">23</span><span class="w">        </span><span class="nt">&quot;grain_env&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cosine&quot;</span><span class="p">,</span>
+<span class="linenos">24</span><span class="w">        </span><span class="nt">&quot;corpus_weights&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span>
+<span class="linenos">25</span><span class="w">        </span><span class="nt">&quot;stretch_factor&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">1.0</span><span class="p">,</span>
+<span class="linenos">26</span><span class="w">        </span><span class="nt">&quot;pan_depth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="linenos">27</span><span class="w">        </span><span class="nt">&quot;onset_var&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="linenos">28</span><span class="w">        </span><span class="nt">&quot;n_chans&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+<span class="linenos">29</span><span class="w">        </span><span class="nt">&quot;sr&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">44100</span>
+<span class="linenos">30</span><span class="w">    </span><span class="p">}</span>
+<span class="linenos">31</span><span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>This <code class="docutils literal notranslate"><span class="pre">JSON</span></code> file consists of <strong>three blocks</strong> that represent the basic <cite>audio musaicking</cite> pipeline in <strong>GAMuT</strong> — it essentially says <cite>create a corpus, then a mosaic, and then an audio file.</cite>
+We can think of this file as containing all the different settings that <strong>GAMuT</strong> can use to do its job.</p>
+<p>Highlighted, are the <strong>two lines</strong> that you should start to experiment with:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">corpus::source</span></code>: This line specifies the path to an audio file, folder directory, or list thereof, you want to use as a <strong>corpus</strong>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mosaic::target</span></code>: This line specifies the path to an audio file you want to use as a <strong>target</strong>.</p></li>
+</ul>
+</div></blockquote>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>To avoid re-building corpus and/or audio everytime you run the script, you can use the <code class="docutils literal notranslate"><span class="pre">--skip</span> <span class="pre">&lt;block&gt;</span></code> argument to skip blocks you don’t want to run. For instance, this runs the <code class="docutils literal notranslate"><span class="pre">test.json</span></code> script, but only the <code class="docutils literal notranslate"><span class="pre">audio</span></code> block:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>gamut<span class="w"> </span>-s<span class="w"> </span>./scripts/test.json<span class="w"> </span>--skip<span class="w"> </span>corpus<span class="w"> </span>mosaic
+</pre></div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Script block names <strong>must start</strong> with either <code class="docutils literal notranslate"><span class="pre">corpus</span></code>, <code class="docutils literal notranslate"><span class="pre">audio</span></code>, or <code class="docutils literal notranslate"><span class="pre">mosaic</span></code>. This makes it possible to include, for instance, more than one corpus in the same script:</p>
+<div class="highlight-javascript notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">   </span><span class="s2">&quot;corpus_1&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="p">...</span>
+<span class="w">   </span><span class="p">},</span>
+<span class="w">   </span><span class="s2">&quot;corpus_2&quot;</span><span class="o">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="p">...</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<p>Inside each block, you have other parameter fields that you can change. Aside from <code class="docutils literal notranslate"><span class="pre">name</span></code>, which specifies the name of the output file for each block, you can learn about what each of these parameters controls through these links:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="../features.html#gamut.features.Corpus" title="gamut.features.Corpus"><code class="xref py py-class docutils literal notranslate"><span class="pre">corpus</span></code></a></p></li>
+<li><p><a class="reference internal" href="../features.html#gamut.features.Mosaic" title="gamut.features.Mosaic"><code class="xref py py-class docutils literal notranslate"><span class="pre">mosaic</span></code></a></p></li>
+<li><p><code class="xref py py-class docutils literal notranslate"><span class="pre">audio</span></code></p></li>
+</ul>
+</div></blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Once you feel more comfortable working with the <strong>GAMuT</strong> <cite>command-line interface</cite>, you may want to go through the <a class="reference internal" href="../getting-started.html"><span class="doc">Python tutorials</span></a> to have more control over your workflow.</p>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="raw-args.html" class="btn btn-neutral float-left" title="Option 1: Direct input arguments" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../gui/overview.html" class="btn btn-neutral float-right" title="Graphical user interface" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Felipe Tovar-Henao.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

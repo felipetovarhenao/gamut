@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutorial 5: Audio musaicking parameters &mdash; GAMuT  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b20cc3f5" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Tutorial 6: Audio feature analysis" href="corpus-features.html" />
+    <link rel="prev" title="Tutorial 4: Converting mosaic to audio" href="basic-audio.html" />
+    <link href="../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                v1.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Table of contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../getting-started.html">Getting started</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../getting-started.html#tutorials">Tutorials</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="basic-pipeline.html">Tutorial 1: Basic audio musaicking with GAMuT</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basic-corpus.html">Tutorial 2: Creating an audio corpus</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basic-mosaic.html">Tutorial 3: Creating an audio mosaic</a></li>
+<li class="toctree-l3"><a class="reference internal" href="basic-audio.html">Tutorial 4: Converting mosaic to audio</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Tutorial 5: Audio musaicking parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="corpus-features.html">Tutorial 6: Audio feature analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mixing-corpora.html">Tutorial 7: Mixing corpora</a></li>
+<li class="toctree-l3"><a class="reference internal" href="portability.html">Tutorial 8: Portability</a></li>
+<li class="toctree-l3"><a class="reference internal" href="audio-effects.html">Tutorial 9: Audio effects</a></li>
+<li class="toctree-l3"><a class="reference internal" href="next-steps.html">Next steps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-line interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gui/overview.html">Graphical user interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">GAMuT</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../getting-started.html">Getting started</a></li>
+      <li class="breadcrumb-item active">Tutorial 5: Audio musaicking parameters</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/tutorials/audio-params.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="tutorial-5-audio-musaicking-parameters">
+<h1>Tutorial 5: Audio musaicking parameters<a class="headerlink" href="#tutorial-5-audio-musaicking-parameters" title="Link to this heading"></a></h1>
+<p>One of the main advantages of the <code class="docutils literal notranslate"><span class="pre">Mosaic</span></code> class, is that it allows to generate different audio mosaic versions
+from the same instance, or <cite>corpus-target</cite> pairing. In other words, a <code class="docutils literal notranslate"><span class="pre">Mosaic</span></code> instance works as a virtual representation,
+or <strong>blueprint</strong> of an <cite>audio mosaic</cite>, rather than the <cite>audio mosaic</cite> itself.</p>
+<p>This allows to play and experiment with different settings, hear the results, all without having to rebuild the
+<code class="docutils literal notranslate"><span class="pre">Corpus</span></code> and/or the <code class="docutils literal notranslate"><span class="pre">Mosaic</span></code> from scratch everytime. Thus, the resulting audio will depend on the many
+audio parameters one can pass to the <code class="docutils literal notranslate"><span class="pre">to_audio()</span></code> method.</p>
+<p>To demonstrate this, let’s consider different cases with the same <code class="docutils literal notranslate"><span class="pre">Mosaic</span></code> instance.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">gamut.features</span> <span class="kn">import</span> <span class="n">Mosaic</span>
+
+<span class="c1"># first load .gamut mosaic from disk</span>
+<span class="n">mosaic</span> <span class="o">=</span> <span class="n">Mosaic</span><span class="p">()</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;/path/to/my_mosaic.gamut&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, let’s generate audio using the default arguments:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># convert to audio mosaic using arguments and play it.</span>
+<span class="n">mosaic</span><span class="o">.</span><span class="n">to_audio</span><span class="p">()</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Optionally, we can pass different arguments to fine-tune the final output. For instance, setting the <cite>grain duration</cite>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># set grain duration to 0.5 seconds</span>
+<span class="n">mosaic</span><span class="o">.</span><span class="n">to_audio</span><span class="p">(</span><span class="n">grain_dur</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>As with most of arguments in the <code class="docutils literal notranslate"><span class="pre">to_audio()</span></code> method, we can use a <code class="docutils literal notranslate"><span class="pre">list</span></code> of values to dynamically (i.e., over time) change the parameter.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># set grain duration, gradually changing from 0.1 to 0.5 seconds, over the duration of the audio file</span>
+<span class="n">mosaic</span><span class="o">.</span><span class="n">to_audio</span><span class="p">(</span><span class="n">grain_dur</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Similarly we can customize the grain envelope:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">env</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">mosaic</span><span class="o">.</span><span class="n">to_audio</span><span class="p">(</span><span class="n">grain_env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span><span class="o">.</span><span class="n">play</span>
+</pre></div>
+</div>
+<p>This would result in the following grain envelope:</p>
+<a class="reference internal image-reference" href="../_images/grain-env-1.png"><img alt="../_images/grain-env-1.png" src="../_images/grain-env-1.png" style="height: 250px;" /></a>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>When specifying envelopes as a <code class="docutils literal notranslate"><span class="pre">list</span></code>, make sure that the envelope <strong>starts and ends</strong> in <code class="docutils literal notranslate"><span class="pre">0</span></code>. Otherwise, you’ll likely get unintended audio clicks in the audio output with every grain.</p>
+</div>
+<p>Another convenient way of specifying time-varying or <cite>dynamic</cite> parameters, is through a
+<code class="docutils literal notranslate"><span class="pre">list</span></code> of <code class="docutils literal notranslate"><span class="pre">tuples</span></code>, here each <code class="docutils literal notranslate"><span class="pre">tuple</span></code> is the (<cite>x, y</cite>) coordinates of the parameter —
+<cite>x</cite> being time, and <cite>y</cite> being the parameter value.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">env</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+<span class="p">]</span>
+<span class="n">mosaic</span><span class="o">.</span><span class="n">to_audio</span><span class="p">(</span><span class="n">grain_env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span><span class="o">.</span><span class="n">play</span>
+</pre></div>
+</div>
+<p>This results is the following grain envelope:</p>
+<a class="reference internal image-reference" href="../_images/grain-env-2.png"><img alt="../_images/grain-env-2.png" src="../_images/grain-env-2.png" style="height: 250px;" /></a>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>When specifying a control parameter as a <code class="docutils literal notranslate"><span class="pre">list</span></code> of <code class="docutils literal notranslate"><span class="pre">tuples</span></code>, make sure the <cite>x</cite> values appear in incremental order. For instance, these <code class="docutils literal notranslate"><span class="pre">lists</span></code> would all throw an error:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">[(0,</span> <span class="pre">0),</span> <span class="pre">(0,</span> <span class="pre">1)]`</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[(0,</span> <span class="pre">0),</span> <span class="pre">(1,</span> <span class="pre">1),</span> <span class="pre">(0,</span> <span class="pre">1)]`</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">[(0,</span> <span class="pre">0),</span> <span class="pre">(1,</span> <span class="pre">1),</span> <span class="pre">(50,</span> <span class="pre">0.5),</span> <span class="pre">(10,</span> <span class="pre">0)]`</span></code></p></li>
+</ul>
+</div>
+<p>Finally, let’s consider a more complex version, changing more than a single parameter.</p>
+<p>In this case, we’ll change:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">corpus_weights</span></code>: This controls the likelihood of using the <cite>corpus</cite> (instead of the original audio <cite>target</cite>) for a given segment or <cite>grain</cite>. By default, this is set to <code class="docutils literal notranslate"><span class="pre">1</span></code>. Although it’s not quite the same, this is somewhat equivalent to controlling the dry-wet mix between corpus and target.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">grain_env</span></code>: grain envelope.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">grain_dur</span></code>: grain duration, in seconds.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stretch_factor</span></code>: inverse playback rate, where 2 is twice as slow, 0.5 is twice as fast, and so on.</p></li>
+</ul>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># gradual change, from only using grains in corpus, to only using grains in original audio target</span>
+<span class="n">corpus_weights</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># a somewhat sharp and percussive grain envelope</span>
+<span class="n">grain_env</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span>
+    <span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+<span class="p">]</span>
+
+<span class="c1"># playback at original speed (1.0), and half way gradually slow down to twice the speed (2.0)</span>
+<span class="n">stretch_factor</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+
+<span class="c1"># convert to audio</span>
+<span class="n">audio</span> <span class="o">=</span> <span class="n">mosaic</span><span class="o">.</span><span class="n">to_audio</span><span class="p">(</span>
+    <span class="n">grain_env</span><span class="o">=</span><span class="n">grain_env</span><span class="p">,</span>
+    <span class="n">corpus_weights</span><span class="o">=</span><span class="n">corpus_weights</span><span class="p">,</span>
+    <span class="n">stretch_factor</span><span class="o">=</span><span class="n">stretch_factor</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># playback audio mosaic</span>
+<span class="n">audio</span><span class="o">.</span><span class="n">play</span><span class="p">()</span>
+
+<span class="c1"># write audio mosaic to disk</span>
+<span class="n">audio</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;./my_cool_audio_mosaic.wav&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>To learn more about all available audio parameters, see the documentation: <code class="xref py py-class docutils literal notranslate"><span class="pre">gamut.features.Mosaic.to_audio</span></code>.</p>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="basic-audio.html" class="btn btn-neutral float-left" title="Tutorial 4: Converting mosaic to audio" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="corpus-features.html" class="btn btn-neutral float-right" title="Tutorial 6: Audio feature analysis" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Felipe Tovar-Henao.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
